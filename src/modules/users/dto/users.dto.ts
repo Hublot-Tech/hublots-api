@@ -6,6 +6,7 @@ import {
   IsDateString,
   IsEmail,
   IsEnum,
+  IsJWT,
   IsOptional,
   IsPhoneNumber,
   IsString,
@@ -21,11 +22,18 @@ export enum Locale {
 }
 
 export enum Role {
-  PROV = "provider",
   CLIENT = "client",
+  PROVIDER = "provider",
   PARTNER = "partner",
   SUPPORT = "support",
   ADMIN = "admin",
+}
+
+export enum VerificationStatus {
+  NOT_SUBMITTED = "Not submitted",
+  SUBMITTED = "Submitted",
+  VERIFIED = "Verified",
+  NOT_VERIFIED = "Not Verified",
 }
 
 export class CreateUserDto {
@@ -51,9 +59,9 @@ export class CreateUserDto {
   @IsPhoneNumber()
   phoneNumber: string;
 
-  @IsBoolean()
   @IsOptional()
-  isVerified: boolean = false;
+  @IsEnum(VerificationStatus)
+  verificationStatus: VerificationStatus = VerificationStatus.NOT_SUBMITTED;
 
   @IsBoolean()
   @IsOptional()
@@ -61,7 +69,8 @@ export class CreateUserDto {
 
   @ApiProperty({
     example: "FR",
-    description: "The locale is the default language of the user. Required to create a new account",
+    description:
+      "The locale is the default language of the user. Required to create a new account",
   })
   @IsEnum(Locale)
   locale: Locale;
@@ -102,7 +111,23 @@ export class GetUserByIdDto {
   id: string;
 }
 
+export class CreateAccountDto extends OmitType(CreateUserDto, ["password"]) {
+  @ApiProperty({
+    example: ["CLIENT", "PROVIDER"],
+    description:
+      "The roles property is an array of Roles for the user. Required to create a new account.",
+    isArray: true,
+    enum: Role,
+  })
+  @IsEnum(Role, { each: true })
+  roles: Role[];
+}
+
 export class UserDto extends CreateUserDto {
+  @IsUUID()
+  @ApiProperty()
+  id: string;
+
   @ApiProperty({
     description: "Timestamp of last update",
   })
@@ -121,14 +146,31 @@ export class UserDto extends CreateUserDto {
   @IsDateString()
   deletedAt: Date;
 
+  @ApiProperty({
+    example: ["CLIENT", "PROVIDER"],
+    description:
+      "The roles property is an array of Roles for the user. Required to create a new account.",
+    isArray: true,
+    enum: Role,
+  })
+  @IsEnum(Role, { each: true })
+  roles: Role[];
+
+  @IsBoolean()
+  @ApiProperty()
+  isActive: boolean = true;
+
   constructor(user: UserDto) {
     super(user);
     Object.assign(this, user);
   }
 }
 
+export class UpdateProfileDto extends PartialType(
+  OmitType(UserDto, ["password", "email", "verificationStatus"] as const),
+) {}
 export class UpdateUserDto extends PartialType(
-  OmitType(UserDto, ["password", "email", "isVerified"] as const),
+  OmitType(UserDto, ["password", "email"] as const),
 ) {}
 
 export class RegisterUserResponseDto extends ResponseMetadataDto {
@@ -136,6 +178,13 @@ export class RegisterUserResponseDto extends ResponseMetadataDto {
   @ValidateNested()
   @Type(() => UserDto)
   data: UserDto;
+
+  @ApiProperty({
+    description: "Valid access token",
+    required: true,
+  })
+  @IsJWT()
+  accessToken: string;
 
   constructor(responseBody: RegisterUserResponseDto) {
     super(responseBody);

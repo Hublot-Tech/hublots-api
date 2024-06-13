@@ -1,8 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
 import { v4 as uuidv4 } from "uuid";
-import { Locale, Role,  UserDto } from "../dto/users.dto";
-import { Service } from "src/modules/service/schema/service.schema";
+import { Locale, Role, UserDto, VerificationStatus } from "../dto/users.dto";
 
 @Schema()
 export class User extends Document {
@@ -26,11 +25,12 @@ export class User extends Document {
   phoneNumber: string;
 
   @Prop({
-    type: Boolean,
+    type: String,
+    enum: VerificationStatus,
     required: true,
-    default: false,
+    default: VerificationStatus.NOT_SUBMITTED,
   })
-  isVerified: boolean;
+  verificationStatus: VerificationStatus;
 
   @Prop({
     type: Boolean,
@@ -46,6 +46,14 @@ export class User extends Document {
     default: Locale.FR,
   })
   locale: Locale;
+
+  @Prop({
+    type: [String],
+    enum: Role,
+    required: true,
+    default: [Role.CLIENT],
+  })
+  roles: Role[];
 
   @Prop({
     type: String,
@@ -71,6 +79,13 @@ export class User extends Document {
   services: Service[]  
 
   @Prop({
+    type: Boolean,
+    required: true,
+    default: true,
+  })
+  isActive: boolean;
+
+  @Prop({
     type: Date,
     required: true,
     default: new Date(),
@@ -89,6 +104,13 @@ export class User extends Document {
   })
   deletedAt: Date;
 
+  //reference to images
+  @Prop({ type: [{ type: Types.ObjectId, ref: "Image", required: true }] })
+  kycImages: Types.ObjectId[];
+
+  //reference to logs
+  @Prop({ type: [{ type: Types.ObjectId, ref: "Log", required: true }] })
+  logs: Types.ObjectId[];
 
   toJSON() {
     const user = this.toObject();
@@ -105,3 +127,9 @@ export class User extends Document {
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);
+
+declare module "express" {
+  export interface Request {
+    user?: User;
+  }
+}

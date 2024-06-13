@@ -1,10 +1,6 @@
+import { HttpStatus } from "@nestjs/common";
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
 import { IsEnum, IsNumber, IsOptional, IsString } from "class-validator";
-
-export enum ResponseStatus {
-  SUCCESS = "success",
-  ERROR = "error",
-}
 
 export class BulkQueryDto {
   @IsNumber()
@@ -28,9 +24,9 @@ export class ResponseMetadataDto {
   @ApiProperty()
   message: string;
 
-  @IsEnum(ResponseStatus)
-  @ApiProperty({ enum: ResponseStatus })
-  status: ResponseStatus;
+  @IsEnum(HttpStatus)
+  @ApiProperty({ enum: HttpStatus })
+  status: HttpStatus;
 
   constructor(responseBody: ResponseMetadataDto) {
     Object.assign(this, responseBody);

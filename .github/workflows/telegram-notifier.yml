@@ -1,0 +1,71 @@
+# A workflow to send Notifications to telegram after a Pull Request Opened
+name: Pull request Notifier
+on:
+    push: 
+        branches:
+            - '*'
+    pull_request:
+      types: [opened, reopened,  closed, assigned, review_requested]
+    
+    fork: 
+
+jobs:
+  notify_pull_request:
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message on 
+        if: github.event_name == 'pull_request'
+        uses: appleboy/telegram-action@master
+        with:
+          to: -4180709325
+          token: 7116884411:AAFl-Wy_azTnQQrSgsjkLw1rd74a7F13-Vc
+          message: |
+            🙀 ${{ github.actor }} created PR:
+            Pull_request title: ${{ github.event.pull_request.title }}
+            Requested Reviewers: ${{ github.event.pull_request.requested_reviewers }}
+            
+            Repository: ${{ github.repository }}
+            See changes: https://github.com/${{ github.repository }}/pull/${{ github.event.pull_request.number }}/files
+
+              
+  notify_push:
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message on push
+        if: github.event_name == 'push'
+        uses: appleboy/telegram-action@master
+        with:
+          to: -4180709325
+          token: 7116884411:AAFl-Wy_azTnQQrSgsjkLw1rd74a7F13-Vc
+          message: |
+            😅 ${{ github.actor }} pushed to branch ${{ github.ref }} in repository ${{ github.repository }}
+        
+
+  notify_review_requested:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Notify Telegram on review requested
+        if: ${{ github.event_name == 'pull_request' && github.event.action == 'review_requested' }}
+        uses: appleboy/telegram-action@master
+        with:
+          to: -4180709325
+          token: 7116884411:AAFl-Wy_azTnQQrSgsjkLw1rd74a7F13-Vc
+          message: |
+            👀 Review requested on pull request by ${{ github.actor }}.
+            Reviewers requested: ${{ github.event.pull_request.requested_reviewers | map(x => x.login) | join(' ') }}.
+
+
+  notify_fork:
+    runs-on: ubuntu-latest
+    steps:
+      - name: send telegram message on fork
+        if: github.event_name == 'fork'
+        uses: appleboy/telegram-action@master
+        with:
+          to: -4180709325
+          token: 7116884411:AAFl-Wy_azTnQQrSgsjkLw1rd74a7F13-Vc
+          message: |
+            🍴 ${{ github.actor }} forked repository ${{ github.repository }}.
+            ⚠️ ${{ github.actor }} this is the intellecutal property of the group. Be careful on any actions you take.
