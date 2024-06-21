@@ -83,7 +83,7 @@ export class User extends Document {
   @Prop({
     type: Date,
     required: true,
-    default: new Date(),
+    default: Date.now,
   })
   createdAt: Date;
 

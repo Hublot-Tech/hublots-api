@@ -24,7 +24,6 @@ export enum Category {
     transform: function (doc, user) {
       user.id = user._id;
       delete user._id;
-      delete user.password;
     },
   },
 })
