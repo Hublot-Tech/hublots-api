@@ -1,7 +1,8 @@
-import { Prop, Schema } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
 import { Offer } from "src/modules/services/offers/schema/offer.schema";
 import { BlotOption } from "./blot-option.schema";
+import { User } from "src/modules/users/schema/user.schema";
 
 export enum BlotStatus {
   CREATED = "Created",
@@ -57,7 +58,13 @@ export class Blot extends Document {
   })
   options: Types.ObjectId[];
 
+  // reference to consumer
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  consumer: string;
+
   // reference to creator
-  @Prop({ type: Types.ObjectId, ref: Blot.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   createdBy: string;
 }
+
+export const BlotSchema = SchemaFactory.createForClass(Blot);

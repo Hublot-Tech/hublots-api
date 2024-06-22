@@ -7,9 +7,9 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 import { ObjectId } from "mongodb";
 import { ClientSession, Model } from "mongoose";
-import { BulkQueryDto } from "src/helpers/api-dto";
 import { OfferItem } from "../services/offers/schema/offer-item.schema";
 import {
+  BlotQueryParams,
   CreateBlotDto,
   CreateBlotOptionDto,
   UpdateBlotDto,
@@ -73,9 +73,12 @@ export class BlotsService {
     return this.blotModel.findById(blotId).populate("options").exec();
   }
 
-  async findAll(query: BulkQueryDto): Promise<Blot[]> {
+  async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
     return this.blotModel
-      .find()
+      .find({
+        ...query,
+        $or: [{ createdBy: activeUser }, { consumer: activeUser }],
+      })
       .limit(query.perpage ?? 10)
       .skip(query.page ?? 1)
       .populate("options")
@@ -108,7 +111,7 @@ export class BlotsService {
           newBlotOptions,
           { session },
         );
-        options = createdOptions.map(({ _id }) => new ObjectId(_id));
+        options = createdOptions.map(({ _id }) => new ObjectId(_id as string));
       }
       return blot
         .updateOne({ ...data, options, updatedAt: new Date() }, { new: true })
@@ -131,7 +134,9 @@ export class BlotsService {
         newBlotOptions,
         { session },
       );
-      blot.options.push(...createdOptions.map(({ _id }) => new ObjectId(_id)));
+      blot.options.push(
+        ...createdOptions.map(({ _id }) => new ObjectId(_id as string)),
+      );
       return blot.save({ session });
     });
   }

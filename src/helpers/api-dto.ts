@@ -17,6 +17,10 @@ export class BulkQueryDto {
   @IsOptional()
   @ApiPropertyOptional()
   limit?: number;
+
+  constructor(query: BulkQueryDto) {
+    Object.assign(this, query);
+  }
 }
 
 export class ResponseMetadataDto {

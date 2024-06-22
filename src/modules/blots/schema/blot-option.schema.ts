@@ -1,5 +1,5 @@
-import { Prop, Schema } from "@nestjs/mongoose";
-import { Types } from "mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
+import { Document, Types } from "mongoose";
 import { OfferItem } from "src/modules/services/offers/schema/offer-item.schema";
 
 @Schema({
@@ -27,3 +27,5 @@ export class BlotOption extends Document {
   @Prop({ type: String, required: true, default: Date.now })
   createdAt: Date;
 }
+
+export const BlotOptionSchema = SchemaFactory.createForClass(BlotOption);
