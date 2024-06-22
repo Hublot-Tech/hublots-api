@@ -1,4 +1,4 @@
-import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -67,7 +67,7 @@ export class CreateBlotDto {
   }
 }
 
-export class UpdateBlotDto extends OmitType(CreateBlotDto, ["options"]) {}
+export class UpdateBlotDto extends PartialType(CreateBlotDto) {}
 
 export class BlotEntity {
   @IsString()

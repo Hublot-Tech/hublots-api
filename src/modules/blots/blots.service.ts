@@ -9,7 +9,11 @@ import { ObjectId } from "mongodb";
 import { ClientSession, Model } from "mongoose";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { OfferItem } from "../services/offers/schema/offer-item.schema";
-import { CreateBlotDto, UpdateBlotDto } from "./dto/blot.dto";
+import {
+  CreateBlotDto,
+  CreateBlotOptionDto,
+  UpdateBlotDto,
+} from "./dto/blot.dto";
 import { BlotOption } from "./schema/blot-option.schema";
 import { Blot, BlotStatus } from "./schema/blot.schema";
 
@@ -27,26 +31,7 @@ export class BlotsService {
     createdBy: string,
   ): Promise<Blot> {
     return this.execWithinTransaction(async (session) => {
-      const newBlotOptions: BlotOption[] = [];
-      for (const {
-        item: { id, ...newItem },
-        quantity,
-      } of options) {
-        let item = id;
-        if (item) {
-          const createdItem = await new this.itemModel(newItem).save({
-            session,
-          });
-          item = createdItem._id as string;
-        }
-        newBlotOptions.push(
-          new this.blotOptionModel({
-            item: new ObjectId(item),
-            updatedAt: new Date(),
-            quantity,
-          }),
-        );
-      }
+      const newBlotOptions = await this.prepareBlotOptions(options, session);
       const createdOptions = await this.blotOptionModel.insertMany(
         newBlotOptions,
         { session },
@@ -58,6 +43,30 @@ export class BlotsService {
         options: createdOptions.map((_) => _._id),
       }).save({ session });
     });
+  }
+
+  private async prepareBlotOptions(options: CreateBlotOptionDto[], session) {
+    const newBlotOptions: BlotOption[] = [];
+    for (const {
+      item: { id, ...newItem },
+      quantity,
+    } of options) {
+      let item = id;
+      if (item) {
+        const createdItem = await new this.itemModel(newItem).save({
+          session,
+        });
+        item = createdItem._id as string;
+      }
+      newBlotOptions.push(
+        new this.blotOptionModel({
+          item: new ObjectId(item),
+          updatedAt: new Date(),
+          quantity,
+        }),
+      );
+    }
+    return newBlotOptions;
   }
 
   async findOne(blotId: string): Promise<Blot> {
@@ -88,15 +97,53 @@ export class BlotsService {
     const blot = await this.blotModel.findById(orderId).exec();
     this.checkPrivileges(blot, updatedBy);
 
-    return blot
-      .updateOne({ ...data, updatedAt: new Date() }, { new: true })
-      .exec();
+    return this.execWithinTransaction(async (session) => {
+      let options = blot.options;
+      if (data.options) {
+        const newBlotOptions = await this.prepareBlotOptions(
+          data.options,
+          session,
+        );
+        const createdOptions = await this.blotOptionModel.insertMany(
+          newBlotOptions,
+          { session },
+        );
+        options = createdOptions.map(({ _id }) => new ObjectId(_id));
+      }
+      return blot
+        .updateOne({ ...data, options, updatedAt: new Date() }, { new: true })
+        .exec();
+    });
   }
 
-  async addOptions(blotId: string, optionIds: string[]): Promise<Blot> {
+  async addOptions(
+    blotId: string,
+    options: CreateBlotOptionDto[],
+    addedBy: string,
+  ): Promise<Blot> {
     const blot = await this.blotModel.findById(blotId);
     if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
-    blot.options.push(...optionIds.map((id) => new ObjectId(id)));
+    this.checkPrivileges(blot, addedBy);
+
+    return this.execWithinTransaction(async (session) => {
+      const newBlotOptions = await this.prepareBlotOptions(options, session);
+      const createdOptions = await this.blotOptionModel.insertMany(
+        newBlotOptions,
+        { session },
+      );
+      blot.options.push(...createdOptions.map(({ _id }) => new ObjectId(_id)));
+      return blot.save({ session });
+    });
+  }
+
+  async removeOptions(blotId: string, optionIds: string[], deletedBy: string) {
+    const blot = await this.blotModel.findById(blotId);
+    if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
+    this.checkPrivileges(blot, deletedBy);
+
+    blot.options = blot.options.filter(
+      (_) => !optionIds.includes(_._id.toString()),
+    );
     return blot.save();
   }
 
