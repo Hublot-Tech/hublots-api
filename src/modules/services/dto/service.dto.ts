@@ -97,4 +97,9 @@ export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
 
   @ApiProperty({ type: UserEntity })
   provider: UserEntity;
+
+  constructor(service: ServiceDetailsDto) {
+    super(service);
+    Object.assign(this, service);
+  }
 }
