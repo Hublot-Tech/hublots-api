@@ -105,6 +105,14 @@ export class BlotsService {
   ): Promise<Blot> {
     const blot = await this.blotModel.findById(orderId).exec();
     this.checkPrivileges(blot, updatedBy);
+    if (
+      data.status === BlotStatus.VALIDATED &&
+      blot.consumer.toString() !== updatedBy
+    ) {
+      throw new ForbiddenException(
+        "Operation only permitted to consumer of the blot",
+      );
+    }
 
     return this.execWithinTransaction(async (session) => {
       let options = blot.options;
@@ -183,7 +191,10 @@ export class BlotsService {
       throw new NotFoundException(`Blot with id ${order._id} not found`);
     }
 
-    if (order.provider.toString() !== actor) {
+    if (
+      order.provider.toString() !== actor &&
+      order.consumer.toString() !== actor
+    ) {
       throw new ForbiddenException(`Operation not permitted for active user`);
     }
 

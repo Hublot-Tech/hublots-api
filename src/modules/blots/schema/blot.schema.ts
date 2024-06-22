@@ -6,7 +6,7 @@ import { User } from "src/modules/users/schema/user.schema";
 
 export enum BlotStatus {
   CREATED = "Created",
-  Validated = "Validated",
+  VALIDATED = "Validated",
   CANCELLED = "Cancelled",
 }
 

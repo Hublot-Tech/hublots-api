@@ -6,6 +6,7 @@ import {
   HttpStatus,
   Param,
   Post,
+  Put,
   Query,
   Req,
 } from "@nestjs/common";
@@ -24,6 +25,7 @@ import {
   BlotEntity,
   BlotQueryParams,
   CreateBlotDto,
+  UpdateBlotDto,
 } from "./dto/blot.dto";
 
 @ApiTags("Blots")
@@ -85,6 +87,32 @@ export class BlotsController {
     return new ResponseDataDto({
       data: new BlotEntity(newBlot.toJSON()),
       message: "Successfully created blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Put(":id")
+  @ApiCustomOkResponse(BlotEntity)
+  async update(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+    @Body() payload: UpdateBlotDto,
+  ) {
+    if (!request.user.roles.includes(Role.PROVIDER)) {
+      throw new ForbiddenException(
+        "Operation not permitted for active user. Only provider can create blot",
+      );
+    }
+
+    const updatedBlot = await this.blotsService.update(
+      blotId,
+      payload,
+      request.user._id as string,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(updatedBlot.toJSON()),
+      message: "Successfully updated blot",
       status: HttpStatus.OK,
     });
   }
