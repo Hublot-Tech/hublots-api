@@ -70,14 +70,20 @@ export class BlotsService {
   }
 
   async findOne(blotId: string): Promise<Blot> {
-    return this.blotModel.findById(blotId).populate("options").exec();
+    return this.blotModel
+      .findById(blotId)
+      .populate("options")
+      .populate("offer")
+      .populate("cunsumer")
+      .populate("provider")
+      .exec();
   }
 
   async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
     return this.blotModel
       .find({
         ...query,
-        $or: [{ createdBy: activeUser }, { consumer: activeUser }],
+        $or: [{ provider: activeUser }, { consumer: activeUser }],
       })
       .limit(query.perpage ?? 10)
       .skip(query.page ?? 1)
@@ -177,7 +183,7 @@ export class BlotsService {
       throw new NotFoundException(`Blot with id ${order._id} not found`);
     }
 
-    if (order.createdBy !== actor) {
+    if (order.provider.toString() !== actor) {
       throw new ForbiddenException(`Operation not permitted for active user`);
     }
 

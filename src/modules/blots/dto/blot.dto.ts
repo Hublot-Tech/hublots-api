@@ -1,4 +1,9 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PartialType,
+} from "@nestjs/swagger";
 import { Type } from "class-transformer";
 import {
   IsArray,
@@ -6,12 +11,15 @@ import {
   IsEnum,
   IsNumber,
   IsObject,
+  IsOptional,
   IsString,
   ValidateNested,
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { OfferItemDto } from "src/modules/services/offers/dto/ofer-item.dto";
 import { BlotStatus } from "../schema/blot.schema";
+import { UserEntity } from "src/modules/users/dto";
+import { OfferEntity } from "src/modules/services/offers/dto/offer.dto";
 
 export class CreateBlotNestedItemDto extends PartialType(OfferItemDto) {}
 
@@ -44,7 +52,8 @@ export class BlotOptionEntity extends CreateBlotOptionDto {
 
 export class CreateBlotDto {
   @IsString()
-  @ApiProperty({ description: "selected offer ID" })
+  @IsOptional()
+  @ApiPropertyOptional({ description: "Selected offer ID" })
   offer: string;
 
   @IsString()
@@ -73,14 +82,14 @@ export class CreateBlotDto {
   @ApiProperty({ description: "The client that the blot is created for." })
   consumer: string;
 
-  constructor(order: CreateBlotDto) {
-    Object.assign(this, order);
+  constructor(blot: CreateBlotDto) {
+    Object.assign(this, blot);
   }
 }
 
 export class UpdateBlotDto extends PartialType(CreateBlotDto) {}
 
-export class BlotEntity {
+export class BlotEntity extends CreateBlotDto {
   @IsString()
   @ApiProperty()
   id: string;
@@ -90,8 +99,13 @@ export class BlotEntity {
   @ApiProperty({ type: BlotOptionEntity })
   options: BlotOptionEntity[];
 
-  constructor(order: BlotEntity) {
-    Object.assign(this, order);
+  @IsString()
+  @ApiProperty()
+  provider: string;
+
+  constructor(blot: BlotEntity) {
+    super(blot);
+    Object.assign(this, blot);
   }
 }
 
@@ -111,5 +125,25 @@ export class BlotQueryParams extends BulkQueryDto {
   constructor(params: BlotQueryParams) {
     super(params);
     Object.assign(this, params);
+  }
+}
+
+export class BlotDetailsDto extends OmitType(BlotEntity, [
+  "consumer",
+  "offer",
+  "provider",
+]) {
+  @ApiPropertyOptional({ type: OfferEntity })
+  offer: OfferEntity;
+
+  @ApiProperty({ type: UserEntity })
+  consumer: UserEntity;
+
+  @ApiProperty({ type: UserEntity })
+  provider: UserEntity;
+
+  constructor(blotDetails: BlotDetailsDto) {
+    super(blotDetails);
+    Object.assign(this, blotDetails);
   }
 }

@@ -1,11 +1,14 @@
-import { Controller, Get, HttpStatus, Query, Req } from "@nestjs/common";
+import { Controller, Get, HttpStatus, Param, Query, Req } from "@nestjs/common";
 import { ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
-import { ApiOkPaginatedResponse } from "src/helpers/api-decorator";
-import { PaginatedResponseDataDto } from "src/helpers/api-dto";
+import {
+  ApiCustomOkResponse,
+  ApiOkPaginatedResponse,
+} from "src/helpers/api-decorator";
+import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
 import { Role } from "../users/dto";
 import { BlotsService } from "./blots.service";
-import { BlotEntity, BlotQueryParams } from "./dto/blot.dto";
+import { BlotDetailsDto, BlotEntity, BlotQueryParams } from "./dto/blot.dto";
 
 @ApiTags("Blots")
 @Controller("blots")
@@ -31,6 +34,19 @@ export class BlotsController {
       perpage: query.perpage ?? 10,
       status: HttpStatus.OK,
       message: "Successfully retrieved blots",
+    });
+  }
+
+  @Get(":id")
+  @ApiCustomOkResponse(BlotDetailsDto)
+  async findOne(
+    @Param("id") blotId: string,
+  ): Promise<ResponseDataDto<BlotDetailsDto>> {
+    const blot = await this.blotsService.findOne(blotId);
+    return new ResponseDataDto({
+      data: new BlotDetailsDto(blot.toJSON()),
+      message: "Successfully retrieved blot details",
+      status: HttpStatus.OK,
     });
   }
 }

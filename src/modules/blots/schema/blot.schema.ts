@@ -14,9 +14,9 @@ export enum BlotStatus {
   toJSON: {
     virtuals: true,
     versionKey: false,
-    transform: function (doc, user) {
-      user.id = user._id;
-      delete user._id;
+    transform: function (doc, blot) {
+      blot.id = blot._id;
+      delete blot._id;
     },
   },
 })
@@ -48,7 +48,7 @@ export class Blot extends Document {
   createdAt: Date;
 
   // reference to offer
-  @Prop({ type: Types.ObjectId, ref: Offer.name, required: true })
+  @Prop({ type: Types.ObjectId, ref: Offer.name })
   offer: Types.ObjectId;
 
   // reference to custom options
@@ -60,11 +60,11 @@ export class Blot extends Document {
 
   // reference to consumer
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  consumer: string;
+  consumer: Types.ObjectId;
 
   // reference to creator
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  createdBy: string;
+  provider: Types.ObjectId;
 }
 
 export const BlotSchema = SchemaFactory.createForClass(Blot);
