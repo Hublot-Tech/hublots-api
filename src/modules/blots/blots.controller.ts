@@ -5,12 +5,13 @@ import {
   Get,
   HttpStatus,
   Param,
+  ParseArrayPipe,
   Post,
   Put,
   Query,
   Req,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -25,6 +26,7 @@ import {
   BlotEntity,
   BlotQueryParams,
   CreateBlotDto,
+  CreateBlotOptionDto,
   UpdateBlotDto,
 } from "./dto/blot.dto";
 
@@ -97,7 +99,7 @@ export class BlotsController {
     @Req() request: Request,
     @Param("id") blotId: string,
     @Body() payload: UpdateBlotDto,
-  ) {
+  ): Promise<ResponseDataDto<BlotEntity>> {
     if (!request.user.roles.includes(Role.PROVIDER)) {
       throw new ForbiddenException(
         "Operation not permitted for active user. Only provider can create blot",
@@ -107,6 +109,34 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.update(
       blotId,
       payload,
+      request.user._id as string,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(updatedBlot.toJSON()),
+      message: "Successfully updated blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Put(":id/options")
+  @ApiBody({ type: [CreateBlotOptionDto] })
+  @ApiCustomOkResponse(BlotEntity)
+  async updateOptions(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+    @Body(new ParseArrayPipe({ items: CreateBlotOptionDto }))
+    blotOptions: CreateBlotOptionDto[],
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    if (!request.user.roles.includes(Role.PROVIDER)) {
+      throw new ForbiddenException(
+        "Operation not permitted for active user. Only provider can create blot",
+      );
+    }
+
+    const updatedBlot = await this.blotsService.addOptions(
+      blotId,
+      blotOptions,
       request.user._id as string,
     );
 
