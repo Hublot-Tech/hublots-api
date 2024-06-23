@@ -17,6 +17,7 @@ import {
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadGatewayResponse,
+  ApiBearerAuth,
   ApiConsumes,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -45,6 +46,7 @@ import {
 import { ServicesService } from "./services.service";
 import { UpdateOfferDto } from "./offers/dto/offer.dto";
 
+@ApiBearerAuth()
 @ApiTags("Services")
 @Controller("services")
 export class ServicesController {

@@ -12,7 +12,12 @@ import {
   Query,
   Req,
 } from "@nestjs/common";
-import { ApiBody, ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiNoContentResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -36,6 +41,7 @@ import {
 } from "./dto/blot.dto";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 
+@ApiBearerAuth()
 @ApiTags("Blots")
 @Controller("blots")
 @UseRoles(Role.PROVIDER)

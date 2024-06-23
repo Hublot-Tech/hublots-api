@@ -10,7 +10,12 @@ import {
   Put,
   Req,
 } from "@nestjs/common";
-import { ApiBody, ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiNoContentResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -28,6 +33,7 @@ import {
 } from "./dto/offer.dto";
 import { OffersService } from "./offers.service";
 
+@ApiBearerAuth()
 @ApiTags("Service Offers")
 @Controller("services/offers")
 export class OffersController {
