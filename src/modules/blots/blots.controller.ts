@@ -1,6 +1,7 @@
 import {
   Body,
   Controller,
+  Delete,
   ForbiddenException,
   Get,
   HttpStatus,
@@ -11,14 +12,18 @@ import {
   Query,
   Req,
 } from "@nestjs/common";
-import { ApiBody, ApiTags } from "@nestjs/swagger";
+import { ApiBody, ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
   ApiCustomOkResponse,
   ApiOkPaginatedResponse,
 } from "src/helpers/api-decorator";
-import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
+import {
+  PaginatedResponseDataDto,
+  ResponseDataDto,
+  ResponseMetadataDto,
+} from "src/helpers/api-dto";
 import { Role } from "../users/dto";
 import { BlotsService } from "./blots.service";
 import {
@@ -29,13 +34,16 @@ import {
   CreateBlotOptionDto,
   UpdateBlotDto,
 } from "./dto/blot.dto";
+import { UseRoles } from "../auth/decorator/auth.decorator";
 
 @ApiTags("Blots")
 @Controller("blots")
+@UseRoles(Role.PROVIDER)
 export class BlotsController {
   constructor(private blotsService: BlotsService) {}
 
   @Get()
+  @UseRoles()
   @ApiOkPaginatedResponse(BlotEntity)
   async finAll(
     @Req() request: Request,
@@ -100,12 +108,6 @@ export class BlotsController {
     @Param("id") blotId: string,
     @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    if (!request.user.roles.includes(Role.PROVIDER)) {
-      throw new ForbiddenException(
-        "Operation not permitted for active user. Only provider can create blot",
-      );
-    }
-
     const updatedBlot = await this.blotsService.update(
       blotId,
       payload,
@@ -114,6 +116,20 @@ export class BlotsController {
 
     return new ResponseDataDto({
       data: new BlotEntity(updatedBlot.toJSON()),
+      message: "Successfully updated blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Delete(":id")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async delete(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+  ): Promise<ResponseMetadataDto> {
+    await this.blotsService.delete(blotId, request.user._id as string);
+
+    return new ResponseMetadataDto({
       message: "Successfully updated blot",
       status: HttpStatus.OK,
     });
@@ -128,15 +144,30 @@ export class BlotsController {
     @Body(new ParseArrayPipe({ items: CreateBlotOptionDto }))
     blotOptions: CreateBlotOptionDto[],
   ): Promise<ResponseDataDto<BlotEntity>> {
-    if (!request.user.roles.includes(Role.PROVIDER)) {
-      throw new ForbiddenException(
-        "Operation not permitted for active user. Only provider can create blot",
-      );
-    }
-
     const updatedBlot = await this.blotsService.addOptions(
       blotId,
       blotOptions,
+      request.user._id as string,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(updatedBlot.toJSON()),
+      message: "Successfully updated blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Delete(":id/options")
+  @ApiCustomOkResponse(BlotEntity)
+  async deleteOptions(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+    @Query(new ParseArrayPipe({ items: String }))
+    optionIds: string[],
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    const updatedBlot = await this.blotsService.removeOptions(
+      blotId,
+      optionIds,
       request.user._id as string,
     );
 
