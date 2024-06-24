@@ -128,7 +128,10 @@ export class BlotsService {
         options = createdOptions.map(({ _id }) => new ObjectId(_id as string));
       }
       return blot
-        .updateOne({ ...data, options, updatedAt: new Date() }, { new: true })
+        .updateOne(
+          { ...data, options, updatedAt: new Date() },
+          { session, new: true },
+        )
         .exec();
     });
   }

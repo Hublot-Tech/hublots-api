@@ -5,9 +5,12 @@ import { BlotOption } from "./blot-option.schema";
 import { User } from "src/modules/users/schema/user.schema";
 
 export enum BlotStatus {
-  CREATED = "Created",
-  VALIDATED = "Validated",
-  CANCELLED = "Cancelled",
+  CREATED = "created",
+  VALIDATED = "validated",
+  GOT_IN_TOUCH = "getting_in_touch",
+  STARTED_WORK = "starte_work",
+  COMPLETED = "completed",
+  CANCELLED = "cancelled",
 }
 
 @Schema({
