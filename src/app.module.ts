@@ -5,7 +5,7 @@ import { UsersModule } from "./modules/users/users.module";
 import { AuthModule } from "./modules/auth/auth.module";
 import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule } from "@nestjs/config";
-import { ChatModule } from "./modules/chat/chat.module";
+import { ChatsModule } from "./modules/chats/chats.module";
 import { ServicesModule } from "./modules/services/services.module";
 import { PaymentModule } from "./modules/payment/payment.module";
 import { BlotsModule } from "./modules/blots/blots.module";
@@ -20,7 +20,7 @@ import { AuthorizationGuard } from "./modules/auth/auth.guard";
     MongooseModule.forRoot(process.env.DATABASE_HOST),
     AuthModule,
     UsersModule,
-    ChatModule,
+    ChatsModule,
     ServicesModule,
     PaymentModule,
     BlotsModule,
