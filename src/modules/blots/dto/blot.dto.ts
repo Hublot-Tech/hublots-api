@@ -17,7 +17,7 @@ import {
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { OfferItemDto } from "src/modules/services/offers/dto/ofer-item.dto";
-import { BlotStatus } from "../schema/blot.schema";
+import { BlotStatus } from "../schemas/blot.schema";
 import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "src/modules/services/offers/dto/offer.dto";
 

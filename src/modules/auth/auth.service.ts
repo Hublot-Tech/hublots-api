@@ -7,7 +7,7 @@ import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
 import { jwtConstants } from "../../constants/constants";
 import { CreateUserDto } from "../users/dto";
-import { User } from "../users/schema/user.schema";
+import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { Request } from "express";
 

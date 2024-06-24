@@ -1,12 +1,12 @@
 import { Module } from "@nestjs/common";
 import { MongooseModule } from "@nestjs/mongoose";
-import { User, UserSchema } from "./schema/user.schema";
+import { User, UserSchema } from "./schemas/user.schema";
 import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 
 import { AuthService } from "../auth/auth.service";
 import { FileUploadModule } from "../files/file-upload.module";
-import { Log, LogSchema } from "./schema/log.schema";
+import { Log, LogSchema } from "./schemas/log.schema";
 
 @Module({
   imports: [

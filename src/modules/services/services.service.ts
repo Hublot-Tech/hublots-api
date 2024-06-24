@@ -8,7 +8,7 @@ import { ObjectId } from "mongodb";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import { CreateServiceDto, UpdateServiceDto } from "./dto";
-import { Service } from "./schema/service.schema";
+import { Service } from "./schemas/service.schema";
 
 @Injectable()
 export class ServicesService {

@@ -10,8 +10,8 @@ import {
   UpdateProfileDto,
   VerificationStatus,
 } from "./dto/users.dto";
-import { User } from "./schema/user.schema";
-import { Log } from "./schema/log.schema";
+import { User } from "./schemas/user.schema";
+import { Log } from "./schemas/log.schema";
 
 export class UsersService {
   constructor(

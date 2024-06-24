@@ -7,15 +7,15 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 import { ObjectId } from "mongodb";
 import { ClientSession, Model } from "mongoose";
-import { OfferItem } from "../services/offers/schema/offer-item.schema";
+import { OfferItem } from "../services/offers/schemas/offer-item.schema";
 import {
   BlotQueryParams,
   CreateBlotDto,
   CreateBlotOptionDto,
   UpdateBlotDto,
 } from "./dto/blot.dto";
-import { BlotOption } from "./schema/blot-option.schema";
-import { Blot, BlotStatus } from "./schema/blot.schema";
+import { BlotOption } from "./schemas/blot-option.schema";
+import { Blot, BlotStatus } from "./schemas/blot.schema";
 
 @Injectable()
 export class BlotsService {

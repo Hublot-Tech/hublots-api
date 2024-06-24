@@ -3,7 +3,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { FileUploadModule } from "../files/file-upload.module";
 import { UsersModule } from "../users/users.module";
 import { OffersModule } from "./offers/offers.module";
-import { Service, ServiceSchema } from "./schema/service.schema";
+import { Service, ServiceSchema } from "./schemas/service.schema";
 import { ServicesController } from "./services.controller";
 import { ServicesService } from "./services.service";
 

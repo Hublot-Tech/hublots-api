@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { OfferItem } from "src/modules/services/offers/schema/offer-item.schema";
+import { OfferItem } from "src/modules/services/offers/schemas/offer-item.schema";
 
 @Schema({
   toJSON: {

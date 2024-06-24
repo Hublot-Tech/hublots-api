@@ -1,10 +1,10 @@
 import { Module } from "@nestjs/common";
 import { OffersService } from "./offers.service";
 import { OffersController } from "./offers.controller";
-import { Offer, OfferSchema } from "./schema/offer.schema";
-import { OfferItem, OfferItemSchema } from "./schema/offer-item.schema";
+import { Offer, OfferSchema } from "./schemas/offer.schema";
+import { OfferItem, OfferItemSchema } from "./schemas/offer-item.schema";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Service, ServiceSchema } from "../schema/service.schema";
+import { Service, ServiceSchema } from "../schemas/service.schema";
 
 @Module({
   imports: [
