@@ -7,6 +7,7 @@ import {
   Req,
 } from "@nestjs/common";
 import {
+  ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiTags,
@@ -81,6 +82,7 @@ export class AuthController {
     });
   }
 
+  @ApiBearerAuth()
   @Delete("/sign-out")
   @ApiNoContentResponse({
     type: ResponseMetadataDto,

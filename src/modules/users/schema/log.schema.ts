@@ -10,7 +10,7 @@ export class Log extends Document {
   @Prop({
     type: Date,
     required: true,
-    default: () => new Date(),
+    default: Date.now,
   })
   loginAt: Date;
 

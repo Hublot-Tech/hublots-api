@@ -14,7 +14,7 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -38,6 +38,7 @@ import {
 } from "./dto/users.dto";
 import { UsersService } from "./users.service";
 
+@ApiBearerAuth()
 @ApiTags("Users")
 @Controller("users")
 export class UsersController {

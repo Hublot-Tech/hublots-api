@@ -23,6 +23,7 @@ async function bootstrap() {
       The general idea of the project is to design software program connecting service providers and customers`,
     )
     .setVersion("1.0")
+    .addBearerAuth()
     .build();
 
   // Customize Swagger UI setup
