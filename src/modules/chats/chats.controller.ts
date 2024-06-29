@@ -19,6 +19,7 @@ import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
 import { ChatsService } from "./chats.service";
 import {
   CreateMessageDto,
+  MessageDetailsDto,
   MessageEntity,
   MessageQueryParamsDto,
 } from "./dto/chat.dto";
@@ -67,13 +68,13 @@ export class ChatsController {
   }
 
   @Get(":id")
-  @ApiCustomOkResponse(MessageEntity)
+  @ApiCustomOkResponse(MessageDetailsDto)
   async getMessageDetails(
     @Param("id") messageId: string,
-  ): Promise<ResponseDataDto<MessageEntity>> {
+  ): Promise<ResponseDataDto<MessageDetailsDto>> {
     const message = await this.chatsService.findOne(messageId);
     return new ResponseDataDto({
-      data: new MessageEntity(message.toJSON()),
+      data: new MessageDetailsDto(message.toJSON()),
       status: HttpStatus.OK,
       message: "Successfully retrieved message details",
     });
