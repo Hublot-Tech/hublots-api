@@ -7,11 +7,11 @@ import { InjectModel } from "@nestjs/mongoose";
 import { ObjectId } from "mongodb";
 import { ClientSession, Model } from "mongoose";
 import { BulkQueryDto } from "src/helpers/api-dto";
-import { Service } from "../schema/service.schema";
+import { Service } from "../schemas/service.schema";
 import { CreateOfferItemDto } from "./dto/ofer-item.dto";
 import { CreateOfferDto, UpdateOfferDto } from "./dto/offer.dto";
-import { OfferItem } from "./schema/offer-item.schema";
-import { Offer } from "./schema/offer.schema";
+import { OfferItem } from "./schemas/offer-item.schema";
+import { Offer } from "./schemas/offer.schema";
 
 @Injectable()
 export class OffersService {

@@ -4,10 +4,10 @@ import { BlotsService } from "./blots.service";
 import {
   OfferItem,
   OfferItemSchema,
-} from "../services/offers/schema/offer-item.schema";
+} from "../services/offers/schemas/offer-item.schema";
 import { MongooseModule } from "@nestjs/mongoose";
-import { Blot, BlotSchema } from "./schema/blot.schema";
-import { BlotOption, BlotOptionSchema } from "./schema/blot-option.schema";
+import { Blot, BlotSchema } from "./schemas/blot.schema";
+import { BlotOption, BlotOptionSchema } from "./schemas/blot-option.schema";
 
 @Module({
   imports: [
