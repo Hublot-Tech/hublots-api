@@ -23,7 +23,7 @@ jobs:
         run: npn run format:check
 
       - name: Lint code
-        run: npn run lint:ckeck
+        run: npm run lint:ckeck
 
   build:
     runs-on: ubuntu-latest
