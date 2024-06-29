@@ -20,7 +20,7 @@ jobs:
         run: npm ci
 
       - name: Check formatting
-        run: npn run format:check
+        run: npm run format:check
 
       - name: Lint code
         run: npm run lint:ckeck
