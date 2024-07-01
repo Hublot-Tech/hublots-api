@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document } from "mongoose";
+import { Document, Types } from "mongoose";
+import { User } from "src/modules/users/schemas/user.schema";
 
 export enum SubscriptionPlanType {
   MONTHLY = "monthly",
@@ -47,6 +48,13 @@ export class SubscriptionPlan extends Document {
 
   @Prop({ type: Boolean, required: true })
   assistance: boolean;
+
+  @Prop({ type: Date, default: Date.now })
+  createdAt: Date;
+
+  // reference to subscriber
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  createdBy: Types.ObjectId;
 }
 
 export const SubscriptionPlanSchema =

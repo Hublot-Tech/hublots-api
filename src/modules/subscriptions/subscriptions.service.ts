@@ -1,6 +1,9 @@
 import { Model } from "mongoose";
 import { Subscription } from "./schemas/subscription.schema";
-import { SubscriptionPlan } from "./schemas/subscription-plan.schema";
+import {
+  SubscriptionPlan,
+  SubscriptionPlanType,
+} from "./schemas/subscription-plan.schema";
 import { InjectModel } from "@nestjs/mongoose";
 import { Injectable, NotFoundException } from "@nestjs/common";
 import {
@@ -46,5 +49,32 @@ export class SubscriptionsService {
         { new: true },
       )
       .exec();
+  }
+
+  async subscribe(
+    subscriber: string,
+    subscriptionPlanId: string,
+  ): Promise<Subscription> {
+    const subscriptionPlan = await this.subscriptionPlanModel
+      .findById(subscriptionPlanId)
+      .exec();
+    if (!subscriptionPlan)
+      throw new NotFoundException(
+        `Subscription plan with id ${subscriptionPlanId} not found`,
+      );
+
+    const endsAt =
+      Date.now() +
+      (subscriptionPlan.type === SubscriptionPlanType.ANNUAL ? 365 : 30) *
+        86400000;
+
+    const newSubscription = new this.subscriptionModel({
+      endsAt,
+      subscriber: subscriber,
+      subscriptionPlan: subscriptionPlanId,
+      ...subscriptionPlan.toJSON(),
+    });
+
+    return newSubscription.save();
   }
 }

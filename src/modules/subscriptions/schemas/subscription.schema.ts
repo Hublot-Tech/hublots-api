@@ -1,5 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { SubscriptionPlan } from "./subscription-plan.schema";
+import { Types } from "mongoose";
+import { User } from "src/modules/users/schemas/user.schema";
 
 @Schema({
   toJSON: {
@@ -12,15 +14,19 @@ import { SubscriptionPlan } from "./subscription-plan.schema";
   },
 })
 export class Subscription extends SubscriptionPlan {
-  @Prop({ default: true })
-  isActive: boolean;
-
-  @Prop({ default: Date.now })
+  @Prop({ required: true, default: Date.now })
   startsAt: Date;
 
   @Prop({ required: true })
   endsAt: Date;
+
+  // reference to subscriber
+  @Prop({ type: Types.ObjectId, ref: SubscriptionPlan.name, required: true })
+  subscriptionPlan: Types.ObjectId;
+
+  // reference to subscriber
+  @Prop({ type: Types.ObjectId, ref: User.name, required: true })
+  subscriber: Types.ObjectId;
 }
 
-export const SubscriptionSchema =
-  SchemaFactory.createForClass(SubscriptionPlan);
+export const SubscriptionSchema = SchemaFactory.createForClass(Subscription);
