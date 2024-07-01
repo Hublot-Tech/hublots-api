@@ -11,6 +11,7 @@ import { PaymentModule } from "./modules/payment/payment.module";
 import { BlotsModule } from "./modules/blots/blots.module";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthorizationGuard } from "./modules/auth/auth.guard";
+import { SubscriptionsModule } from "./modules/subscriptions/subscriptions.module";
 
 @Module({
   imports: [
@@ -24,6 +25,7 @@ import { AuthorizationGuard } from "./modules/auth/auth.guard";
     ServicesModule,
     PaymentModule,
     BlotsModule,
+    SubscriptionsModule,
   ],
   controllers: [AppController],
   providers: [

@@ -20,8 +20,14 @@ export class SubscriptionsService {
     private readonly subscriptionPlanModel: Model<SubscriptionPlan>,
   ) {}
 
-  async create(payload: CreateSubscriptionPlanDto): Promise<SubscriptionPlan> {
-    const newSubscription = new this.subscriptionPlanModel(payload);
+  async create(
+    payload: CreateSubscriptionPlanDto,
+    createdBy: string,
+  ): Promise<SubscriptionPlan> {
+    const newSubscription = new this.subscriptionPlanModel({
+      payload,
+      createdBy,
+    });
     return newSubscription.save();
   }
 
@@ -76,5 +82,13 @@ export class SubscriptionsService {
     });
 
     return newSubscription.save();
+  }
+
+  async findSubscriptions(): Promise<Subscription[]> {
+    return this.subscriptionModel.find().exec();
+  }
+
+  async findSubscription(id: string): Promise<Subscription> {
+    return this.subscriptionModel.findById(id).exec();
   }
 }
