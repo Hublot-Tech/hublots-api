@@ -21,7 +21,7 @@ export class ServicesService {
       ...data,
       createdBy,
       updatedAt: new Date(),
-      createdAt: new Date(),
+      provider: data.provider ?? createdBy,
     }).save();
   }
 
@@ -78,7 +78,10 @@ export class ServicesService {
     if (!service) {
       throw new NotFoundException(`Service with id ${service._id} not found`);
     }
-    if (service.createdBy !== actor && service.provider.toString() !== actor) {
+    if (
+      service.createdBy.toString() !== actor &&
+      service.provider.toString() !== actor
+    ) {
       throw new ForbiddenException("Operation not permitted for active user");
     }
   }

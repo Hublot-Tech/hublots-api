@@ -68,7 +68,7 @@ export class Service extends Document {
 
   // reference to creator
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
-  createdBy: string;
+  createdBy: Types.ObjectId;
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);
