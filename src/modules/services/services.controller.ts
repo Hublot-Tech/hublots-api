@@ -32,28 +32,24 @@ import {
 import {
   BulkQueryDto,
   PaginatedResponseDataDto,
-  ResponseMetadataDto,
   ResponseDataDto,
+  ResponseMetadataDto,
 } from "src/helpers/api-dto";
 import { Public, UseRoles } from "../auth/decorator/auth.decorator";
-import { FileUploadService } from "../files/file-upload.service";
 import { Role } from "../users/dto";
 import {
   CreateServiceDto,
   ServiceDetailsDto,
   ServiceEntity,
 } from "./dto/service.dto";
-import { ServicesService } from "./services.service";
 import { UpdateOfferDto } from "./offers/dto/offer.dto";
+import { ServicesService } from "./services.service";
 
 @ApiBearerAuth()
 @ApiTags("Services")
 @Controller("services")
 export class ServicesController {
-  constructor(
-    private serviceService: ServicesService,
-    private fileUploadService: FileUploadService,
-  ) {}
+  constructor(private serviceService: ServicesService) {}
 
   @Get()
   @Public()
@@ -77,8 +73,8 @@ export class ServicesController {
   @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomCreatedResponse(ServiceEntity)
   async create(
-    @UploadedFile() file,
     @Req() request: Request,
+    @UploadedFile() file: Express.Multer.File,
     @Body() createServiceDto: CreateServiceDto,
   ): Promise<ResponseDataDto<ServiceEntity>> {
     if (
@@ -94,9 +90,8 @@ export class ServicesController {
         ? request.user.id
         : createServiceDto.provider,
     };
-    if (!createServiceDto.mainImageId && file) {
-      const image = await this.fileUploadService.uploadImage(file);
-      newService.mainImageId = image.id;
+    if (!createServiceDto.mainImageRef && file) {
+      newService.mainImageRef = `${process.env.PUBLIC_URL}/${file.filename}`;
     }
 
     const service = await this.serviceService.create(
@@ -170,20 +165,19 @@ export class ServicesController {
   @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomOkResponse(ServiceEntity)
   async uploadImages(
-    @UploadedFiles() files,
+    @UploadedFiles() files: Array<Express.Multer.File>,
     @Param("id") serviceId: string,
   ): Promise<ResponseDataDto<ServiceEntity>> {
     if (!Array.isArray(files)) {
       throw new BadRequestException("Except an array of files");
     }
 
-    const imageIds: string[] = [];
+    const imageRefs: string[] = [];
     for (const file of files) {
-      const image = await this.fileUploadService.uploadImage(file);
-      imageIds.push(image.id);
+      imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
     }
 
-    const service = await this.serviceService.addImages(serviceId, imageIds);
+    const service = await this.serviceService.addImages(serviceId, imageRefs);
     return new ResponseDataDto({
       data: new ServiceEntity(service.toJSON()),
       message: "Service Created Sucessfully",

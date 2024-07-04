@@ -1,4 +1,5 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
@@ -49,8 +50,8 @@ export class CreateServiceDto {
   provider: string;
 
   @IsString()
-  @ApiPropertyOptional({})
-  mainImageId: string;
+  @ApiHideProperty()
+  mainImageRef: string;
 
   constructor(createService: CreateServiceDto) {
     Object.assign(this, createService);
@@ -80,6 +81,10 @@ export class ServiceEntity extends CreateServiceDto {
   @IsOptional()
   @IsString()
   availability: string;
+
+  @IsString()
+  @ApiProperty()
+  mainImageRef: string;
 
   constructor(service: ServiceEntity) {
     super(service);

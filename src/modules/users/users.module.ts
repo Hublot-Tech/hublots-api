@@ -5,12 +5,10 @@ import { UsersController } from "./users.controller";
 import { UsersService } from "./users.service";
 
 import { AuthService } from "../auth/auth.service";
-import { FileUploadModule } from "../files/file-upload.module";
 import { Log, LogSchema } from "./schemas/log.schema";
 
 @Module({
   imports: [
-    FileUploadModule.forRoot(process.env.DATABASE_HOST, "kycImages"),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: Log.name, schema: LogSchema },

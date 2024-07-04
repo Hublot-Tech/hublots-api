@@ -47,7 +47,7 @@ export class CreateAnnouncementDto {
 
   @IsString()
   @ApiHideProperty()
-  image: string;
+  imageRef: string;
 
   constructor(announcement: CreateAnnouncementDto) {
     Object.assign(this, announcement);

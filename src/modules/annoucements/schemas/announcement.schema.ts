@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { Image } from "src/modules/files/schemas/image.schema";
 import { Role } from "src/modules/users/dto";
 import { User } from "src/modules/users/schemas/user.schema";
 
@@ -34,8 +33,8 @@ export class Announcement extends Document {
   createdAt: Date;
 
   //reference to images
-  @Prop({ type: [{ type: Types.ObjectId, ref: Image.name, required: true }] })
-  image: Types.ObjectId;
+  @Prop({ type: String })
+  imageRef: string;
 
   //reference to provider
   @Prop({ type: [{ type: Types.ObjectId, ref: User.name, required: true }] })

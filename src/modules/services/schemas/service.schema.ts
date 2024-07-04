@@ -1,6 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { Image } from "src/modules/files/schemas/image.schema";
 import { User } from "src/modules/users/schemas/user.schema";
 import { Offer } from "../offers/schemas/offer.schema";
 
@@ -50,17 +49,16 @@ export class Service extends Document {
   })
   category: Category;
 
+  //reference to images
+  imageRefs: string[];
+
   // reference to main image
-  @Prop({ type: Types.ObjectId, ref: Image.name, required: true })
-  mainImageId: Types.ObjectId;
+  @Prop({ type: String, required: true })
+  mainImageRef: string;
 
   //reference to offers
   @Prop({ type: [{ type: Types.ObjectId, ref: Offer.name, required: true }] })
   offers: Types.ObjectId[];
-
-  //reference to images
-  @Prop({ type: [{ type: Types.ObjectId, ref: Image.name, required: true }] })
-  images: Types.ObjectId[];
 
   //reference to the provider
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

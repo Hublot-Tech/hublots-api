@@ -27,7 +27,6 @@ import {
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
 import { UseRoles } from "../auth/decorator/auth.decorator";
-import { FileUploadService } from "../files/file-upload.service";
 import { Role } from "../users/dto";
 import { AnnouncementsService } from "./announcements.service";
 import {
@@ -39,10 +38,7 @@ import {
 @ApiTags("Announcements")
 @Controller("announcements")
 export class AnnouncementsController {
-  constructor(
-    private readonly annonucementsService: AnnouncementsService,
-    private readonly fileUploadService: FileUploadService,
-  ) {}
+  constructor(private readonly annonucementsService: AnnouncementsService) {}
 
   @Get()
   @ApiOkPaginatedResponse(AnnouncementEntity)
@@ -86,9 +82,8 @@ export class AnnouncementsController {
     @Body() payload: CreateAnnouncementDto,
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<AnnouncementEntity>> {
-    const uploadedFile = await this.fileUploadService.uploadImage(file);
     const announcement = await this.annonucementsService.create(
-      { ...payload, image: uploadedFile._id as string },
+      { ...payload, imageRef: `${process.env.PUBLIC_URL}/${file.filename}` },
       request.user._id as string,
     );
 

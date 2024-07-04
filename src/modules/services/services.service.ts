@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { ObjectId } from "mongodb";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import { CreateServiceDto, UpdateServiceDto } from "./dto";
@@ -61,11 +60,11 @@ export class ServicesService {
       .exec();
   }
 
-  async addImages(serviceId: string, imageIds: string[]): Promise<Service> {
+  async addImages(serviceId: string, imageRefs: string[]): Promise<Service> {
     const service = await this.serviceModel.findById(serviceId);
     if (!service)
       throw new NotFoundException(`Service with id ${serviceId} not found`);
-    service.images.push(...imageIds.map((id) => new ObjectId(id)));
+    service.imageRefs.push(...imageRefs);
     return service.save();
   }
 
