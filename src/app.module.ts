@@ -13,12 +13,14 @@ import { APP_GUARD } from "@nestjs/core";
 import { AuthorizationGuard } from "./modules/auth/auth.guard";
 import { SubscriptionsModule } from "./modules/subscriptions/subscriptions.module";
 import { AnnouncementsModule } from "./modules/annoucements/annnouncements.module";
+import { FilesModule } from "./modules/files/files.module";
 
 @Module({
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
     }),
+    FilesModule,
     MongooseModule.forRoot(process.env.DATABASE_HOST),
     AuthModule,
     UsersModule,
