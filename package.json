@@ -34,6 +34,7 @@
     "class-transformer": "^0.5.1",
     "class-validator": "^0.14.1",
     "google-auth-library": "^9.7.0",
+    "mongodb": "^6.8.0",
     "mongoose": "^8.3.1",
     "multer-gridfs-storage": "^5.0.2",
     "passport": "^0.7.0",
