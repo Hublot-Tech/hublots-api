@@ -1,5 +1,6 @@
 import {
   Body,
+  Controller,
   Delete,
   Get,
   HttpStatus,
@@ -8,31 +9,40 @@ import {
   Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
-import { AnnouncementsService } from "./announcements.service";
+import { FileInterceptor } from "@nestjs/platform-express";
+import { ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import { Request } from "express";
+import {
+  ApiCustomCreatedResponse,
+  ApiCustomOkResponse,
+  ApiOkPaginatedResponse,
+} from "src/helpers/api-decorator";
 import {
   BulkQueryDto,
   PaginatedResponseDataDto,
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { UseRoles } from "../auth/decorator/auth.decorator";
+import { FileUploadService } from "../files/file-upload.service";
+import { Role } from "../users/dto";
+import { AnnouncementsService } from "./announcements.service";
 import {
   AnnouncementDetailsDto,
   AnnouncementEntity,
   CreateAnnouncementDto,
 } from "./dto/announcement.dto";
-import {
-  ApiCustomCreatedResponse,
-  ApiCustomOkResponse,
-  ApiOkPaginatedResponse,
-} from "src/helpers/api-decorator";
-import { Request } from "express";
-import { UseRoles } from "../auth/decorator/auth.decorator";
-import { Role } from "../users/dto";
-import { ApiNoContentResponse } from "@nestjs/swagger";
 
-export class AnnouncementController {
-  constructor(private readonly annonucementsService: AnnouncementsService) {}
+@ApiTags("Announcements")
+@Controller("announcements")
+export class AnnouncementsController {
+  constructor(
+    private readonly annonucementsService: AnnouncementsService,
+    private readonly fileUploadService: FileUploadService,
+  ) {}
 
   @Get()
   @ApiOkPaginatedResponse(AnnouncementEntity)
@@ -70,12 +80,15 @@ export class AnnouncementController {
   @Post("new")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomCreatedResponse(AnnouncementEntity)
+  @UseInterceptors(FileInterceptor("flyer"))
   async create(
     @Req() request: Request,
     @Body() payload: CreateAnnouncementDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<AnnouncementEntity>> {
+    const uploadedFile = await this.fileUploadService.uploadImage(file);
     const announcement = await this.annonucementsService.create(
-      payload,
+      { ...payload, image: uploadedFile._id as string },
       request.user._id as string,
     );
 

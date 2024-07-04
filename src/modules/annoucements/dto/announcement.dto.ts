@@ -1,4 +1,5 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
@@ -43,6 +44,10 @@ export class CreateAnnouncementDto {
       "ID of the payment intented for announcement you what to create",
   })
   paymentId: string;
+
+  @IsString()
+  @ApiHideProperty()
+  image: string;
 
   constructor(announcement: CreateAnnouncementDto) {
     Object.assign(this, announcement);

@@ -51,12 +51,12 @@ export class AnnouncementsService {
   }
 
   async delete(announcementId: string, deletedBy: string): Promise<void> {
-    const service = await this.announcementModel
+    const announcement = await this.announcementModel
       .findById(announcementId)
       .exec();
-    this.checkPrivileges(service, deletedBy);
+    this.checkPrivileges(announcement, deletedBy);
 
-    await service.deleteOne().exec();
+    await announcement.deleteOne().exec();
   }
 
   async update(
@@ -64,12 +64,12 @@ export class AnnouncementsService {
     data: UpdateAnnouncementDto,
     updatedBy: string,
   ): Promise<Announcement> {
-    const service = await this.announcementModel
+    const announcement = await this.announcementModel
       .findById(announcementId)
       .exec();
-    this.checkPrivileges(service, updatedBy);
+    this.checkPrivileges(announcement, updatedBy);
 
-    return service
+    return announcement
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
       .exec();
   }

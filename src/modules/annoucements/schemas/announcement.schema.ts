@@ -1,4 +1,4 @@
-import { Prop, Schema } from "@nestjs/mongoose";
+import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
 import { Image } from "src/modules/files/schemas/image.schema";
 import { Role } from "src/modules/users/dto";
@@ -45,3 +45,5 @@ export class Announcement extends Document {
   @Prop({ type: [{ type: Types.ObjectId, ref: User.name, required: true }] })
   createdBy: Types.ObjectId;
 }
+
+export const AnnouncementSchema = SchemaFactory.createForClass(Announcement);
