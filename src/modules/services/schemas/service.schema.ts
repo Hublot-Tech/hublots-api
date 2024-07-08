@@ -4,16 +4,16 @@ import { User } from "src/modules/users/schemas/user.schema";
 import { Offer } from "../offers/schemas/offer.schema";
 
 export enum Category {
-  SCHOOL_SUPPORT = "Soutien scolaire",
-  RENOVATION = "Rénovation",
-  DELIVERY = "Livraison",
-  RELOCATION = "Déménagement",
-  CLEANING = "Nettoyage",
-  HEALTH = "Santé",
-  SALON_SPA = "Salon & Spa",
-  TECHNICIANS = "Techniciens",
-  RESTAURANT = "Restauration",
-  IT = "Informatique",
+  SCHOOL_SUPPORT = "school_support",
+  RENOVATION = "renovation",
+  DELIVERY = "develivery",
+  RELOCATION = "relocation",
+  CLEANING = "cleaning",
+  HEALTH = "health",
+  SALON_SPA = "salon_spa",
+  TECHNICIANS = "technician",
+  RESTAURANTION = "restauration",
+  IT = "information_technologies",
 }
 
 @Schema({

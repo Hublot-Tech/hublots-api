@@ -25,10 +25,10 @@ export enum Role {
 }
 
 export enum VerificationStatus {
-  NOT_SUBMITTED = "Not submitted",
-  SUBMITTED = "Submitted",
-  VERIFIED = "Verified",
-  NOT_VERIFIED = "Not Verified",
+  NOT_SUBMITTED = "not_submitted",
+  SUBMITTED = "submitted",
+  VERIFIED = "verified",
+  NOT_VERIFIED = "not_verified",
 }
 
 export class CreateUserDto {
