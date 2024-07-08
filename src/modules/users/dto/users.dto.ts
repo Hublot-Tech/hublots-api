@@ -54,14 +54,6 @@ export class CreateUserDto {
   @IsPhoneNumber()
   phoneNumber: string;
 
-  @IsOptional()
-  @IsEnum(VerificationStatus)
-  verificationStatus: VerificationStatus = VerificationStatus.NOT_SUBMITTED;
-
-  @IsBoolean()
-  @IsOptional()
-  isOnline: boolean = true;
-
   @ApiProperty({
     example: "FR",
     description:
@@ -124,9 +116,21 @@ export class UserEntity extends CreateUserDto {
   @IsEnum(Role, { each: true })
   roles: Role[];
 
+  @IsEnum(VerificationStatus)
+  @ApiProperty({ enum: VerificationStatus })
+  verificationStatus: VerificationStatus = VerificationStatus.NOT_SUBMITTED;
+
   @IsBoolean()
-  @ApiProperty()
+  @ApiProperty({ default: true })
+  isOnline: boolean = true;
+
+  @IsBoolean()
+  @ApiProperty({ default: true })
   isActive: boolean = true;
+
+  @IsBoolean()
+  @ApiProperty({ default: false })
+  isOTPVerified: boolean = false;
 
   constructor(user: UserEntity) {
     super(user);
@@ -161,7 +165,7 @@ export class GoogleSignInDto {
 }
 
 export class UpdateProfileDto extends PartialType(
-  OmitType(UserEntity, ["password", "email", "verificationStatus"] as const),
+  OmitType(UserEntity, ["password", "email"] as const),
 ) {}
 export class UpdateUserDto extends PartialType(
   OmitType(UserEntity, ["password", "email"] as const),

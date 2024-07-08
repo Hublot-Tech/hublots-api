@@ -6,7 +6,6 @@ import {
   CreateUserDto,
   GoogleSignInDto,
   Locale,
-  VerificationStatus,
 } from "../../users/dto/users.dto";
 import { UsersService } from "../../users/users.service";
 
@@ -47,8 +46,6 @@ export class GoogleAuthService {
       email: data.email,
       phoneNumber: null,
       address: null,
-      isOnline: true,
-      verificationStatus: VerificationStatus.NOT_SUBMITTED,
       locale: data.locale as Locale,
       password: null,
     };
