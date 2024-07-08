@@ -10,6 +10,7 @@ import { CreateUserDto } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { Request } from "express";
+import { VerifyOTPDto } from "./dto/auth.dto";
 
 @Injectable()
 export class AuthService {
@@ -31,10 +32,14 @@ export class AuthService {
   }
 
   private async login(user: User) {
+    if (!user.isOTPVerified) {
+      await this.usersService.createUserOTP(user.phoneNumber);
+    }
     const log = await this.usersService.createSignInLog(user.id);
-    const payload = { username: user.email, logId: log._id };
+    const payload = { username: user.email, logId: log.id };
     return this.jwtService.sign(payload, {
       secret: jwtConstants.secret,
+      expiresIn: "7d",
     });
   }
 
@@ -68,23 +73,32 @@ export class AuthService {
     }
   }
 
+  async verifyOTP(payload: VerifyOTPDto) {
+    return this.usersService.verifiyUserOTP(payload.phoneNumber, payload.otp);
+  }
+
   async authorizeUser(request: Request) {
     const token = this.extractTokenFromHeader(request);
     if (!token) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("No bearer token found!");
     }
 
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_SECRET,
-    });
     let authorizedUser: User;
-    const log = await this.usersService.findUserLog(payload.logId);
-    if (!log.logoutAt) {
-      authorizedUser = await this.usersService.findByEmail(payload?.username);
+    try {
+      const payload = await this.jwtService.verifyAsync(token, {
+        secret: process.env.JWT_SECRET,
+      });
+
+      const log = await this.usersService.findUserLog(payload.logId);
+      if (!log.logoutAt) {
+        authorizedUser = await this.usersService.findByEmail(payload.username);
+      }
+    } catch (error) {
+      throw new UnauthorizedException("Invalid access token!");
     }
 
-    if (!authorizedUser) {
-      throw new UnauthorizedException();
+    if (!authorizedUser.isOTPVerified) {
+      throw new UnauthorizedException("OTP verification not completed");
     }
 
     return authorizedUser;

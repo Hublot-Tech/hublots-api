@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsJWT, IsString } from "class-validator";
+import { IsEmail, IsJWT, IsString, Length } from "class-validator";
 import { ResponseMetadataDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 
@@ -48,4 +48,19 @@ export class SignUpResponseDto extends UserEntity {
 
 export class AuthGoogleLoginDto {
   idToken: string;
+}
+
+export class VerifyOTPDto {
+  @IsString()
+  @ApiProperty()
+  phoneNumber: string;
+
+  @Length(5)
+  @IsString()
+  @ApiProperty()
+  otp: string;
+
+  constructor(otp: VerifyOTPDto) {
+    Object.assign(this, otp);
+  }
 }

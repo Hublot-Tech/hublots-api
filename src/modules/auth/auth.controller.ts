@@ -22,6 +22,7 @@ import {
   SignInDto,
   SignInResponseDto,
   SignUpResponseDto,
+  VerifyOTPDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
 
@@ -79,6 +80,19 @@ export class AuthController {
       data: new SignUpResponseDto({ ...user.toJSON(), accessToken }),
       status: HttpStatus.CREATED,
       message: "Successfully register user",
+    });
+  }
+
+  @Public()
+  @Post("verify-otp")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async verifyOTP(
+    @Body() otpPayload: VerifyOTPDto,
+  ): Promise<ResponseMetadataDto> {
+    await this.authService.verifyOTP(otpPayload);
+    return new ResponseMetadataDto({
+      status: HttpStatus.CREATED,
+      message: "Successfully verified one time password",
     });
   }
 
