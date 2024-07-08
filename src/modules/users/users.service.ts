@@ -81,7 +81,7 @@ export class UsersService {
     const user = await this.userModel.findById(userId);
     if (!user) throw new NotFoundException(`User with id ${userId} not found`);
     const log = await new this.logModel().save();
-    user.logs.push(new ObjectId(log._id as string));
+    user.logs.push(new ObjectId(log.id as string));
     await user.save();
     return log;
   }

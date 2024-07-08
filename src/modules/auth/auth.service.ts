@@ -31,7 +31,7 @@ export class AuthService {
   }
 
   private async login(user: User) {
-    const log = await this.usersService.createSignInLog(user._id as string);
+    const log = await this.usersService.createSignInLog(user.id);
     const payload = { username: user.email, logId: log._id };
     return this.jwtService.sign(payload, {
       secret: jwtConstants.secret,

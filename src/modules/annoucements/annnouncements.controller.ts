@@ -84,7 +84,7 @@ export class AnnouncementsController {
   ): Promise<ResponseDataDto<AnnouncementEntity>> {
     const announcement = await this.annonucementsService.create(
       { ...payload, imageRef: `${process.env.PUBLIC_URL}/${file.filename}` },
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
@@ -105,7 +105,7 @@ export class AnnouncementsController {
     const announcement = await this.annonucementsService.update(
       announcementId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
@@ -122,10 +122,7 @@ export class AnnouncementsController {
     @Req() request: Request,
     @Param("id") announcementId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.annonucementsService.delete(
-      announcementId,
-      request.user._id as string,
-    );
+    await this.annonucementsService.delete(announcementId, request.user.id);
 
     return new ResponseMetadataDto({
       status: HttpStatus.OK,

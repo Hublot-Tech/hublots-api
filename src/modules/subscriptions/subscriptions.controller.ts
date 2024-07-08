@@ -68,7 +68,7 @@ export class SubscriptionsController {
     @Param("id") subscriptionPlanId: string,
   ): Promise<ResponseDataDto<SubscriptionEntity>> {
     const subscription = await this.subscriptionsService.subscribe(
-      request.user._id as string,
+      request.user.id,
       subscriptionPlanId,
     );
 
@@ -103,7 +103,7 @@ export class SubscriptionsController {
   ): Promise<ResponseDataDto<SubscriptionPlanEntity>> {
     const subscriptionPlan = await this.subscriptionsService.create(
       payload,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({

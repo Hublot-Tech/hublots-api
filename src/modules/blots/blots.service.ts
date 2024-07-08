@@ -56,7 +56,7 @@ export class BlotsService {
         const createdItem = await new this.itemModel(newItem).save({
           session,
         });
-        item = createdItem._id as string;
+        item = createdItem.id;
       }
       newBlotOptions.push(
         new this.blotOptionModel({
@@ -152,7 +152,7 @@ export class BlotsService {
         { session },
       );
       blot.options.push(
-        ...createdOptions.map(({ _id }) => new ObjectId(_id as string)),
+        ...createdOptions.map((opt) => new ObjectId(opt.id as string)),
       );
       return blot.save({ session });
     });
@@ -191,7 +191,7 @@ export class BlotsService {
    */
   private checkPrivileges(order: Blot, actor: string) {
     if (!order) {
-      throw new NotFoundException(`Blot with id ${order._id} not found`);
+      throw new NotFoundException(`Blot with id ${order.id} not found`);
     }
 
     if (

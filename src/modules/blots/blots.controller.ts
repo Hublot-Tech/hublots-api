@@ -58,7 +58,7 @@ export class BlotsController {
     const activeUser = [Role.CLIENT, Role.PROVIDER].some((role) =>
       request.user.roles.includes(role),
     )
-      ? (request.user._id as string)
+      ? request.user.id
       : undefined;
     const blots = await this.blotsService.findAll(query, activeUser);
 
@@ -95,10 +95,7 @@ export class BlotsController {
         "Operation not permitted for active user. Only provider can create blot",
       );
     }
-    const newBlot = await this.blotsService.create(
-      payload,
-      request.user._id as string,
-    );
+    const newBlot = await this.blotsService.create(payload, request.user.id);
 
     return new ResponseDataDto({
       data: new BlotEntity(newBlot.toJSON()),
@@ -117,7 +114,7 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.update(
       blotId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
@@ -133,7 +130,7 @@ export class BlotsController {
     @Req() request: Request,
     @Param("id") blotId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.blotsService.delete(blotId, request.user._id as string);
+    await this.blotsService.delete(blotId, request.user.id);
 
     return new ResponseMetadataDto({
       message: "Successfully updated blot",
@@ -153,7 +150,7 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.addOptions(
       blotId,
       blotOptions,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
@@ -174,7 +171,7 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.removeOptions(
       blotId,
       optionIds,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({

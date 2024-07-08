@@ -133,7 +133,7 @@ export class ServicesController {
     const service = await this.serviceService.update(
       serviceId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
     return new ResponseDataDto({
       data: new ServiceDetailsDto(service.toJSON()),
@@ -152,7 +152,7 @@ export class ServicesController {
     @Req() request: Request,
     @Param("id") serviceId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.serviceService.delete(serviceId, request.user._id as string);
+    await this.serviceService.delete(serviceId, request.user.id);
     return new ResponseMetadataDto({
       status: HttpStatus.NO_CONTENT,
       message: "Service successfully deleted",
