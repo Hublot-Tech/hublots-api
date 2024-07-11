@@ -1,29 +1,20 @@
 import { Injectable, UnprocessableEntityException } from "@nestjs/common";
-import { JwtService } from "@nestjs/jwt";
-import { OAuth2Client, TokenPayload } from "google-auth-library";
-import { jwtConstants } from "../../../constants/constants";
-import {
-  CreateUserDto,
-  GoogleSignInDto,
-  Locale,
-} from "../../users/dto/users.dto";
-import { UsersService } from "../../users/users.service";
+import { OAuth2Client } from "google-auth-library";
+import { GoogleSignInDto } from "../../users/dto/users.dto";
+import { AuthService } from "../auth.service";
 
 @Injectable()
 export class GoogleAuthService {
   private google: OAuth2Client;
 
-  constructor(
-    private userService: UsersService,
-    private readonly jwtService: JwtService,
-  ) {
+  constructor(private readonly authService: AuthService) {
     this.google = new OAuth2Client(
       process.env.AUTH_GOOGLE_CLIENT_ID,
       process.env.AUTH_GOOGLE_CLIENT_SECRET,
     );
   }
 
-  async getProfileByToken(loginDto: GoogleSignInDto): Promise<string> {
+  async getProfileByToken(loginDto: GoogleSignInDto) {
     const ticket = await this.google.verifyIdToken({
       idToken: loginDto.idToken,
       audience: [process.env.AUTH_GOOGLE_CLIENT_ID],
@@ -37,24 +28,6 @@ export class GoogleAuthService {
       );
     }
 
-    return this.authenticateUser(data);
-  }
-
-  async authenticateUser(data: TokenPayload) {
-    const payload: CreateUserDto = {
-      fullname: data.name,
-      email: data.email,
-      phoneNumber: null,
-      address: null,
-      locale: data.locale as Locale,
-      password: null,
-    };
-    const existingUser = await this.userService.findByEmail(data.email);
-    if (!existingUser) {
-      await this.userService.register(payload);
-    }
-    return this.jwtService.sign(payload, {
-      secret: jwtConstants.secret,
-    });
+    return this.authService.authenticateUser(data);
   }
 }

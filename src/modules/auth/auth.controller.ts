@@ -19,6 +19,7 @@ import { CreateUserDto, GoogleSignInDto } from "../users/dto/users.dto";
 import { AuthService } from "./auth.service";
 import { Public } from "./decorator/auth.decorator";
 import {
+  AuthTokensDto,
   SignInDto,
   SignInResponseDto,
   SignUpResponseDto,
@@ -41,12 +42,12 @@ export class AuthController {
     description: "User Successfully signed in",
   })
   async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
-    const accessToken = await this.authService.signIn(
+    const tokens = await this.authService.signIn(
       signInDto.email,
       signInDto.password,
     );
     return new SignInResponseDto({
-      accessToken,
+      ...tokens,
       message: "User Successfully signed in",
       status: HttpStatus.OK,
     });
@@ -61,9 +62,9 @@ export class AuthController {
   async googleSignIn(
     @Body() signInDto: GoogleSignInDto,
   ): Promise<SignInResponseDto> {
-    const accessToken = await this.authGuard.getProfileByToken(signInDto);
+    const tokens = await this.authGuard.getProfileByToken(signInDto);
     return new SignInResponseDto({
-      accessToken,
+      ...tokens,
       message: "Successfully signed user in",
       status: HttpStatus.OK,
     });
@@ -75,9 +76,9 @@ export class AuthController {
   async register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<ResponseDataDto<SignUpResponseDto>> {
-    const { accessToken, user } = await this.authService.singUp(createUserDto);
+    const { user, ...tokens } = await this.authService.singUp(createUserDto);
     return new ResponseDataDto({
-      data: new SignUpResponseDto({ ...user.toJSON(), accessToken }),
+      data: new SignUpResponseDto({ ...user.toJSON(), ...tokens }),
       status: HttpStatus.CREATED,
       message: "Successfully register user",
     });
@@ -93,6 +94,20 @@ export class AuthController {
     return new ResponseMetadataDto({
       status: HttpStatus.CREATED,
       message: "Successfully verified one time password",
+    });
+  }
+
+  @Public()
+  @Post("refresh-token")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async requestAccessToken(
+    @Body("refreshToken") refreshToken: string,
+  ): Promise<ResponseDataDto<AuthTokensDto>> {
+    const tokens = await this.authService.requestAuthzToken(refreshToken);
+    return new ResponseDataDto({
+      data: tokens,
+      status: HttpStatus.CREATED,
+      message: "Successfully generate new authorization tokens",
     });
   }
 

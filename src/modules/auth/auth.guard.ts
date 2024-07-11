@@ -28,7 +28,8 @@ export class AuthorizationGuard implements CanActivate {
       return true;
     }
 
-    const authenticatedUser = await this.authService.authorizeUser(request);
+    const authzToken = this.authService.extractTokenFromHeader(request);
+    const authenticatedUser = await this.authService.authorizeUser(authzToken);
 
     const allowedRoles = this.reflector.getAllAndOverride<Role[] | null>(
       ROLES_KEY,

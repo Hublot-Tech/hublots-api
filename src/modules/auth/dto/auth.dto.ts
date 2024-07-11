@@ -1,5 +1,5 @@
 import { ApiProperty } from "@nestjs/swagger";
-import { IsEmail, IsJWT, IsString, Length } from "class-validator";
+import { IsEmail, IsString, Length } from "class-validator";
 import { ResponseMetadataDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 
@@ -20,12 +20,14 @@ export class SignInDto {
 }
 
 export class SignInResponseDto extends ResponseMetadataDto {
-  @ApiProperty({
-    description: "Valid access token",
-    required: true,
-  })
-  @IsJWT()
+  @ApiProperty({ description: "Access token live is 24h" })
   accessToken: string;
+
+  @ApiProperty({
+    description:
+      "Use refresh token to request of new access token. Refresh token live is 7d",
+  })
+  refreshToken: string;
 
   constructor(responseBody: SignInResponseDto) {
     super(responseBody);
@@ -34,11 +36,14 @@ export class SignInResponseDto extends ResponseMetadataDto {
 }
 
 export class SignUpResponseDto extends UserEntity {
-  @ApiProperty({
-    description: "Valid access token",
-    required: true,
-  })
+  @ApiProperty({ description: "Access token live is 24h" })
   accessToken: string;
+
+  @ApiProperty({
+    description:
+      "Use refresh token to request of new access token. Refresh token live is 7d",
+  })
+  refreshToken: string;
 
   constructor(data: SignUpResponseDto) {
     super(data);
@@ -62,5 +67,20 @@ export class VerifyOTPDto {
 
   constructor(otp: VerifyOTPDto) {
     Object.assign(this, otp);
+  }
+}
+
+export class AuthTokensDto {
+  @ApiProperty({ description: "Access token live is 24h" })
+  accessToken: string;
+
+  @ApiProperty({
+    description:
+      "Use refresh token to request of new access token. Refresh token live is 7d",
+  })
+  refreshToken: string;
+
+  constructor(tokens: AuthTokensDto) {
+    Object.assign(this, tokens);
   }
 }
