@@ -7,7 +7,7 @@ import { MongooseModule } from "@nestjs/mongoose";
 import { ConfigModule } from "@nestjs/config";
 import { ChatsModule } from "./modules/chats/chats.module";
 import { ServicesModule } from "./modules/services/services.module";
-import { PaymentModule } from "./modules/payment/payment.module";
+import { PaymentModule } from "./modules/payments/payments.module";
 import { BlotsModule } from "./modules/blots/blots.module";
 import { APP_GUARD } from "@nestjs/core";
 import { AuthorizationGuard } from "./modules/auth/auth.guard";
