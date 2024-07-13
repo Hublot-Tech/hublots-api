@@ -32,6 +32,9 @@ export class Payment extends Document {
   @Prop({ type: String, required: true })
   customer: string;
 
+  @Prop({ type: Date, required: true, default: Date.now() })
+  createdAt: Date;
+
   // reference to payer
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })
   payer: Types.ObjectId;

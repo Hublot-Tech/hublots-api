@@ -16,4 +16,4 @@ import { Payment, PaymentSchema } from "./schemas/payment.schema";
   controllers: [PaymentsController],
   providers: [PaymentsService],
 })
-export class PaymentModule {}
+export class PaymentsModule {}
