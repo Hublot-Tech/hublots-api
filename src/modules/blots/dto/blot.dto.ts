@@ -1,10 +1,11 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import {
   IsArray,
   IsDateString,
@@ -87,7 +88,20 @@ export class CreateBlotDto {
   }
 }
 
-export class UpdateBlotDto extends PartialType(CreateBlotDto) {}
+export class UpdateBlotDto extends PartialType(CreateBlotDto) {
+  @Exclude()
+  @ApiHideProperty()
+  payment?: string;
+
+  constructor(blot: UpdateBlotDto) {
+    super(blot);
+    Object.assign(this, blot);
+  }
+}
+
+export class UpdateBlotWithoutStatus extends OmitType(UpdateBlotDto, [
+  "status",
+]) {}
 
 export class BlotEntity extends CreateBlotDto {
   @IsString()

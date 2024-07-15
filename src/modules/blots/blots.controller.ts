@@ -18,6 +18,7 @@ import {
   ApiNoContentResponse,
   ApiTags,
 } from "@nestjs/swagger";
+import { randomBytes } from "crypto";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -29,6 +30,9 @@ import {
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { UseRoles } from "../auth/decorator/auth.decorator";
+import { DirectChargePaymentDto } from "../payments/dto/payment.dto";
+import { PaymentsService } from "../payments/payments.service";
 import { Role } from "../users/dto";
 import { BlotsService } from "./blots.service";
 import {
@@ -37,16 +41,18 @@ import {
   BlotQueryParams,
   CreateBlotDto,
   CreateBlotOptionDto,
-  UpdateBlotDto,
+  UpdateBlotWithoutStatus,
 } from "./dto/blot.dto";
-import { UseRoles } from "../auth/decorator/auth.decorator";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
 @Controller("blots")
 @UseRoles(Role.PROVIDER)
 export class BlotsController {
-  constructor(private blotsService: BlotsService) {}
+  constructor(
+    private blotsService: BlotsService,
+    private paymentsService: PaymentsService,
+  ) {}
 
   @Get()
   @UseRoles()
@@ -109,7 +115,7 @@ export class BlotsController {
   async update(
     @Req() request: Request,
     @Param("id") blotId: string,
-    @Body() payload: UpdateBlotDto,
+    @Body() payload: UpdateBlotWithoutStatus,
   ): Promise<ResponseDataDto<BlotEntity>> {
     const updatedBlot = await this.blotsService.update(
       blotId,
@@ -121,6 +127,44 @@ export class BlotsController {
       data: new BlotEntity(updatedBlot.toJSON()),
       message: "Successfully updated blot",
       status: HttpStatus.OK,
+    });
+  }
+
+  @Put(":id/accept-offer")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async acceptOffer(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+    @Body() paymentDetails: DirectChargePaymentDto,
+  ): Promise<ResponseMetadataDto> {
+    const { phoneNumber, email, id: userId } = request.user;
+    const customerPhone = paymentDetails.phoneNumber ?? phoneNumber;
+    const customerEmail = paymentDetails.email ?? email;
+
+    const blot = await this.blotsService.findOne(blotId);
+    const initializedPayment = await this.paymentsService.initialize(
+      {
+        amount: blot.price,
+        currency: "XAF",
+        customer: { email: customerEmail, phone: customerPhone },
+        reference: randomBytes(256).toString("base64url"),
+      },
+      userId,
+    );
+    const chargePayment = await this.paymentsService.charge(
+      initializedPayment.reference,
+      customerPhone,
+    );
+
+    await this.blotsService.update(
+      blotId,
+      { payment: initializedPayment.id },
+      request.user.id,
+    );
+
+    return new ResponseMetadataDto({
+      message: chargePayment.message,
+      status: chargePayment.code,
     });
   }
 

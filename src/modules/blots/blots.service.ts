@@ -45,7 +45,10 @@ export class BlotsService {
     });
   }
 
-  private async prepareBlotOptions(options: CreateBlotOptionDto[], session) {
+  private async prepareBlotOptions(
+    options: CreateBlotOptionDto[],
+    session: ClientSession,
+  ) {
     const newBlotOptions: BlotOption[] = [];
     for (const {
       item: { id, ...newItem },
@@ -99,14 +102,14 @@ export class BlotsService {
   }
 
   async update(
-    orderId: string,
+    blotId: string,
     data: UpdateBlotDto,
     updatedBy: string,
   ): Promise<Blot> {
-    const blot = await this.blotModel.findById(orderId).exec();
+    const blot = await this.blotModel.findById(blotId).exec();
     this.checkPrivileges(blot, updatedBy);
     if (
-      data.status === BlotStatus.VALIDATED &&
+      data.status === BlotStatus.ACCEPTED &&
       blot.consumer.toString() !== updatedBy
     ) {
       throw new ForbiddenException(
