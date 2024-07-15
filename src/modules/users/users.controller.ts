@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   HttpStatus,
+  NotAcceptableException,
   Param,
   Post,
   Put,
@@ -105,6 +106,16 @@ export class UsersController {
     @Param("id") userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ResponseDataDto<UserEntity>> {
+    if (
+      !updateUserDto.roles.find((role) =>
+        [Role.PROVIDER, Role.PARTNER].includes(role),
+      )
+    ) {
+      throw new NotAcceptableException(
+        "Please use the allocate endpoints to accept or mark as completed a blot",
+      );
+    }
+
     const user = await this.usersService.update(userId, updateUserDto);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),

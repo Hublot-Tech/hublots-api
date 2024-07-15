@@ -44,11 +44,7 @@ export class UsersService {
   }
 
   async findAll(query: BulkQueryDto): Promise<User[]> {
-    return this.userModel
-      .find()
-      .limit(query.perpage)
-      .skip(query.page)
-      .exec();
+    return this.userModel.find().limit(query.perpage).skip(query.page).exec();
   }
 
   async delete(userId: string): Promise<void> {

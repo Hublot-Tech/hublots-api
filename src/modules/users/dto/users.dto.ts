@@ -165,7 +165,7 @@ export class GoogleSignInDto {
 }
 
 export class UpdateProfileDto extends PartialType(
-  OmitType(UserEntity, ["password", "email"] as const),
+  OmitType(UserEntity, ["password", "email", "roles"] as const),
 ) {}
 export class UpdateUserDto extends PartialType(
   OmitType(UserEntity, ["password", "email"] as const),
