@@ -97,7 +97,6 @@ export class SubscriptionsService {
   async findSubscription(subscriptionId: string): Promise<Subscription> {
     const subscription = await this.subscriptionModel
       .findById(subscriptionId)
-      .populate("payment")
       .populate("subscriber")
       .exec();
 

@@ -10,6 +10,7 @@ import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsMongoId,
   IsNumber,
   IsObject,
   IsOptional,
@@ -116,6 +117,10 @@ export class BlotEntity extends CreateBlotDto {
   @IsString()
   @ApiProperty()
   provider: string;
+
+  @IsMongoId()
+  @ApiProperty({ description: "Reference payment for this blot" })
+  payment: string;
 
   constructor(blot: BlotEntity) {
     super(blot);

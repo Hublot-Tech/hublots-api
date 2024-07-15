@@ -79,7 +79,6 @@ export class BlotsService {
       .populate("offer")
       .populate("consumer")
       .populate("provider")
-      .populate("payment")
       .exec();
 
     if (!blot) {
