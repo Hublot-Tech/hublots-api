@@ -97,11 +97,7 @@ export class OffersService {
   }
 
   async findAll(query: BulkQueryDto): Promise<Offer[]> {
-    return this.offerModel
-      .find()
-      .limit(query.perpage)
-      .skip(query.page)
-      .exec();
+    return this.offerModel.find().limit(query.perpage).skip(query.page).exec();
   }
 
   async delete(offerId: string, deletedBy: string): Promise<void> {
