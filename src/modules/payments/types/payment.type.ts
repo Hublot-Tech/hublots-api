@@ -18,6 +18,7 @@ export interface InitializePayment {
   description?: string;
   customer: Customer;
   callback?: string;
+  metadata?: Record<string, string>;
 }
 
 export interface ResponseMetadata {
@@ -35,6 +36,7 @@ export interface PaymentTransaction
   converted_amount: number;
   customer: string;
   reference: string;
+  merchant_reference: string;
   status: PaymentStatus;
   geo: string;
   created_at: string;

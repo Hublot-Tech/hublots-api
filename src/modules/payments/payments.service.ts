@@ -7,9 +7,8 @@ import {
   UnprocessableEntityException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { randomUUID } from "crypto";
+import { randomBytes } from "crypto";
 import { Model } from "mongoose";
-import { BulkQueryDto } from "src/helpers/api-dto";
 import { PaymentStatus } from "src/helpers/payment-status";
 import { Payment } from "./schemas/payment.schema";
 import {
@@ -18,6 +17,7 @@ import {
   InitializePaymentResponse,
   VerifyPaymentResponse,
 } from "./types/payment.type";
+import { BulkQueryDto } from "src/helpers/api-dto";
 
 @Injectable()
 export class PaymentsService {
@@ -27,10 +27,14 @@ export class PaymentsService {
   ) {}
 
   async initialize(
-    newPayment: InitializePayment,
+    payload: InitializePayment,
     createdBy: string,
   ): Promise<Payment> {
-    newPayment.reference = Buffer.from(randomUUID()).toString("base64");
+    const newPayment: InitializePayment = {
+      ...payload,
+      currency: "XAF",
+      reference: randomBytes(256).toString("hex"),
+    };
     const {
       status,
       data: { message, errors, transaction },
@@ -55,6 +59,8 @@ export class PaymentsService {
       description: transaction.description,
       customer: transaction.customer,
       status: transaction.status,
+      asset: transaction.metadata.asset,
+      internal_reference: transaction.merchant_reference,
       payer: createdBy,
     }).save();
   }
@@ -94,7 +100,11 @@ export class PaymentsService {
   async findOne(paymentIdOrRef: string): Promise<Payment> {
     const paymentDocument = await this.paymentModel
       .findOne({
-        $or: [{ id: paymentIdOrRef }, { reference: paymentIdOrRef }],
+        $or: [
+          { id: paymentIdOrRef },
+          { reference: paymentIdOrRef },
+          { internal_reference: paymentIdOrRef },
+        ],
       })
       .populate("payer")
       .exec();

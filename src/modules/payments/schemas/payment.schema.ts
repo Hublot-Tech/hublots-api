@@ -23,17 +23,23 @@ export class Payment extends Document {
   @Prop({ type: String, unique: true, required: true })
   reference: string;
 
+  @Prop({ type: String, unique: true, required: true })
+  internal_reference: string;
+
   @Prop({ type: String, required: true })
   description: string;
 
   @Prop({ type: String, enum: PaymentStatus, required: true })
   status: PaymentStatus;
 
+  @Prop({ type: String })
+  authorization_url: string;
+
+  @Prop({ type: Date, required: true, default: Date.now })
+  createdAt: Date;
+
   @Prop({ type: String, required: true })
   customer: string;
-
-  @Prop({ type: Date, required: true, default: Date.now() })
-  createdAt: Date;
 
   // reference to payer
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })

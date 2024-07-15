@@ -1,8 +1,8 @@
+import { HttpModule } from "@nestjs/axios";
 import { Module } from "@nestjs/common";
+import { MongooseModule } from "@nestjs/mongoose";
 import { PaymentsController } from "./payments.controller";
 import { PaymentsService } from "./payments.service";
-import { HttpModule } from "@nestjs/axios";
-import { MongooseModule } from "@nestjs/mongoose";
 import { Payment, PaymentSchema } from "./schemas/payment.schema";
 
 @Module({
@@ -15,5 +15,6 @@ import { Payment, PaymentSchema } from "./schemas/payment.schema";
   ],
   controllers: [PaymentsController],
   providers: [PaymentsService],
+  exports: [PaymentsService],
 })
 export class PaymentsModule {}
