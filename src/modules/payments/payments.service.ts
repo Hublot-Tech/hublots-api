@@ -8,18 +8,24 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { randomBytes } from "crypto";
+import { Request } from "express";
 import { Model } from "mongoose";
+import { BulkQueryDto } from "src/helpers/api-dto";
 import { PaymentStatus } from "src/helpers/payment-status";
-import { Payment } from "./schemas/payment.schema";
+import { DirectChargePaymentDto } from "./dto/payment.dto";
+import { Payment, PaymentType } from "./schemas/payment.schema";
 import {
   ChargePaymentResponse,
+  CreateRecipient,
+  CreateRecipientResponse,
+  FetchRecipientResponse,
   InitializePayment,
   InitializePaymentResponse,
-  VerifyPaymentResponse,
+  InitiateTransfer,
+  InitiateTransferResponse,
+  FetchTransactionResponse,
+  FetchTransferResponse,
 } from "./types/payment.type";
-import { BulkQueryDto } from "src/helpers/api-dto";
-import { Request } from "express";
-import { DirectChargePaymentDto } from "./dto/payment.dto";
 
 @Injectable()
 export class PaymentsService {
@@ -61,8 +67,6 @@ export class PaymentsService {
       description: transaction.description,
       customer: transaction.customer,
       status: transaction.status,
-      asset: transaction.metadata.asset,
-      internal_reference: transaction.merchant_reference,
       payer: createdBy,
     }).save();
   }
@@ -84,7 +88,7 @@ export class PaymentsService {
       data: { errors, message },
     } = await this.httpService.axiosRef.post<ChargePaymentResponse>(
       `/payments/${payment.reference}`,
-      { channel: "cm.mobile", data: { phone: phoneNumber } },
+      { channel: "cm.mobile", phone: phoneNumber },
     );
     if (status !== HttpStatus.ACCEPTED) {
       //getting the first error message
@@ -124,6 +128,90 @@ export class PaymentsService {
     return [initializedPayment, chargePayment];
   }
 
+  async transfer(
+    recipient: CreateRecipient,
+    amount: number,
+    transferedBy: string,
+  ) {
+    const {
+      status,
+      data: { errors, message, items },
+    } =
+      await this.httpService.axiosRef.get<FetchRecipientResponse>(
+        `/recipients`,
+      );
+    if (status !== HttpStatus.OK) {
+      //getting the first error message
+      const firstErrorMessage =
+        errors && errors[0] && errors[0][0] ? errors[0][0] : message;
+
+      throw new HttpException("Failed to fetch recipient", status, {
+        cause: firstErrorMessage,
+      });
+    }
+    let beneficiary = items.find(
+      (_) => _.email === recipient.email && _.phone === recipient.phone,
+    );
+
+    if (!beneficiary) {
+      const {
+        status,
+        data: { errors, message, beneficiary: newBeneficiary },
+      } = await this.httpService.axiosRef.post<CreateRecipientResponse>(
+        `/recipients`,
+        recipient,
+      );
+
+      if (status !== HttpStatus.CREATED) {
+        //getting the first error message
+        const firstErrorMessage =
+          errors && errors[0] && errors[0][0] ? errors[0][0] : message;
+
+        throw new HttpException("Failed to create recipient", status, {
+          cause: firstErrorMessage,
+        });
+      }
+      beneficiary = newBeneficiary;
+    }
+
+    const initiateTransfer: InitiateTransfer = {
+      amount,
+      currency: "XAF",
+      description: "Service Provider payout",
+      recipient: beneficiary.id,
+    };
+    const {
+      status: transferRespStatus,
+      data: { errors: transferErrors, message: transferMessage, transfer },
+    } = await this.httpService.axiosRef.post<InitiateTransferResponse>(
+      `/transfer`,
+      initiateTransfer,
+    );
+
+    if (transferRespStatus !== HttpStatus.CREATED) {
+      //getting the first error message
+      const firstErrorMessage =
+        transferErrors && transferErrors[0] && transferErrors[0][0]
+          ? transferErrors[0][0]
+          : transferMessage;
+
+      throw new HttpException("Failed to create recipient", status, {
+        cause: firstErrorMessage,
+      });
+    }
+
+    return new this.paymentModel({
+      currency: transfer.currency,
+      amount: transfer.amount,
+      reference: transfer.reference,
+      description: transfer.description,
+      status: transfer.status,
+      customer: transfer.beneficiary,
+      paymentType: PaymentType.PAY_OUT,
+      payer: transferedBy,
+    }).save();
+  }
+
   async findOne(paymentIdOrRef: string): Promise<Payment> {
     const paymentDocument = await this.paymentModel
       .findOne({
@@ -142,11 +230,16 @@ export class PaymentsService {
 
     const {
       status,
-      data: { message, errors, payment },
-    } = await this.httpService.axiosRef.get<VerifyPaymentResponse>(
-      `/payments/${paymentDocument.reference}`,
+      data: { message, errors, transaction, transfer },
+    } = await this.httpService.axiosRef.get<
+      FetchTransactionResponse & FetchTransferResponse
+    >(
+      `/${paymentDocument.paymentType === PaymentType.PAY_IN ? "payments" : "transfers"}/${paymentDocument.reference}`,
     );
-
+    const payment =
+      paymentDocument.paymentType === PaymentType.PAY_IN
+        ? transaction
+        : transfer;
     if (status !== 200) {
       //getting the first error message
       const firstErrorMessage =

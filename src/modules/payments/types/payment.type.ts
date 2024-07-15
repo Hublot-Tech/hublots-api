@@ -11,6 +11,25 @@ export interface Customer {
   zip_code?: string;
 }
 
+export interface CreateRecipient {
+  email: string;
+  channel?: "cm.mobile" | "cm.mtn" | "cm.orange";
+  number: number;
+  name: string;
+  phone: string;
+  country?: string;
+}
+
+export interface Recipient {
+  id: string;
+  email: string;
+  channel: "cm.mobile" | "cm.mtn" | "cm.orange";
+  number: number;
+  name: string;
+  phone: string;
+  country: string;
+}
+
 export interface InitializePayment {
   amount: number;
   currency: string;
@@ -38,6 +57,7 @@ export interface PaymentTransaction
   reference: string;
   merchant_reference: string;
   status: PaymentStatus;
+  description: string;
   geo: string;
   created_at: string;
   updated_at: string;
@@ -52,6 +72,36 @@ export interface ChargePaymentResponse extends ResponseMetadata {
   action: string;
 }
 
-export interface VerifyPaymentResponse extends ResponseMetadata {
-  payment: PaymentTransaction;
+export interface FetchTransactionResponse extends ResponseMetadata {
+  transaction: PaymentTransaction;
+}
+
+export interface FetchRecipientResponse extends ResponseMetadata {
+  items: Recipient[];
+}
+
+export interface CreateRecipientResponse extends ResponseMetadata {
+  beneficiary: Recipient;
+}
+
+export interface InitiateTransfer {
+  amount: number;
+  currency: string;
+  description: string;
+  statement?: string;
+  recipient: string;
+}
+
+export interface Transfer extends Omit<PaymentTransaction, "customer"> {
+  beneficiary: string;
+  statement: string;
+  trxref: string;
+}
+
+export interface InitiateTransferResponse extends ResponseMetadata {
+  transfer: Transfer;
+}
+
+export interface FetchTransferResponse extends ResponseMetadata {
+  transfer: Transfer;
 }
