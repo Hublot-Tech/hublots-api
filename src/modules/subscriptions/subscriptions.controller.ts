@@ -8,7 +8,7 @@ import {
   Put,
   Req,
 } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
 import {
   ApiCustomCreatedResponse,
   ApiCustomOkResponse,
@@ -21,15 +21,24 @@ import {
   UpdateSubscriptionPlanDto,
 } from "./dto/subscription.dto";
 import { SubscriptionsService } from "./subscriptions.service";
-import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
+import {
+  PaginatedResponseDataDto,
+  ResponseDataDto,
+  ResponseMetadataDto,
+} from "src/helpers/api-dto";
 import { Request } from "express";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
+import { PaymentsService } from "../payments/payments.service";
+import { DirectChargePaymentDto } from "../payments/dto/payment.dto";
 
 @ApiTags("Subscriptions")
 @Controller("subscriptions")
 export class SubscriptionsController {
-  constructor(private readonly subscriptionsService: SubscriptionsService) {}
+  constructor(
+    private paymentsService: PaymentsService,
+    private subscriptionsService: SubscriptionsService,
+  ) {}
 
   @Get()
   @ApiOkPaginatedResponse(SubscriptionEntity)
@@ -62,20 +71,30 @@ export class SubscriptionsController {
 
   @Put(":id/subscribe")
   @UseRoles(Role.PROVIDER)
-  @ApiCustomOkResponse(SubscriptionEntity)
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
   async subscribe(
     @Req() request: Request,
     @Param("id") subscriptionPlanId: string,
+    @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseDataDto<SubscriptionEntity>> {
+    const subscriptionPlan =
+      await this.subscriptionsService.findOne(subscriptionPlanId);
+    const [initializedPayment, chargePayment] =
+      await this.paymentsService.initializeAndCharge(
+        request,
+        paymentDetails,
+        subscriptionPlan.price,
+      );
     const subscription = await this.subscriptionsService.subscribe(
       request.user.id,
       subscriptionPlanId,
+      initializedPayment.id,
     );
 
     return new ResponseDataDto({
       data: new SubscriptionEntity(subscription.toJSON()),
-      message: "Successfully subscribed to plan",
-      status: HttpStatus.OK,
+      message: chargePayment.message,
+      status: chargePayment.code,
     });
   }
 

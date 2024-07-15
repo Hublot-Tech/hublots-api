@@ -10,12 +10,14 @@ import {
 } from "./schemas/subscription.schema";
 import { SubscriptionsService } from "./subscriptions.service";
 import { SubscriptionsController } from "./subscriptions.controller";
+import { PaymentsModule } from "../payments/payments.module";
 
 @Module({
   imports: [
+    PaymentsModule,
     MongooseModule.forFeature([
-      { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },
       { name: Subscription.name, schema: SubscriptionSchema },
+      { name: SubscriptionPlan.name, schema: SubscriptionPlanSchema },
     ]),
   ],
   providers: [SubscriptionsService],

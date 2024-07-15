@@ -35,8 +35,12 @@ export class SubscriptionsService {
     const subscriptionPlan = await this.subscriptionPlanModel
       .findById(subscriptionId)
       .exec();
-    if (!subscriptionPlan)
-      throw new NotFoundException(`User with id ${subscriptionId} not found`);
+
+    if (!subscriptionPlan) {
+      throw new NotFoundException(
+        `Subscription plan with id ${subscriptionId} not found`,
+      );
+    }
     return subscriptionPlan;
   }
 
@@ -60,6 +64,7 @@ export class SubscriptionsService {
   async subscribe(
     subscriber: string,
     subscriptionPlanId: string,
+    payment: string,
   ): Promise<Subscription> {
     const subscriptionPlan = await this.subscriptionPlanModel
       .findById(subscriptionPlanId)
@@ -76,6 +81,7 @@ export class SubscriptionsService {
 
     const newSubscription = new this.subscriptionModel({
       endsAt,
+      payment,
       subscriber: subscriber,
       subscriptionPlan: subscriptionPlanId,
       ...subscriptionPlan.toJSON(),
@@ -88,7 +94,18 @@ export class SubscriptionsService {
     return this.subscriptionModel.find().exec();
   }
 
-  async findSubscription(id: string): Promise<Subscription> {
-    return this.subscriptionModel.findById(id).exec();
+  async findSubscription(subscriptionId: string): Promise<Subscription> {
+    const subscription = await this.subscriptionModel
+      .findById(subscriptionId)
+      .populate("payment")
+      .populate("subscriber")
+      .exec();
+
+    if (!subscription) {
+      throw new NotFoundException(
+        `Subscription plan with id ${subscriptionId} not found`,
+      );
+    }
+    return subscription;
   }
 }

@@ -2,6 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { SubscriptionPlan } from "./subscription-plan.schema";
 import { Types } from "mongoose";
 import { User } from "src/modules/users/schemas/user.schema";
+import { Payment } from "src/modules/payments/schemas/payment.schema";
 
 @Schema({
   toJSON: {
@@ -23,6 +24,10 @@ export class Subscription extends SubscriptionPlan {
   // reference to subscriber
   @Prop({ type: Types.ObjectId, ref: SubscriptionPlan.name, required: true })
   subscriptionPlan: Types.ObjectId;
+
+  // reference to payment
+  @Prop({ type: Types.ObjectId, ref: Payment.name, required: true })
+  payment: Types.ObjectId;
 
   // reference to subscriber
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
