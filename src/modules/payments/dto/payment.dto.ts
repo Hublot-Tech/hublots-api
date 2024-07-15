@@ -59,7 +59,10 @@ export class InitializePaymentDto {
 export class DirectChargePaymentDto extends InitializePaymentDto {
   @IsOptional()
   @IsPhoneNumber("CM")
-  @ApiProperty({ description: "Customer phone number, paying phone number" })
+  @ApiProperty({
+    description: "Customer phone number, paying phone number",
+    examples: ["674481721", "674000000", "656019261", "656000000"],
+  })
   phoneNumber?: string;
 
   constructor(payload: DirectChargePaymentDto) {
