@@ -60,8 +60,8 @@ export class ServicesController {
     const services = await this.serviceService.findAll(query);
     return new PaginatedResponseDataDto({
       data: services.map((service) => new ServiceEntity(service.toJSON())),
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved services",
     });

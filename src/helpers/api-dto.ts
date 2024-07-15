@@ -6,17 +6,12 @@ export class BulkQueryDto {
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional()
-  perpage?: number;
+  perpage: number = 10;
 
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional()
-  page?: number;
-
-  @IsNumber()
-  @IsOptional()
-  @ApiPropertyOptional()
-  limit?: number;
+  page: number = 1;
 
   constructor(query: BulkQueryDto) {
     Object.assign(this, query);
@@ -54,11 +49,6 @@ export class PaginatedResponseDataDto<TData> extends ResponseMetadataDto {
   @IsNumber()
   @ApiProperty()
   page: number;
-
-  @IsNumber()
-  @IsOptional()
-  @ApiPropertyOptional()
-  limit?: number;
 
   data: TData[];
 

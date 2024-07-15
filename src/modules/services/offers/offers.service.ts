@@ -99,8 +99,8 @@ export class OffersService {
   async findAll(query: BulkQueryDto): Promise<Offer[]> {
     return this.offerModel
       .find()
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 

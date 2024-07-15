@@ -35,8 +35,8 @@ export class ServicesService {
   async findAll(query: BulkQueryDto): Promise<Service[]> {
     return this.serviceModel
       .find()
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 

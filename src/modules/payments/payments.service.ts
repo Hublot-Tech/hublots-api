@@ -169,8 +169,8 @@ export class PaymentsService {
   async findAll(query: BulkQueryDto): Promise<Payment[]> {
     return this.paymentModel
       .find(query)
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 }

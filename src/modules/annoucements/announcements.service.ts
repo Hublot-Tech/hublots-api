@@ -45,8 +45,8 @@ export class AnnouncementsService {
   async findAll(query: BulkQueryDto): Promise<Announcement[]> {
     return this.announcementModel
       .find()
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 

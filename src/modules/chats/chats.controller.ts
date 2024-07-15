@@ -59,8 +59,8 @@ export class ChatsController {
       data: messages.map((message) => new MessageEntity(message.toJSON())),
       status: HttpStatus.OK,
       message: "Successfully retrieved messages",
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
     });
   }
 

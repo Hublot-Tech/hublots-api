@@ -52,8 +52,8 @@ export class UsersController {
     const users = await this.usersService.findAll(query);
     return new PaginatedResponseDataDto({
       data: users.map((user) => new UserEntity(user.toJSON())),
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved users",
     });

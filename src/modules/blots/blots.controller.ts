@@ -69,8 +69,8 @@ export class BlotsController {
 
     return new PaginatedResponseDataDto({
       data: blots.map((blot) => new BlotEntity(blot.toJSON())),
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved blots",
     });
