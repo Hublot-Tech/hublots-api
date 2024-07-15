@@ -130,13 +130,13 @@ export class BlotsController {
   }
 
   @Put(":id/accept-offer")
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiCustomOkResponse(BlotEntity)
   async acceptOffer(
     @Req() request: Request,
     @Param("id") blotId: string,
     @Body() paymentDetails: DirectChargePaymentDto,
-  ): Promise<ResponseMetadataDto> {
-    const blot = await this.blotsService.findOne(blotId);
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    let blot = await this.blotsService.findOne(blotId);
     const [initializedPayment, chargePayment] =
       await this.paymentsService.initializeAndCharge(
         request,
@@ -144,13 +144,14 @@ export class BlotsController {
         blot.price,
       );
 
-    await this.blotsService.update(
+    blot = await this.blotsService.update(
       blotId,
       { payment: initializedPayment.id },
       request.user.id,
     );
 
-    return new ResponseMetadataDto({
+    return new ResponseDataDto({
+      data: new BlotEntity(blot.toJSON()),
       message: chargePayment.message,
       status: chargePayment.code,
     });
