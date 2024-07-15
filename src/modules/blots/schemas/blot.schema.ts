@@ -66,6 +66,10 @@ export class Blot extends Document {
   @Prop({ type: Types.ObjectId, ref: Payment.name })
   payment: Types.ObjectId;
 
+  // reference to payment
+  @Prop({ type: Types.ObjectId, ref: Payment.name })
+  payoutRef: Types.ObjectId;
+
   // reference to consumer
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   consumer: Types.ObjectId;

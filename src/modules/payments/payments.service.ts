@@ -159,7 +159,7 @@ export class PaymentsService {
         data: { errors, message, beneficiary: newBeneficiary },
       } = await this.httpService.axiosRef.post<CreateRecipientResponse>(
         `/recipients`,
-        recipient,
+        { ...recipient, channel: "cm.mobile" },
       );
 
       if (status !== HttpStatus.CREATED) {

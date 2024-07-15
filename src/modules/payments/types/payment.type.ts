@@ -14,10 +14,9 @@ export interface Customer {
 export interface CreateRecipient {
   email: string;
   channel?: "cm.mobile" | "cm.mtn" | "cm.orange";
-  number: number;
+  number: string;
   name: string;
   phone: string;
-  country?: string;
 }
 
 export interface Recipient {

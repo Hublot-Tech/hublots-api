@@ -28,7 +28,7 @@ export class PaymentEntity {
   @ApiProperty({ type: String })
   customer: string;
 
-  @ApiProperty({ type: Date, default: Date.now })
+  @ApiProperty({ type: Date, default: () => Date.now() })
   createdAt: Date;
 
   @ApiProperty({ type: UserEntity })

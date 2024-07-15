@@ -53,6 +53,10 @@ export class BlotOptionEntity extends CreateBlotOptionDto {
 }
 
 export class CreateBlotDto {
+  @IsNumber()
+  @ApiProperty()
+  price: number;
+
   @IsString()
   @IsOptional()
   @ApiPropertyOptional({ description: "Selected offer ID" })
@@ -94,15 +98,15 @@ export class UpdateBlotDto extends PartialType(CreateBlotDto) {
   @ApiHideProperty()
   payment?: string;
 
+  @Exclude()
+  @ApiHideProperty()
+  payoutRef?: string;
+
   constructor(blot: UpdateBlotDto) {
     super(blot);
     Object.assign(this, blot);
   }
 }
-
-export class UpdateBlotWithoutStatus extends OmitType(UpdateBlotDto, [
-  "status",
-]) {}
 
 export class BlotEntity extends CreateBlotDto {
   @IsString()

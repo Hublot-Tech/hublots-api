@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Get,
   HttpStatus,
+  NotAcceptableException,
   Param,
   ParseArrayPipe,
   Post,
@@ -40,8 +41,9 @@ import {
   BlotQueryParams,
   CreateBlotDto,
   CreateBlotOptionDto,
-  UpdateBlotWithoutStatus,
+  UpdateBlotDto,
 } from "./dto/blot.dto";
+import { BlotStatus } from "./schemas/blot.schema";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
@@ -114,8 +116,14 @@ export class BlotsController {
   async update(
     @Req() request: Request,
     @Param("id") blotId: string,
-    @Body() payload: UpdateBlotWithoutStatus,
+    @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
+    if (![BlotStatus.ACCEPTED, BlotStatus.COMPLETED].includes(payload.status)) {
+      throw new NotAcceptableException(
+        "Please use the allocate endpoints to accept or finalize a blot",
+      );
+    }
+
     const updatedBlot = await this.blotsService.update(
       blotId,
       payload,
@@ -154,6 +162,38 @@ export class BlotsController {
       data: new BlotEntity(blot.toJSON()),
       message: chargePayment.message,
       status: chargePayment.code,
+    });
+  }
+
+  @Put(":id/finalize")
+  @ApiCustomOkResponse(BlotEntity)
+  async finalizeBlot(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    let blot = await this.blotsService.findOne(blotId);
+    const { provider, price } = new BlotDetailsDto(blot.toJSON());
+    const payment = await this.paymentsService.transfer(
+      {
+        email: provider.email,
+        name: provider.fullname,
+        phone: provider.phoneNumber,
+        number: provider.phoneNumber,
+      },
+      price,
+      request.user.id,
+    );
+
+    blot = await this.blotsService.update(
+      blotId,
+      { payoutRef: payment.id },
+      request.user.id,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(blot.toJSON()),
+      message: "Successfully initiated provider funds transfer",
+      status: HttpStatus.OK,
     });
   }
 
