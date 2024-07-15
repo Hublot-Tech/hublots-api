@@ -18,7 +18,6 @@ import {
   ApiNoContentResponse,
   ApiTags,
 } from "@nestjs/swagger";
-import { randomBytes } from "crypto";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -137,24 +136,13 @@ export class BlotsController {
     @Param("id") blotId: string,
     @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseMetadataDto> {
-    const { phoneNumber, email, id: userId } = request.user;
-    const customerPhone = paymentDetails.phoneNumber ?? phoneNumber;
-    const customerEmail = paymentDetails.email ?? email;
-
     const blot = await this.blotsService.findOne(blotId);
-    const initializedPayment = await this.paymentsService.initialize(
-      {
-        amount: blot.price,
-        currency: "XAF",
-        customer: { email: customerEmail, phone: customerPhone },
-        reference: randomBytes(256).toString("base64url"),
-      },
-      userId,
-    );
-    const chargePayment = await this.paymentsService.charge(
-      initializedPayment.reference,
-      customerPhone,
-    );
+    const [initializedPayment, chargePayment] =
+      await this.paymentsService.initializeAndCharge(
+        request,
+        paymentDetails,
+        blot.price,
+      );
 
     await this.blotsService.update(
       blotId,

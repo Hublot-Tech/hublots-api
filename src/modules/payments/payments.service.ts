@@ -18,6 +18,8 @@ import {
   VerifyPaymentResponse,
 } from "./types/payment.type";
 import { BulkQueryDto } from "src/helpers/api-dto";
+import { Request } from "express";
+import { DirectChargePaymentDto } from "./dto/payment.dto";
 
 @Injectable()
 export class PaymentsService {
@@ -95,6 +97,31 @@ export class PaymentsService {
     }
 
     return chargePayment;
+  }
+
+  async initializeAndCharge(
+    request: Request,
+    paymentDetails: DirectChargePaymentDto,
+    amount: number,
+  ): Promise<[Payment, ChargePaymentResponse]> {
+    const { phoneNumber, email, id: userId } = request.user;
+    const customerPhone = paymentDetails.phoneNumber ?? phoneNumber;
+    const customerEmail = paymentDetails.email ?? email;
+    const initializedPayment = await this.initialize(
+      {
+        amount,
+        currency: "XAF",
+        customer: { email: customerEmail, phone: customerPhone },
+        reference: randomBytes(256).toString("base64url"),
+      },
+      userId,
+    );
+    const chargePayment = await this.charge(
+      initializedPayment.reference,
+      customerPhone,
+    );
+
+    return [initializedPayment, chargePayment];
   }
 
   async findOne(paymentIdOrRef: string): Promise<Payment> {

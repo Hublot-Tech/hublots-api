@@ -73,13 +73,19 @@ export class BlotsService {
   }
 
   async findOne(blotId: string): Promise<Blot> {
-    return this.blotModel
+    const blot = this.blotModel
       .findById(blotId)
       .populate("options")
       .populate("offer")
-      .populate("cunsumer")
+      .populate("consumer")
       .populate("provider")
+      .populate("payment")
       .exec();
+
+    if (!blot) {
+      throw new NotFoundException(`Blot with id ${blotId} not found`);
+    }
+    return blot;
   }
 
   async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
