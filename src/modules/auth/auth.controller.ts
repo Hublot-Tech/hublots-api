@@ -10,6 +10,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -19,9 +20,11 @@ import { CreateUserDto, GoogleSignInDto } from "../users/dto/users.dto";
 import { AuthService } from "./auth.service";
 import { Public } from "./decorator/auth.decorator";
 import {
+  AuthTokensDto,
   SignInDto,
   SignInResponseDto,
   SignUpResponseDto,
+  VerifyOTPDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
 
@@ -39,13 +42,17 @@ export class AuthController {
     type: SignInResponseDto,
     description: "User Successfully signed in",
   })
+  @ApiOperation({
+    description:
+      "Sign in. A successfully sign in will send a OTP to user phone number if not verified yet",
+  })
   async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
-    const accessToken = await this.authService.signIn(
+    const tokens = await this.authService.signIn(
       signInDto.email,
       signInDto.password,
     );
     return new SignInResponseDto({
-      accessToken,
+      ...tokens,
       message: "User Successfully signed in",
       status: HttpStatus.OK,
     });
@@ -57,12 +64,16 @@ export class AuthController {
     type: SignInResponseDto,
     description: "Successful user registration",
   })
+  @ApiOperation({
+    description:
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+  })
   async googleSignIn(
     @Body() signInDto: GoogleSignInDto,
   ): Promise<SignInResponseDto> {
-    const accessToken = await this.authGuard.getProfileByToken(signInDto);
+    const tokens = await this.authGuard.getProfileByToken(signInDto);
     return new SignInResponseDto({
-      accessToken,
+      ...tokens,
       message: "Successfully signed user in",
       status: HttpStatus.OK,
     });
@@ -70,15 +81,46 @@ export class AuthController {
 
   @Public()
   @Post("register")
+  @ApiOperation({
+    description:
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+  })
   @ApiCustomCreatedResponse(SignUpResponseDto)
   async register(
     @Body() createUserDto: CreateUserDto,
   ): Promise<ResponseDataDto<SignUpResponseDto>> {
-    const { accessToken, user } = await this.authService.singUp(createUserDto);
+    const { user, ...tokens } = await this.authService.singUp(createUserDto);
     return new ResponseDataDto({
-      data: new SignUpResponseDto({ ...user.toJSON(), accessToken }),
+      data: new SignUpResponseDto({ ...user.toJSON(), ...tokens }),
       status: HttpStatus.CREATED,
       message: "Successfully register user",
+    });
+  }
+
+  @Public()
+  @Post("verify-otp")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async verifyOTP(
+    @Body() otpPayload: VerifyOTPDto,
+  ): Promise<ResponseMetadataDto> {
+    await this.authService.verifyOTP(otpPayload);
+    return new ResponseMetadataDto({
+      status: HttpStatus.CREATED,
+      message: "Successfully verified one time password",
+    });
+  }
+
+  @Public()
+  @Post("refresh-token")
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async requestAccessToken(
+    @Body("refreshToken") refreshToken: string,
+  ): Promise<ResponseDataDto<AuthTokensDto>> {
+    const tokens = await this.authService.requestAuthzToken(refreshToken);
+    return new ResponseDataDto({
+      data: tokens,
+      status: HttpStatus.CREATED,
+      message: "Successfully generate new authorization tokens",
     });
   }
 

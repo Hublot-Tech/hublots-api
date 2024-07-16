@@ -34,8 +34,8 @@ export class ChatsService {
           { receiver: sender, sender: receiver },
         ],
       })
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 }

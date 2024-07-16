@@ -32,21 +32,6 @@ export class User extends Document {
 
   @Prop({
     type: String,
-    enum: VerificationStatus,
-    required: true,
-    default: VerificationStatus.NOT_SUBMITTED,
-  })
-  verificationStatus: VerificationStatus;
-
-  @Prop({
-    type: Boolean,
-    required: true,
-    default: false,
-  })
-  isOnline: boolean;
-
-  @Prop({
-    type: String,
     enum: Locale,
     required: true,
     default: Locale.FR,
@@ -74,11 +59,33 @@ export class User extends Document {
   password: string;
 
   @Prop({
+    type: String,
+    enum: VerificationStatus,
+    required: true,
+    default: VerificationStatus.NOT_SUBMITTED,
+  })
+  verificationStatus: VerificationStatus;
+
+  @Prop({
+    type: Boolean,
+    required: true,
+    default: false,
+  })
+  isOnline: boolean;
+
+  @Prop({
     type: Boolean,
     required: true,
     default: true,
   })
   isActive: boolean;
+
+  @Prop({
+    type: Boolean,
+    required: true,
+    default: false,
+  })
+  isOTPVerified: boolean;
 
   @Prop({
     type: Date,

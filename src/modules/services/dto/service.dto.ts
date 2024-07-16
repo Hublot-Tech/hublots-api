@@ -1,4 +1,5 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
@@ -6,14 +7,15 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import {
-  IsNumber,
+  IsEnum,
   IsOptional,
   IsString,
   IsUUID,
   MinLength,
 } from "class-validator";
-import { OfferEntity } from "../offers/dto/offer.dto";
 import { UserEntity } from "src/modules/users/dto";
+import { OfferEntity } from "../offers/dto/offer.dto";
+import { Category } from "../schemas/service.schema";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -32,12 +34,9 @@ export class CreateServiceDto {
   @MinLength(30, { message: "description must be at least 40 characters long" })
   description: string;
 
-  @ApiProperty({
-    example: 5000,
-    description: "Price of the service",
-  })
-  @IsNumber()
-  price: number;
+  @IsEnum(Category)
+  @ApiProperty({ description: "Service category" })
+  category: Category;
 
   //referencing the user who created the service
   @ApiPropertyOptional({
@@ -49,8 +48,8 @@ export class CreateServiceDto {
   provider: string;
 
   @IsString()
-  @ApiPropertyOptional({})
-  mainImageId: string;
+  @ApiHideProperty()
+  mainImageRef: string;
 
   constructor(createService: CreateServiceDto) {
     Object.assign(this, createService);
@@ -81,6 +80,10 @@ export class ServiceEntity extends CreateServiceDto {
   @IsString()
   availability: string;
 
+  @IsString()
+  @ApiProperty()
+  mainImageRef: string;
+
   constructor(service: ServiceEntity) {
     super(service);
     Object.assign(this, service);
@@ -88,7 +91,7 @@ export class ServiceEntity extends CreateServiceDto {
 }
 
 export class UpdateServiceDto extends PartialType(
-  PickType(ServiceEntity, ["name", "description", "price"] as const),
+  PickType(ServiceEntity, ["name", "description"] as const),
 ) {}
 
 export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {

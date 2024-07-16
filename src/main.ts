@@ -5,14 +5,16 @@ import { readFileSync } from "fs";
 import { join } from "path";
 import { ValidationPipe, Logger } from "@nestjs/common";
 import { AllExceptionsFilter } from "./all-exceptions.filter";
+import { NestExpressApplication } from "@nestjs/platform-express";
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
   app.useGlobalPipes(
     new ValidationPipe({ whitelist: true, forbidUnknownValues: true }),
   );
 
   app.setGlobalPrefix("api");
+  app.useStaticAssets("./uploads");
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
 
   // Swagger initialise

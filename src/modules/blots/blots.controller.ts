@@ -5,6 +5,7 @@ import {
   ForbiddenException,
   Get,
   HttpStatus,
+  NotAcceptableException,
   Param,
   ParseArrayPipe,
   Post,
@@ -29,6 +30,9 @@ import {
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { UseRoles } from "../auth/decorator/auth.decorator";
+import { DirectChargePaymentDto } from "../payments/dto/payment.dto";
+import { PaymentsService } from "../payments/payments.service";
 import { Role } from "../users/dto";
 import { BlotsService } from "./blots.service";
 import {
@@ -39,14 +43,17 @@ import {
   CreateBlotOptionDto,
   UpdateBlotDto,
 } from "./dto/blot.dto";
-import { UseRoles } from "../auth/decorator/auth.decorator";
+import { BlotStatus } from "./schemas/blot.schema";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
 @Controller("blots")
 @UseRoles(Role.PROVIDER)
 export class BlotsController {
-  constructor(private blotsService: BlotsService) {}
+  constructor(
+    private blotsService: BlotsService,
+    private paymentsService: PaymentsService,
+  ) {}
 
   @Get()
   @UseRoles()
@@ -58,14 +65,14 @@ export class BlotsController {
     const activeUser = [Role.CLIENT, Role.PROVIDER].some((role) =>
       request.user.roles.includes(role),
     )
-      ? (request.user._id as string)
+      ? request.user.id
       : undefined;
     const blots = await this.blotsService.findAll(query, activeUser);
 
     return new PaginatedResponseDataDto({
       data: blots.map((blot) => new BlotEntity(blot.toJSON())),
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved blots",
     });
@@ -95,10 +102,7 @@ export class BlotsController {
         "Operation not permitted for active user. Only provider can create blot",
       );
     }
-    const newBlot = await this.blotsService.create(
-      payload,
-      request.user._id as string,
-    );
+    const newBlot = await this.blotsService.create(payload, request.user.id);
 
     return new ResponseDataDto({
       data: new BlotEntity(newBlot.toJSON()),
@@ -114,15 +118,81 @@ export class BlotsController {
     @Param("id") blotId: string,
     @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
+    if (![BlotStatus.ACCEPTED, BlotStatus.FINALIZED].includes(payload.status)) {
+      throw new NotAcceptableException(
+        "Please use the allocate endpoints to accept or finalize a blot",
+      );
+    }
+
     const updatedBlot = await this.blotsService.update(
       blotId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
       data: new BlotEntity(updatedBlot.toJSON()),
       message: "Successfully updated blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Put(":id/accept-offer")
+  @ApiCustomOkResponse(BlotEntity)
+  async acceptOffer(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+    @Body() paymentDetails: DirectChargePaymentDto,
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    let blot = await this.blotsService.findOne(blotId);
+    const [initializedPayment, chargePayment] =
+      await this.paymentsService.initializeAndCharge(
+        request,
+        paymentDetails,
+        blot.price,
+      );
+
+    blot = await this.blotsService.update(
+      blotId,
+      { payment: initializedPayment.id, status: BlotStatus.ACCEPTED },
+      request.user.id,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(blot.toJSON()),
+      message: chargePayment.message,
+      status: chargePayment.code,
+    });
+  }
+
+  @Put(":id/finalize")
+  @ApiCustomOkResponse(BlotEntity)
+  async finalizeBlot(
+    @Req() request: Request,
+    @Param("id") blotId: string,
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    let blot = await this.blotsService.findOne(blotId);
+    const { provider, price } = new BlotDetailsDto(blot.toJSON());
+    const payment = await this.paymentsService.transfer(
+      {
+        email: provider.email,
+        name: provider.fullname,
+        phone: provider.phoneNumber,
+        number: provider.phoneNumber,
+      },
+      price,
+      request.user.id,
+    );
+
+    blot = await this.blotsService.update(
+      blotId,
+      { payoutRef: payment.id, status: BlotStatus.FINALIZED },
+      request.user.id,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(blot.toJSON()),
+      message: "Successfully initiated provider funds transfer",
       status: HttpStatus.OK,
     });
   }
@@ -133,7 +203,7 @@ export class BlotsController {
     @Req() request: Request,
     @Param("id") blotId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.blotsService.delete(blotId, request.user._id as string);
+    await this.blotsService.delete(blotId, request.user.id);
 
     return new ResponseMetadataDto({
       message: "Successfully updated blot",
@@ -153,7 +223,7 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.addOptions(
       blotId,
       blotOptions,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({
@@ -174,7 +244,7 @@ export class BlotsController {
     const updatedBlot = await this.blotsService.removeOptions(
       blotId,
       optionIds,
-      request.user._id as string,
+      request.user.id,
     );
 
     return new ResponseDataDto({

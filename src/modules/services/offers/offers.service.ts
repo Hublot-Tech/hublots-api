@@ -38,7 +38,7 @@ export class OffersService {
           items.map((item) => ({ ...item, createdBy })),
           { session },
         );
-        createdItemIds = createdItems.map((_) => _._id as string);
+        createdItemIds = createdItems.map((_) => _.id);
       }
 
       return new this.offerModel({
@@ -72,7 +72,7 @@ export class OffersService {
             items.map((item) => ({ ...item, createdBy })),
             { session },
           );
-          createdItemIds = createdItems.map((_) => _._id as string);
+          createdItemIds = createdItems.map((_) => _.id);
           newOffers.push(
             new this.offerModel({
               ...data,
@@ -97,11 +97,7 @@ export class OffersService {
   }
 
   async findAll(query: BulkQueryDto): Promise<Offer[]> {
-    return this.offerModel
-      .find()
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
-      .exec();
+    return this.offerModel.find().limit(query.perpage).skip(query.page).exec();
   }
 
   async delete(offerId: string, deletedBy: string): Promise<void> {
@@ -138,7 +134,7 @@ export class OffersService {
         { session },
       );
 
-      offer.items.push(...newItems.map((_) => new ObjectId(_._id as string)));
+      offer.items.push(...newItems.map((_) => _.id));
       return (await offer.save({ session })).populate("items");
     });
   }

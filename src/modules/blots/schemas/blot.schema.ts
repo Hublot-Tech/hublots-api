@@ -3,13 +3,14 @@ import { Document, Types } from "mongoose";
 import { Offer } from "src/modules/services/offers/schemas/offer.schema";
 import { BlotOption } from "./blot-option.schema";
 import { User } from "src/modules/users/schemas/user.schema";
+import { Payment } from "src/modules/payments/schemas/payment.schema";
 
 export enum BlotStatus {
   CREATED = "created",
-  VALIDATED = "validated",
+  ACCEPTED = "accepted",
   GOT_IN_TOUCH = "getting_in_touch",
-  STARTED_WORK = "starte_work",
-  COMPLETED = "completed",
+  STARTED_WORK = "started_work",
+  FINALIZED = "finalized",
   CANCELLED = "cancelled",
 }
 
@@ -60,6 +61,14 @@ export class Blot extends Document {
     type: [{ type: Types.ObjectId, ref: BlotOption.name, required: true }],
   })
   options: Types.ObjectId[];
+
+  // reference to payment
+  @Prop({ type: Types.ObjectId, ref: Payment.name })
+  payment: Types.ObjectId;
+
+  // reference to payment
+  @Prop({ type: Types.ObjectId, ref: Payment.name })
+  payoutRef: Types.ObjectId;
 
   // reference to consumer
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

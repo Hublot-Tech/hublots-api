@@ -5,20 +5,32 @@ import {
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
 import * as bcrypt from "bcrypt";
+import { Request } from "express";
+import { TokenPayload } from "google-auth-library";
 import { jwtConstants } from "../../constants/constants";
-import { CreateUserDto } from "../users/dto";
+import { CreateUserDto, Locale } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
-import { Request } from "express";
+import { AuthTokensDto, VerifyOTPDto } from "./dto/auth.dto";
+
+type TokenType = "access_token" | "refresh_token";
+interface IJWTPayload {
+  username: string;
+  sub: string;
+  type?: TokenType;
+}
 
 @Injectable()
 export class AuthService {
+  private static readonly ACCESS_TOKEN_TYPE: TokenType = "access_token";
+  private static readonly REFRESH_TOKEN_TYPE: TokenType = "refresh_token";
+
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersService: UsersService,
   ) {}
 
-  async signIn(email: string, pass: string): Promise<string> {
+  async signIn(email: string, pass: string): Promise<AuthTokensDto> {
     const user = await this.usersService.findByEmail(email);
     if (!bcrypt.compareSync(pass, user.password)) {
       throw new UnauthorizedException(
@@ -30,18 +42,10 @@ export class AuthService {
     return await this.login(user);
   }
 
-  private async login(user: User) {
-    const log = await this.usersService.createSignInLog(user._id as string);
-    const payload = { username: user.email, logId: log._id };
-    return this.jwtService.sign(payload, {
-      secret: jwtConstants.secret,
-    });
-  }
-
   async singUp(createUserDto: CreateUserDto) {
     const user = await this.usersService.register(createUserDto);
-    const accessToken = await this.login(user);
-    return { accessToken, user };
+    const tokens = await this.login(user);
+    return { ...tokens, user };
   }
 
   async validateUser(
@@ -60,38 +64,110 @@ export class AuthService {
   async signOut(request: Request) {
     const accessToken = this.extractTokenFromHeader(request);
 
-    if (accessToken) {
-      const payload = await this.jwtService.verifyAsync(accessToken, {
-        secret: process.env.JWT_SECRET,
-      });
-      await this.usersService.createSignOutLog(payload.logId);
-    }
+    const payload = this.jwtService.decode<IJWTPayload>(accessToken);
+    await this.usersService.createSignOutLog(payload.sub);
   }
 
-  async authorizeUser(request: Request) {
-    const token = this.extractTokenFromHeader(request);
-    if (!token) {
-      throw new UnauthorizedException();
+  async verifyOTP(payload: VerifyOTPDto) {
+    return this.usersService.verifiyUserOTP(payload.phoneNumber, payload.otp);
+  }
+
+  async authorizeUser(
+    authzToken: string,
+    type: TokenType = AuthService.ACCESS_TOKEN_TYPE,
+  ) {
+    let payload: IJWTPayload;
+    try {
+      payload = this.jwtService.verify(authzToken, {
+        secret: process.env.JWT_SECRET,
+      });
+    } catch (error) {
+      throw new UnauthorizedException("Invalid access token!");
     }
 
-    const payload = await this.jwtService.verifyAsync(token, {
-      secret: process.env.JWT_SECRET,
-    });
-    let authorizedUser: User;
-    const log = await this.usersService.findUserLog(payload.logId);
-    if (!log.logoutAt) {
-      authorizedUser = await this.usersService.findByEmail(payload?.username);
+    if (payload.type !== type) {
+      throw new UnauthorizedException("Invalid token type!");
     }
 
-    if (!authorizedUser) {
-      throw new UnauthorizedException();
+    const [log, authorizedUser] = await Promise.all([
+      this.usersService.findUserLog(payload.sub),
+      this.usersService.findByEmail(payload.username),
+    ]);
+
+    if (!log || !authorizedUser) {
+      throw new UnauthorizedException("Invalid token payload");
+    }
+
+    if (log.logoutAt) {
+      throw new UnauthorizedException("User was sign out!");
+    }
+
+    if (!authorizedUser.isOTPVerified) {
+      throw new UnauthorizedException("OTP verification not completed");
     }
 
     return authorizedUser;
   }
 
-  private extractTokenFromHeader(request: Request): string | undefined {
+  async requestAuthzToken(refreshToken: string) {
+    await this.authorizeUser(refreshToken, AuthService.REFRESH_TOKEN_TYPE);
+    const payload = this.jwtService.decode<IJWTPayload>(refreshToken);
+
+    return this.createAuthzTokens(payload.username, payload.sub);
+  }
+
+  async authenticateUser(data: TokenPayload) {
+    const payload: CreateUserDto = {
+      fullname: data.name,
+      email: data.email,
+      phoneNumber: null,
+      address: null,
+      locale: data.locale as Locale,
+      password: null,
+    };
+
+    let existingUser = await this.usersService.findByEmail(data.email);
+    if (!existingUser) {
+      existingUser = await this.usersService.register(payload);
+    }
+
+    return this.login(existingUser);
+  }
+
+  private async login(user: User): Promise<AuthTokensDto> {
+    if (!user.isOTPVerified) {
+      await this.usersService.createUserOTP(user.phoneNumber);
+    }
+    const log = await this.usersService.createSignInLog(user.id);
+    return this.createAuthzTokens(user.email, log.id);
+  }
+
+  private createAuthzTokens(username: string, sub: string) {
+    const payload: IJWTPayload = { username, sub };
+    const refreshToken = this.jwtService.sign(
+      { ...payload, type: "refresh_token" },
+      {
+        secret: jwtConstants.secret,
+        expiresIn: "7d",
+      },
+    );
+    const accessToken = this.jwtService.sign(
+      { ...payload, type: "access_token" },
+      {
+        secret: jwtConstants.secret,
+        expiresIn: "24h",
+      },
+    );
+    return new AuthTokensDto({ refreshToken, accessToken });
+  }
+
+  extractTokenFromHeader(request: Request): string {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
-    return type === "Bearer" ? token : undefined;
+
+    if (type !== "Bearer" || !token) {
+      throw new UnauthorizedException("No bearer token found!");
+    }
+
+    return token;
   }
 }

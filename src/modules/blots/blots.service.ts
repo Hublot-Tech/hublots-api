@@ -45,7 +45,10 @@ export class BlotsService {
     });
   }
 
-  private async prepareBlotOptions(options: CreateBlotOptionDto[], session) {
+  private async prepareBlotOptions(
+    options: CreateBlotOptionDto[],
+    session: ClientSession,
+  ) {
     const newBlotOptions: BlotOption[] = [];
     for (const {
       item: { id, ...newItem },
@@ -56,7 +59,7 @@ export class BlotsService {
         const createdItem = await new this.itemModel(newItem).save({
           session,
         });
-        item = createdItem._id as string;
+        item = createdItem.id;
       }
       newBlotOptions.push(
         new this.blotOptionModel({
@@ -70,13 +73,18 @@ export class BlotsService {
   }
 
   async findOne(blotId: string): Promise<Blot> {
-    return this.blotModel
+    const blot = this.blotModel
       .findById(blotId)
       .populate("options")
       .populate("offer")
-      .populate("cunsumer")
+      .populate("consumer")
       .populate("provider")
       .exec();
+
+    if (!blot) {
+      throw new NotFoundException(`Blot with id ${blotId} not found`);
+    }
+    return blot;
   }
 
   async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
@@ -85,8 +93,8 @@ export class BlotsService {
         ...query,
         $or: [{ provider: activeUser }, { consumer: activeUser }],
       })
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .populate("options")
       .exec();
   }
@@ -99,14 +107,14 @@ export class BlotsService {
   }
 
   async update(
-    orderId: string,
+    blotId: string,
     data: UpdateBlotDto,
     updatedBy: string,
   ): Promise<Blot> {
-    const blot = await this.blotModel.findById(orderId).exec();
+    const blot = await this.blotModel.findById(blotId).exec();
     this.checkPrivileges(blot, updatedBy);
     if (
-      data.status === BlotStatus.VALIDATED &&
+      data.status === BlotStatus.ACCEPTED &&
       blot.consumer.toString() !== updatedBy
     ) {
       throw new ForbiddenException(
@@ -152,7 +160,7 @@ export class BlotsService {
         { session },
       );
       blot.options.push(
-        ...createdOptions.map(({ _id }) => new ObjectId(_id as string)),
+        ...createdOptions.map((opt) => new ObjectId(opt.id as string)),
       );
       return blot.save({ session });
     });
@@ -191,7 +199,7 @@ export class BlotsService {
    */
   private checkPrivileges(order: Blot, actor: string) {
     if (!order) {
-      throw new NotFoundException(`Blot with id ${order._id} not found`);
+      throw new NotFoundException(`Blot with id ${order.id} not found`);
     }
 
     if (

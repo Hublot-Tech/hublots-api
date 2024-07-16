@@ -4,7 +4,6 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { ObjectId } from "mongodb";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import { CreateServiceDto, UpdateServiceDto } from "./dto";
@@ -21,7 +20,7 @@ export class ServicesService {
       ...data,
       createdBy,
       updatedAt: new Date(),
-      createdAt: new Date(),
+      provider: data.provider ?? createdBy,
     }).save();
   }
 
@@ -36,8 +35,8 @@ export class ServicesService {
   async findAll(query: BulkQueryDto): Promise<Service[]> {
     return this.serviceModel
       .find()
-      .limit(query.perpage ?? 10)
-      .skip(query.page ?? 1)
+      .limit(query.perpage)
+      .skip(query.page)
       .exec();
   }
 
@@ -61,11 +60,11 @@ export class ServicesService {
       .exec();
   }
 
-  async addImages(serviceId: string, imageIds: string[]): Promise<Service> {
+  async addImages(serviceId: string, imageRefs: string[]): Promise<Service> {
     const service = await this.serviceModel.findById(serviceId);
     if (!service)
       throw new NotFoundException(`Service with id ${serviceId} not found`);
-    service.images.push(...imageIds.map((id) => new ObjectId(id)));
+    service.imageRefs.push(...imageRefs);
     return service.save();
   }
 
@@ -78,7 +77,10 @@ export class ServicesService {
     if (!service) {
       throw new NotFoundException(`Service with id ${service._id} not found`);
     }
-    if (service.createdBy !== actor && service.provider.toString() !== actor) {
+    if (
+      service.createdBy.toString() !== actor &&
+      service.provider.toString() !== actor
+    ) {
       throw new ForbiddenException("Operation not permitted for active user");
     }
   }

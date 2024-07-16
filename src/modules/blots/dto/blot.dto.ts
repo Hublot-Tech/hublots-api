@@ -1,14 +1,16 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
-import { Type } from "class-transformer";
+import { Exclude, Type } from "class-transformer";
 import {
   IsArray,
   IsDateString,
   IsEnum,
+  IsMongoId,
   IsNumber,
   IsObject,
   IsOptional,
@@ -51,6 +53,10 @@ export class BlotOptionEntity extends CreateBlotOptionDto {
 }
 
 export class CreateBlotDto {
+  @IsNumber()
+  @ApiProperty()
+  price: number;
+
   @IsString()
   @IsOptional()
   @ApiPropertyOptional({ description: "Selected offer ID" })
@@ -87,7 +93,20 @@ export class CreateBlotDto {
   }
 }
 
-export class UpdateBlotDto extends PartialType(CreateBlotDto) {}
+export class UpdateBlotDto extends PartialType(CreateBlotDto) {
+  @Exclude()
+  @ApiHideProperty()
+  payment?: string;
+
+  @Exclude()
+  @ApiHideProperty()
+  payoutRef?: string;
+
+  constructor(blot: UpdateBlotDto) {
+    super(blot);
+    Object.assign(this, blot);
+  }
+}
 
 export class BlotEntity extends CreateBlotDto {
   @IsString()
@@ -102,6 +121,10 @@ export class BlotEntity extends CreateBlotDto {
   @IsString()
   @ApiProperty()
   provider: string;
+
+  @IsMongoId()
+  @ApiProperty({ description: "Reference payment for this blot" })
+  payment: string;
 
   constructor(blot: BlotEntity) {
     super(blot);

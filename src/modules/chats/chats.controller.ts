@@ -36,10 +36,7 @@ export class ChatsController {
     @Req() request: Request,
     @Body() payload: CreateMessageDto,
   ): Promise<ResponseDataDto<MessageEntity>> {
-    const message = await this.chatsService.create(
-      payload,
-      request.user._id as string,
-    );
+    const message = await this.chatsService.create(payload, request.user.id);
 
     return new ResponseDataDto({
       data: new MessageEntity(message.toJSON()),
@@ -56,14 +53,14 @@ export class ChatsController {
   ) {
     const messages = await this.chatsService.findAll({
       ...query,
-      sender: request.user._id as string,
+      sender: request.user.id,
     });
     return new PaginatedResponseDataDto({
       data: messages.map((message) => new MessageEntity(message.toJSON())),
       status: HttpStatus.OK,
       message: "Successfully retrieved messages",
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
     });
   }
 

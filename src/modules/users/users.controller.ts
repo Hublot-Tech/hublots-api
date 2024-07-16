@@ -5,6 +5,7 @@ import {
   Delete,
   Get,
   HttpStatus,
+  NotAcceptableException,
   Param,
   Post,
   Put,
@@ -28,7 +29,6 @@ import {
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
 import { UseRoles } from "../auth/decorator/auth.decorator";
-import { FileUploadService } from "../files/file-upload.service";
 import {
   CreateAccountDto,
   Role,
@@ -42,10 +42,7 @@ import { UsersService } from "./users.service";
 @ApiTags("Users")
 @Controller("users")
 export class UsersController {
-  constructor(
-    private readonly usersService: UsersService,
-    private readonly fileUploadService: FileUploadService,
-  ) {}
+  constructor(private readonly usersService: UsersService) {}
 
   @Get()
   @UseRoles(Role.ADMIN, Role.SUPPORT)
@@ -56,8 +53,8 @@ export class UsersController {
     const users = await this.usersService.findAll(query);
     return new PaginatedResponseDataDto({
       data: users.map((user) => new UserEntity(user.toJSON())),
-      page: query.page ?? 1,
-      perpage: query.perpage ?? 10,
+      page: query.page,
+      perpage: query.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved users",
     });
@@ -109,6 +106,16 @@ export class UsersController {
     @Param("id") userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ResponseDataDto<UserEntity>> {
+    if (
+      !updateUserDto.roles.find((role) =>
+        [Role.PROVIDER, Role.PARTNER].includes(role),
+      )
+    ) {
+      throw new NotAcceptableException(
+        "Please use the allocate endpoints to accept or mark as completed a blot",
+      );
+    }
+
     const user = await this.usersService.update(userId, updateUserDto);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),
@@ -137,15 +144,14 @@ export class UsersController {
   @UseInterceptors(FileInterceptor("file"))
   async uploadKYCImages(
     @Req() req: Request,
-    @UploadedFiles() files,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<ResponseDataDto<UserEntity>> {
-    const imageIds = [];
+    const imageRefs = [];
     for (const file of files) {
-      const image = await this.fileUploadService.uploadImage(file);
-      imageIds.push(image._id);
+      imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
     }
 
-    const user = await this.usersService.addKYCImages(req.user.id, imageIds);
+    const user = await this.usersService.addKYCImages(req.user.id, imageRefs);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),
       message: "Successfully uploaded user KYC images",

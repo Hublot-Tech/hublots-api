@@ -78,7 +78,7 @@ export class OffersController {
   ): Promise<ResponseDataDto<OfferEntity[]>> {
     const newOffers = await this.offersService.bulkCreate(
       payload,
-      request.user._id as string,
+      request.user.id,
     );
     return new ResponseDataDto({
       data: newOffers.map((newOffer) => new OfferEntity(newOffer.toJSON())),
@@ -98,7 +98,7 @@ export class OffersController {
     const updatedOffer = await this.offersService.update(
       offerId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
     return new ResponseDataDto({
       data: new OfferEntity(updatedOffer.toJSON()),
@@ -116,7 +116,7 @@ export class OffersController {
     @Req() request: Request,
     @Param("id") offerId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.offersService.delete(offerId, request.user._id as string);
+    await this.offersService.delete(offerId, request.user.id);
     return new ResponseMetadataDto({
       message: "Offer deleted successfully",
       status: HttpStatus.CREATED,
@@ -135,7 +135,7 @@ export class OffersController {
     const updatedOffer = await this.offersService.addItems(
       offerId,
       payload,
-      request.user._id as string,
+      request.user.id,
     );
     return new ResponseDataDto({
       data: new OfferDetailsDto(updatedOffer.toJSON()),
@@ -156,7 +156,7 @@ export class OffersController {
     const updatedOffer = await this.offersService.removedItems(
       offerId,
       itemIds,
-      request.user._id as string,
+      request.user.id,
     );
     return new ResponseDataDto({
       data: new OfferDetailsDto(updatedOffer.toJSON()),
