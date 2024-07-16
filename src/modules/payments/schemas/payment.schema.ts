@@ -1,12 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { PaymentStatus } from "src/helpers/payment-status";
+import { PaymentStatus, TransactionType } from "src/helpers/payment-status";
 import { User } from "src/modules/users/schemas/user.schema";
-
-export enum PaymentType {
-  PAY_IN = "pay_in",
-  PAY_OUT = "pay_out",
-}
 
 @Schema({
   toJSON: {
@@ -22,11 +17,14 @@ export class Payment extends Document {
   @Prop({ type: Number, required: true })
   amount: number;
 
-  @Prop({ type: String, unique: true, required: true })
+  @Prop({ type: String, required: true })
   currency: string;
 
   @Prop({ type: String, unique: true, required: true })
   reference: string;
+
+  @Prop({ type: String, unique: true, required: true })
+  internal_reference: string;
 
   @Prop({ type: String, required: true })
   description: string;
@@ -43,8 +41,12 @@ export class Payment extends Document {
   @Prop({ type: String, required: true })
   customer: string;
 
-  @Prop({ type: String, enum: PaymentType, default: PaymentType.PAY_IN })
-  paymentType: PaymentType;
+  @Prop({
+    type: String,
+    enum: TransactionType,
+    default: TransactionType.PAY_IN,
+  })
+  type: TransactionType;
 
   // reference to payer
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })

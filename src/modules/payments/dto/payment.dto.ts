@@ -1,7 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import {
+  ApiHideProperty,
+  ApiProperty,
+  ApiPropertyOptional,
+} from "@nestjs/swagger";
+import { Exclude } from "class-transformer";
 import { IsEmail, IsOptional, IsPhoneNumber, IsString } from "class-validator";
-import { PaymentStatus } from "src/helpers/payment-status";
-import { UserEntity } from "src/modules/users/dto";
+import { PaymentStatus, TransactionType } from "src/helpers/payment-status";
 
 export class PaymentEntity {
   @ApiProperty({ type: Number })
@@ -13,8 +17,15 @@ export class PaymentEntity {
   @ApiProperty({ type: String })
   reference: string;
 
+  @Exclude()
+  @ApiHideProperty()
+  internal_reference: string;
+
   @ApiProperty({ type: String })
   description: string;
+
+  @ApiProperty({ enum: TransactionType })
+  type: TransactionType;
 
   @ApiProperty({ enum: PaymentStatus })
   status: PaymentStatus;
@@ -31,8 +42,8 @@ export class PaymentEntity {
   @ApiProperty({ type: Date, default: () => Date.now() })
   createdAt: Date;
 
-  @ApiProperty({ type: UserEntity })
-  payer: UserEntity;
+  @ApiProperty()
+  payer: string;
 
   constructor(payment: PaymentEntity) {
     Object.assign(this, payment);

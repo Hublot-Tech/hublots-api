@@ -1,9 +1,9 @@
 import { PaymentStatus } from "src/helpers/payment-status";
 
 export interface Customer {
-  email: string;
+  email?: string;
   name?: string;
-  phone: string;
+  phone?: string;
   address?: string;
   city?: string;
   state?: string;
@@ -31,8 +31,8 @@ export interface Recipient {
 
 export interface InitializePayment {
   amount: number;
-  currency: string;
-  reference: string;
+  currency?: string;
+  reference?: string;
   description?: string;
   customer: Customer;
   callback?: string;

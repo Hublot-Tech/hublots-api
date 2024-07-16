@@ -12,6 +12,11 @@ export enum PaymentStatus {
   PARTIALLY_REFUNDED = "partialy-refunded",
 }
 
+export enum TransactionType {
+  PAY_IN = "pay_in",
+  PAY_OUT = "pay_out",
+}
+
 export const isFinal = (status: PaymentStatus): boolean => {
   return [
     PaymentStatus.CANCELED,
