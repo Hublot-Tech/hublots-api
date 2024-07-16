@@ -7,6 +7,7 @@ import {
   Logger,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
+import { AxiosError } from "axios";
 import { MongoError } from "mongodb";
 import { MongooseError } from "mongoose";
 
@@ -33,6 +34,11 @@ export class AllExceptionsFilter implements ExceptionFilter {
     ) {
       errorMessage = exception.message;
       httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+    } else if (exception instanceof AxiosError) {
+      // Handle Axios-specific errors
+      const { status, data } = exception.response;
+      errorMessage = data["message"] ?? data["error"] ?? exception.message;
+      httpStatus = status;
     } else {
       errorMessage =
         exception["message"] ??
