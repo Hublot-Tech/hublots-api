@@ -104,6 +104,7 @@ export class UsersService {
       );
 
     const otp = new this.otpModel({
+      phoneNumber,
       otp: generateOtp(5),
       expiresAt: Date.now() + 5 * 3600 * 1000,
     });
