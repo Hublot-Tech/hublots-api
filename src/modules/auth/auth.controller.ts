@@ -10,6 +10,7 @@ import {
   ApiBearerAuth,
   ApiCreatedResponse,
   ApiNoContentResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -41,6 +42,10 @@ export class AuthController {
     type: SignInResponseDto,
     description: "User Successfully signed in",
   })
+  @ApiOperation({
+    description:
+      "Sign in. A successfully sign in will send a OTP to user phone number if not verified yet",
+  })
   async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
     const tokens = await this.authService.signIn(
       signInDto.email,
@@ -59,6 +64,10 @@ export class AuthController {
     type: SignInResponseDto,
     description: "Successful user registration",
   })
+  @ApiOperation({
+    description:
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+  })
   async googleSignIn(
     @Body() signInDto: GoogleSignInDto,
   ): Promise<SignInResponseDto> {
@@ -72,6 +81,10 @@ export class AuthController {
 
   @Public()
   @Post("register")
+  @ApiOperation({
+    description:
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+  })
   @ApiCustomCreatedResponse(SignUpResponseDto)
   async register(
     @Body() createUserDto: CreateUserDto,
