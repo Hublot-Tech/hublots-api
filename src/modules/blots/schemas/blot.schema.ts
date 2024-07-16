@@ -10,7 +10,7 @@ export enum BlotStatus {
   ACCEPTED = "accepted",
   GOT_IN_TOUCH = "getting_in_touch",
   STARTED_WORK = "started_work",
-  COMPLETED = "completed",
+  FINALIZED = "finalized",
   CANCELLED = "cancelled",
 }
 

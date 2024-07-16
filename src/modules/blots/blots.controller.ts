@@ -118,7 +118,7 @@ export class BlotsController {
     @Param("id") blotId: string,
     @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    if (![BlotStatus.ACCEPTED, BlotStatus.COMPLETED].includes(payload.status)) {
+    if (![BlotStatus.ACCEPTED, BlotStatus.FINALIZED].includes(payload.status)) {
       throw new NotAcceptableException(
         "Please use the allocate endpoints to accept or finalize a blot",
       );
@@ -154,7 +154,7 @@ export class BlotsController {
 
     blot = await this.blotsService.update(
       blotId,
-      { payment: initializedPayment.id },
+      { payment: initializedPayment.id, status: BlotStatus.ACCEPTED },
       request.user.id,
     );
 
@@ -186,7 +186,7 @@ export class BlotsController {
 
     blot = await this.blotsService.update(
       blotId,
-      { payoutRef: payment.id },
+      { payoutRef: payment.id, status: BlotStatus.FINALIZED },
       request.user.id,
     );
 
