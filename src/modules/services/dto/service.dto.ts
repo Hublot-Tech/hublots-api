@@ -47,7 +47,6 @@ export class CreateServiceDto {
   @IsOptional()
   provider: string;
 
-  @IsString()
   @ApiHideProperty()
   mainImageRef: string;
 

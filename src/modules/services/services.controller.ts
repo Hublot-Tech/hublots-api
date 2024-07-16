@@ -81,7 +81,7 @@ export class ServicesController {
       !createServiceDto.provider &&
       !request.user.roles.includes(Role.PROVIDER)
     ) {
-      throw new BadRequestException("provider must be provider");
+      throw new BadRequestException("provider is required");
     }
 
     const newService = {

@@ -33,9 +33,6 @@ export class Service extends Document {
   @Prop({ type: String, required: true })
   description: string;
 
-  @Prop({ type: Number, required: true })
-  price: number;
-
   @Prop({ type: String, required: true })
   updatedAt: Date;
 
@@ -50,6 +47,10 @@ export class Service extends Document {
   category: Category;
 
   //reference to images
+  @Prop({
+    default: [],
+    type: [{ type: String }],
+  })
   imageRefs: string[];
 
   // reference to main image
@@ -57,7 +58,10 @@ export class Service extends Document {
   mainImageRef: string;
 
   //reference to offers
-  @Prop({ type: [{ type: Types.ObjectId, ref: Offer.name, required: true }] })
+  @Prop({
+    default: [],
+    type: [{ type: Types.ObjectId, ref: Offer.name, required: true }],
+  })
   offers: Types.ObjectId[];
 
   //reference to the provider
