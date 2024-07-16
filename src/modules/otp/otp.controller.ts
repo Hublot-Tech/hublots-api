@@ -10,7 +10,6 @@ import { Public } from "../auth/decorator/auth.decorator";
 export class OTPController {
   constructor(private otpService: OTPService) {}
 
-  @Public()
   @Post("send")
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async sendOTP(@Body() otpPayload: SendOTPDto): Promise<ResponseMetadataDto> {

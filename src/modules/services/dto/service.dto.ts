@@ -6,13 +6,7 @@ import {
   PartialType,
   PickType,
 } from "@nestjs/swagger";
-import {
-  IsEnum,
-  IsOptional,
-  IsString,
-  IsUUID,
-  MinLength,
-} from "class-validator";
+import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "../offers/dto/offer.dto";
 import { Category } from "../schemas/service.schema";
@@ -43,7 +37,7 @@ export class CreateServiceDto {
     example: "60e1f9f1c3c7b40015f7c4b5",
     description: "User ID of the service provider",
   })
-  @IsUUID()
+  @IsString()
   @IsOptional()
   provider: string;
 

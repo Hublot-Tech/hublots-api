@@ -54,7 +54,7 @@ export class Service extends Document {
   imageRefs: string[];
 
   // reference to main image
-  @Prop({ type: String, required: true })
+  @Prop({ type: String })
   mainImageRef: string;
 
   //reference to offers

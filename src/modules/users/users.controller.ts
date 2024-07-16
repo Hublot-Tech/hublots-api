@@ -15,7 +15,12 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBearerAuth, ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBearerAuth,
+  ApiConsumes,
+  ApiNoContentResponse,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -141,6 +146,7 @@ export class UsersController {
   @Put("profile/kyc-files")
   @UseRoles(Role.CLIENT)
   @ApiCustomOkResponse(UserEntity)
+  @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
   async uploadKYCImages(
     @Req() req: Request,
