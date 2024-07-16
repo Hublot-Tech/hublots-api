@@ -2,7 +2,7 @@ import { HttpService } from "@nestjs/axios";
 import {
   Injectable,
   NotFoundException,
-  UnprocessableEntityException
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { randomBytes } from "crypto";
@@ -22,7 +22,7 @@ import {
   InitializePayment,
   InitializePaymentResponse,
   InitiateTransfer,
-  InitiateTransferResponse
+  InitiateTransferResponse,
 } from "./types/payment.type";
 
 @Injectable()
