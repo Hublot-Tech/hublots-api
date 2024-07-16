@@ -1,9 +1,8 @@
-import { NotFoundException, UnauthorizedException } from "@nestjs/common";
+import { NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
 import { ObjectId } from "mongodb";
 import { Model } from "mongoose";
-import { generateOtp } from "src/helpers/otp-generator";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import {
   CreateAccountDto,
@@ -12,12 +11,10 @@ import {
   VerificationStatus,
 } from "./dto/users.dto";
 import { Log } from "./schemas/log.schema";
-import { OTP } from "./schemas/otp.schema";
 import { User } from "./schemas/user.schema";
 
 export class UsersService {
   constructor(
-    @InjectModel(OTP.name) private readonly otpModel: Model<OTP>,
     @InjectModel(Log.name) private readonly logModel: Model<Log>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
@@ -93,34 +90,5 @@ export class UsersService {
 
   async findUserLog(logId: string): Promise<Log> {
     return this.logModel.findById(logId).exec();
-  }
-
-  async createUserOTP(phoneNumber: string) {
-    const user = await this.userModel.findOne({ phoneNumber });
-
-    if (!user)
-      throw new NotFoundException(
-        `No user found with phone number ${phoneNumber}`,
-      );
-
-    const otp = new this.otpModel({
-      phoneNumber,
-      otp: generateOtp(5),
-      expiresAt: Date.now() + 5 * 3600 * 1000,
-    });
-
-    //TODO: send generated otp to whatsApp phone number
-    await otp.save();
-  }
-
-  async verifiyUserOTP(phoneNumber: string, otp: string) {
-    const userOTP = await this.otpModel
-      .findOne({ phoneNumber, otp })
-      .sort({ createdAt: -1 })
-      .exec();
-
-    if (!userOTP || userOTP.expiresAt.getTime() >= Date.now()) {
-      throw new UnauthorizedException(`Incorrect One time password`);
-    }
   }
 }

@@ -11,7 +11,8 @@ import { jwtConstants } from "../../constants/constants";
 import { CreateUserDto, Locale } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
-import { AuthTokensDto, VerifyOTPDto } from "./dto/auth.dto";
+import { AuthTokensDto } from "./dto/auth.dto";
+import { OTPService } from "../otp/otp.service";
 
 type TokenType = "access_token" | "refresh_token";
 interface IJWTPayload {
@@ -27,6 +28,7 @@ export class AuthService {
 
   constructor(
     private readonly jwtService: JwtService,
+    private readonly otpService: OTPService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -66,10 +68,6 @@ export class AuthService {
 
     const payload = this.jwtService.decode<IJWTPayload>(accessToken);
     await this.usersService.createSignOutLog(payload.sub);
-  }
-
-  async verifyOTP(payload: VerifyOTPDto) {
-    return this.usersService.verifiyUserOTP(payload.phoneNumber, payload.otp);
   }
 
   async authorizeUser(
@@ -136,7 +134,7 @@ export class AuthService {
 
   private async login(user: User): Promise<AuthTokensDto> {
     if (!user.isOTPVerified) {
-      await this.usersService.createUserOTP(user.phoneNumber);
+      await this.otpService.sendOTP(user.phoneNumber);
     }
     const log = await this.usersService.createSignInLog(user.id);
     return this.createAuthzTokens(user.email, log.id);

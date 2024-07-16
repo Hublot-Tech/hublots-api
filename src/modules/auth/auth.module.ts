@@ -6,9 +6,11 @@ import { UsersModule } from "../users/users.module";
 import { AuthController } from "./auth.controller";
 import { AuthService } from "./auth.service";
 import { GoogleAuthService } from "./google/google-auth.service";
+import { OTPModule } from "../otp/otp.module";
 
 @Module({
   imports: [
+    OTPModule,
     UsersModule,
     JwtModule.register({
       global: true,
