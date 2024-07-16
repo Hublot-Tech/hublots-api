@@ -7,6 +7,8 @@ import {
   Logger,
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
+import { MongoError } from "mongodb";
+import { MongooseError } from "mongoose";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -19,15 +21,28 @@ export class AllExceptionsFilter implements ExceptionFilter {
     const { httpAdapter } = this.httpAdapterHost;
 
     const ctx = host.switchToHttp();
-    const httpStatus =
-      exception instanceof HttpException
-        ? exception.getStatus()
-        : HttpStatus.INTERNAL_SERVER_ERROR;
+
+    let errorMessage = "Ooops, unexpected exception occured.";
+    let httpStatus = HttpStatus.INTERNAL_SERVER_ERROR;
+    if (exception instanceof HttpException) {
+      errorMessage = exception.getResponse()["message"];
+      httpStatus = exception.getStatus();
+    } else if (
+      exception instanceof MongoError ||
+      exception instanceof MongooseError
+    ) {
+      errorMessage = exception.message;
+      httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+    } else {
+      errorMessage =
+        exception["message"] ??
+        exception["error"] ??
+        exception.toString() ??
+        errorMessage;
+    }
 
     const responseBody = {
-      ...(exception instanceof HttpException
-        ? (exception.getResponse() as object)
-        : { message: "Internal server error" }),
+      message: errorMessage,
       statusCode: httpStatus,
       timestamp: new Date().toISOString(),
       path: httpAdapter.getRequestUrl(ctx.getRequest()),
