@@ -25,6 +25,7 @@ import {
   InitiateTransferResponse,
   FetchTransactionResponse,
   FetchTransferResponse,
+  ResponseMetadata,
 } from "./types/payment.type";
 
 @Injectable()
@@ -133,45 +134,28 @@ export class PaymentsService {
     amount: number,
     transferedBy: string,
   ) {
-    const {
-      status,
-      data: { errors, message, items },
-    } =
+    const { status, data: recipientsData } =
       await this.httpService.axiosRef.get<FetchRecipientResponse>(
         `/recipients`,
       );
     if (status !== HttpStatus.OK) {
-      //getting the first error message
-      const firstErrorMessage =
-        errors && errors[0] && errors[0][0] ? errors[0][0] : message;
-
-      throw new HttpException("Failed to fetch recipient", status, {
-        cause: firstErrorMessage,
-      });
+      throwCustomError("Failed to fetch recipient", recipientsData);
     }
-    let beneficiary = items.find(
+    let beneficiary = recipientsData.items.find(
       (_) => _.email === recipient.email && _.phone === recipient.phone,
     );
 
     if (!beneficiary) {
-      const {
-        status,
-        data: { errors, message, beneficiary: newBeneficiary },
-      } = await this.httpService.axiosRef.post<CreateRecipientResponse>(
-        `/recipients`,
-        { ...recipient, channel: "cm.mobile" },
-      );
+      const { status, data: beneficiaryData } =
+        await this.httpService.axiosRef.post<CreateRecipientResponse>(
+          `/recipients`,
+          { ...recipient, channel: "cm.mobile" },
+        );
 
       if (status !== HttpStatus.CREATED) {
-        //getting the first error message
-        const firstErrorMessage =
-          errors && errors[0] && errors[0][0] ? errors[0][0] : message;
-
-        throw new HttpException("Failed to create recipient", status, {
-          cause: firstErrorMessage,
-        });
+        throwCustomError("Failed to create recipient", beneficiaryData);
       }
-      beneficiary = newBeneficiary;
+      beneficiary = beneficiaryData.beneficiary;
     }
 
     const initiateTransfer: InitiateTransfer = {
@@ -180,33 +164,23 @@ export class PaymentsService {
       description: "Service Provider payout",
       recipient: beneficiary.id,
     };
-    const {
-      status: transferRespStatus,
-      data: { errors: transferErrors, message: transferMessage, transfer },
-    } = await this.httpService.axiosRef.post<InitiateTransferResponse>(
-      `/transfer`,
-      initiateTransfer,
-    );
+    const { status: transferRespStatus, data: transferData } =
+      await this.httpService.axiosRef.post<InitiateTransferResponse>(
+        `/transfers`,
+        initiateTransfer,
+      );
 
     if (transferRespStatus !== HttpStatus.CREATED) {
-      //getting the first error message
-      const firstErrorMessage =
-        transferErrors && transferErrors[0] && transferErrors[0][0]
-          ? transferErrors[0][0]
-          : transferMessage;
-
-      throw new HttpException("Failed to create recipient", status, {
-        cause: firstErrorMessage,
-      });
+      throwCustomError("Failed to initiate transfer", transferData);
     }
 
     return new this.paymentModel({
-      currency: transfer.currency,
-      amount: transfer.amount,
-      reference: transfer.reference,
-      description: transfer.description,
-      status: transfer.status,
-      customer: transfer.beneficiary,
+      currency: transferData.transfer.currency,
+      amount: transferData.transfer.amount,
+      reference: transferData.transfer.reference,
+      description: transferData.transfer.description,
+      status: transferData.transfer.status,
+      customer: transferData.transfer.beneficiary,
       paymentType: PaymentType.PAY_OUT,
       payer: transferedBy,
     }).save();
@@ -228,26 +202,17 @@ export class PaymentsService {
       throw new NotFoundException("Payment not found");
     }
 
-    const {
-      status,
-      data: { message, errors, transaction, transfer },
-    } = await this.httpService.axiosRef.get<
+    const { status, data: paymentData } = await this.httpService.axiosRef.get<
       FetchTransactionResponse & FetchTransferResponse
     >(
       `/${paymentDocument.paymentType === PaymentType.PAY_IN ? "payments" : "transfers"}/${paymentDocument.reference}`,
     );
     const payment =
       paymentDocument.paymentType === PaymentType.PAY_IN
-        ? transaction
-        : transfer;
-    if (status !== 200) {
-      //getting the first error message
-      const firstErrorMessage =
-        errors && errors[0] && errors[0][0] ? errors[0][0] : message;
-
-      throw new HttpException("Could not check transaction status", status, {
-        cause: firstErrorMessage,
-      });
+        ? paymentData.transaction
+        : paymentData.transfer;
+    if (status !== HttpStatus.OK) {
+      throwCustomError("Could not check transaction status", paymentData);
     }
 
     if (paymentDocument.status !== payment.status) {
@@ -266,4 +231,17 @@ export class PaymentsService {
       .skip(query.page)
       .exec();
   }
+}
+
+function throwCustomError(
+  customErrorMessage: string,
+  { errors, code: status, message }: ResponseMetadata,
+) {
+  //getting the first error message
+  const firstErrorMessage =
+    errors && errors[0] && errors[0][0] ? errors[0][0] : message;
+
+  throw new HttpException(customErrorMessage, status, {
+    cause: firstErrorMessage,
+  });
 }
