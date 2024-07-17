@@ -24,6 +24,9 @@ export class CreateMessageDto {
 
 export class MessageEntity extends CreateMessageDto {
   @ApiProperty()
+  id: string;
+
+  @ApiProperty()
   sender: string;
 
   @ApiProperty({ type: Date })

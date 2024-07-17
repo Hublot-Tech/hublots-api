@@ -8,6 +8,9 @@ import { IsEmail, IsOptional, IsPhoneNumber, IsString } from "class-validator";
 import { PaymentStatus, TransactionType } from "src/helpers/payment-status";
 
 export class PaymentEntity {
+  @ApiProperty()
+  id: string;
+
   @ApiProperty({ type: Number })
   amount: number;
 

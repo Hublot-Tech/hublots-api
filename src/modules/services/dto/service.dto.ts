@@ -50,6 +50,9 @@ export class CreateServiceDto {
 }
 
 export class ServiceEntity extends CreateServiceDto {
+  @ApiProperty()
+  id: string;
+
   @ApiProperty({
     description: "Timestamp of last update",
   })
