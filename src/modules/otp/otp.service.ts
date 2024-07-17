@@ -18,10 +18,12 @@ export class OTPService {
       otp: generateOtp(6),
       expiresAt: Date.now() + 15 * 60 * 1000,
     });
-    await this.httpService.axiosRef.post(
-      "/messages",
-      this.getTemplateMessageBody(phoneNumber, otp.otp),
-    );
+    if (process.env.META_PHONE_NUMBER_ID) {
+      await this.httpService.axiosRef.post(
+        "/messages",
+        this.getTemplateMessageBody(phoneNumber, otp.otp),
+      );
+    }
 
     await otp.save();
   }
