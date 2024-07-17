@@ -14,9 +14,10 @@ import {
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
+import { FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiNoContentResponse,
   ApiTags,
@@ -143,11 +144,23 @@ export class UsersController {
     });
   }
 
-  @Put("profile/kyc-files")
+  @Post("kyc-images")
   @UseRoles(Role.CLIENT)
   @ApiCustomOkResponse(UserEntity)
   @ApiConsumes("multipart/form-data")
-  @UseInterceptors(FileInterceptor("file"))
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        kycFiles: {
+          type: "array",
+          format: "binary",
+          description: "Array of Identity files to be verified",
+        },
+      },
+    },
+  })
+  @UseInterceptors(FilesInterceptor("kycFiles"))
   async uploadKYCImages(
     @Req() req: Request,
     @UploadedFiles() files: Array<Express.Multer.File>,

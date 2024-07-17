@@ -18,6 +18,7 @@ import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBadGatewayResponse,
   ApiBearerAuth,
+  ApiBody,
   ApiConsumes,
   ApiNoContentResponse,
   ApiNotFoundResponse,
@@ -72,6 +73,7 @@ export class ServicesController {
   @UseInterceptors(FileInterceptor("file"))
   @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomCreatedResponse(ServiceEntity)
+  @ApiBody({ type: CreateServiceDto })
   async create(
     @Req() request: Request,
     @UploadedFile() file: Express.Multer.File,
@@ -84,13 +86,13 @@ export class ServicesController {
       throw new BadRequestException("provider is required");
     }
 
-    const newService = {
+    const newService: CreateServiceDto = {
       ...createServiceDto,
       provider: request.user.roles.includes(Role.PROVIDER)
         ? request.user.id
         : createServiceDto.provider,
     };
-    if (!createServiceDto.mainImageRef && file) {
+    if (file) {
       newService.mainImageRef = `${process.env.PUBLIC_URL}/${file.filename}`;
     }
 

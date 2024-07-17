@@ -10,6 +10,7 @@ import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "../offers/dto/offer.dto";
 import { Category } from "../schemas/service.schema";
+import { Exclude } from "class-transformer";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -29,7 +30,7 @@ export class CreateServiceDto {
   description: string;
 
   @IsEnum(Category)
-  @ApiProperty({ description: "Service category" })
+  @ApiProperty({ enum: Category, description: "Service category" })
   category: Category;
 
   //referencing the user who created the service
@@ -41,8 +42,18 @@ export class CreateServiceDto {
   @IsOptional()
   provider: string;
 
+  @Exclude()
   @ApiHideProperty()
   mainImageRef: string;
+
+  @Exclude()
+  @ApiPropertyOptional({
+    type: String,
+    format: "binary",
+    description:
+      "Binary file to be upload as service main image. This will be use to populate the mainImageRef",
+  })
+  readonly file: string;
 
   constructor(createService: CreateServiceDto) {
     Object.assign(this, createService);
