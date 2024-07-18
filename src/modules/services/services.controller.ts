@@ -16,12 +16,11 @@ import {
 } from "@nestjs/common";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import {
-  ApiBadGatewayResponse,
   ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiNoContentResponse,
-  ApiNotFoundResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -55,6 +54,7 @@ export class ServicesController {
   @Get()
   @Public()
   @ApiOkPaginatedResponse(ServiceEntity)
+  @ApiOperation({ summary: "Fetch all services." })
   async findAll(
     @Query() query: BulkQueryDto,
   ): Promise<PaginatedResponseDataDto<ServiceEntity>> {
@@ -74,6 +74,11 @@ export class ServicesController {
   @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomCreatedResponse(ServiceEntity)
   @ApiBody({ type: CreateServiceDto })
+  @ApiOperation({
+    summary: "Create new service.",
+    description:
+      "Requires authorized user to have a `provider` or `support` (customer support) access",
+  })
   async create(
     @Req() request: Request,
     @UploadedFile() file: Express.Multer.File,
@@ -110,8 +115,7 @@ export class ServicesController {
 
   @Get(":id")
   @ApiCustomOkResponse(ServiceDetailsDto)
-  @ApiNotFoundResponse({ description: "Service not found" })
-  @ApiBadGatewayResponse({ description: "Invalid service ID" })
+  @ApiOperation({ summary: "Fetch service details." })
   async findOne(
     @Param("id") serviceId: string,
   ): Promise<ResponseDataDto<ServiceDetailsDto>> {
@@ -125,8 +129,11 @@ export class ServicesController {
 
   @Put(":id")
   @ApiCustomOkResponse(ServiceDetailsDto)
-  @ApiNotFoundResponse({ description: "Service not found" })
-  @ApiBadGatewayResponse({ description: "Invalid service ID" })
+  @ApiOperation({
+    summary: "Update service.",
+    description:
+      "Requires authorized user to have a `provider` or `support` (customer support) access Support must be creator of the service",
+  })
   async update(
     @Req() request: Request,
     @Body() payload: UpdateOfferDto,
@@ -145,10 +152,15 @@ export class ServicesController {
   }
 
   @Delete(":id")
-  @UseRoles(Role.PROVIDER)
+  @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiNoContentResponse({
     type: ResponseMetadataDto,
     description: "Service successfully deleted",
+  })
+  @ApiOperation({
+    summary: "Delete a service.",
+    description:
+      "Requires authorized user to have a `provider` or `support` (customer support) access Support must be creator of the service",
   })
   async delete(
     @Req() request: Request,
@@ -161,14 +173,31 @@ export class ServicesController {
     });
   }
 
-  @Put(":id/images")
+  @Post(":id/images")
   @ApiConsumes("multipart/form-data")
-  @UseInterceptors(FilesInterceptor("files"))
+  @UseInterceptors(FilesInterceptor("images"))
   @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomOkResponse(ServiceEntity)
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        images: {
+          type: "array",
+          format: "binary",
+          description: "Array of service images binary files",
+        },
+      },
+    },
+  })
+  @ApiOperation({
+    summary: "Upload service images.",
+    description:
+      "Requires authorized user to have a `provider` or `support` (customer support) role",
+  })
   async uploadImages(
-    @UploadedFiles() files: Array<Express.Multer.File>,
     @Param("id") serviceId: string,
+    @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<ResponseDataDto<ServiceEntity>> {
     if (!Array.isArray(files)) {
       throw new BadRequestException("Except an array of files");
@@ -182,7 +211,7 @@ export class ServicesController {
     const service = await this.serviceService.addImages(serviceId, imageRefs);
     return new ResponseDataDto({
       data: new ServiceEntity(service.toJSON()),
-      message: "Service Created Sucessfully",
+      message: "Sucessfully uploaded service images",
       status: HttpStatus.CREATED,
     });
   }

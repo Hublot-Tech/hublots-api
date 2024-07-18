@@ -19,9 +19,9 @@ import {
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { OfferItemDto } from "src/modules/services/offers/dto/ofer-item.dto";
-import { BlotStatus } from "../schemas/blot.schema";
-import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "src/modules/services/offers/dto/offer.dto";
+import { UserEntity } from "src/modules/users/dto";
+import { BlotStatus } from "../schemas/blot.schema";
 
 export class CreateBlotNestedItemDto extends PartialType(OfferItemDto) {}
 
@@ -93,7 +93,9 @@ export class CreateBlotDto {
   }
 }
 
-export class UpdateBlotDto extends PartialType(CreateBlotDto) {
+export class UpdateBlotDto extends PartialType(
+  OmitType(CreateBlotDto, ["options"]),
+) {
   @Exclude()
   @ApiHideProperty()
   payment?: string;

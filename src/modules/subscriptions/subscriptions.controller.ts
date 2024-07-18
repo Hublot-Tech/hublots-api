@@ -8,7 +8,7 @@ import {
   Put,
   Req,
 } from "@nestjs/common";
-import { ApiNoContentResponse, ApiTags } from "@nestjs/swagger";
+import { ApiNoContentResponse, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   ApiCustomCreatedResponse,
   ApiCustomOkResponse,
@@ -42,6 +42,10 @@ export class SubscriptionsController {
 
   @Get()
   @ApiOkPaginatedResponse(SubscriptionEntity)
+  @ApiOperation({
+    summary: "Fetch all subscriptions.",
+    description: "Requires authorized user to have an `admin` access.",
+  })
   async findAll(): Promise<PaginatedResponseDataDto<SubscriptionEntity>> {
     const subscriptions = await this.subscriptionsService.findSubscriptions();
     return new PaginatedResponseDataDto({
@@ -56,7 +60,12 @@ export class SubscriptionsController {
   }
 
   @Get(":id")
+  @UseRoles(Role.PROVIDER)
   @ApiCustomOkResponse(SubscriptionEntity)
+  @ApiOperation({
+    summary: "Fetch provider subscription.",
+    description: "Requires authorized user to have an `provider` access.",
+  })
   async findOne(
     @Param("id") subscriptionId: string,
   ): Promise<ResponseDataDto<SubscriptionEntity>> {
@@ -69,9 +78,13 @@ export class SubscriptionsController {
     });
   }
 
-  @Put(":id/subscribe")
+  @Post(":id/subscribe")
   @UseRoles(Role.PROVIDER)
   @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiOperation({
+    summary: "Subscribe to subscription plan.",
+    description: "Requires authorized user to have a `provider` access.",
+  })
   async subscribe(
     @Req() request: Request,
     @Param("id") subscriptionPlanId: string,
@@ -100,6 +113,7 @@ export class SubscriptionsController {
 
   @Get("plans")
   @ApiOkPaginatedResponse(SubscriptionEntity)
+  @ApiOperation({ summary: "Fetch subscription plans." })
   async findPlans(): Promise<PaginatedResponseDataDto<SubscriptionPlanEntity>> {
     const subscriptionPlans = await this.subscriptionsService.findAll();
     return new PaginatedResponseDataDto({
@@ -116,6 +130,10 @@ export class SubscriptionsController {
   @Post("plans/new")
   @UseRoles(Role.ADMIN)
   @ApiCustomCreatedResponse(SubscriptionPlanEntity)
+  @ApiOperation({
+    summary: "Create subscription plan.",
+    description: "Requires authorized user to have an `admin` access.",
+  })
   async createPlan(
     @Req() request: Request,
     @Body() payload: CreateSubscriptionPlanDto,
@@ -135,6 +153,10 @@ export class SubscriptionsController {
   @Put("plans/:id")
   @UseRoles(Role.ADMIN)
   @ApiCustomOkResponse(SubscriptionPlanEntity)
+  @ApiOperation({
+    summary: "Update subscription plan.",
+    description: "Requires authorized user to have an `admin` access.",
+  })
   async updatePlan(
     @Param("id") subscriptionPlanId: string,
     @Body() payload: UpdateSubscriptionPlanDto,
@@ -152,6 +174,7 @@ export class SubscriptionsController {
 
   @Get("plans/:id")
   @ApiCustomOkResponse(SubscriptionPlanEntity)
+  @ApiOperation({ summary: "Fetch subscription plan details." })
   async findPlan(
     @Param(":id") subscriptionPlanId: string,
   ): Promise<ResponseDataDto<SubscriptionPlanEntity>> {

@@ -43,7 +43,7 @@ export class AuthController {
     description: "User Successfully signed in",
   })
   @ApiOperation({
-    description:
+    summary:
       "Sign in. A successfully sign in will send a OTP to user phone number if not verified yet",
   })
   async signIn(@Body() signInDto: SignInDto): Promise<SignInResponseDto> {
@@ -65,7 +65,7 @@ export class AuthController {
     description: "Successful user registration",
   })
   @ApiOperation({
-    description:
+    summary:
       "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
   })
   async googleSignIn(
@@ -82,7 +82,7 @@ export class AuthController {
   @Public()
   @Post("register")
   @ApiOperation({
-    description:
+    summary:
       "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
   })
   @ApiCustomCreatedResponse(SignUpResponseDto)
@@ -99,6 +99,9 @@ export class AuthController {
 
   @Public()
   @Post("refresh-token")
+  @ApiOperation({
+    summary: "Request for new access token.",
+  })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async requestAccessToken(
     @Body("refreshToken") refreshToken: string,
@@ -111,9 +114,10 @@ export class AuthController {
     });
   }
 
+  @ApiBearerAuth()
   @Post("verify")
   @ApiOperation({
-    description: "Verify one time password sent to user on sign up/in",
+    summary: "Verify one time password sent to user on sign up/in",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async verifyOTP(
@@ -133,6 +137,7 @@ export class AuthController {
     type: ResponseMetadataDto,
     description: "Logout successfully",
   })
+  @ApiOperation({ summary: "Sign out." })
   async signOut(@Req() req: Request) {
     await this.authService.signOut(req);
     return new ResponseMetadataDto({

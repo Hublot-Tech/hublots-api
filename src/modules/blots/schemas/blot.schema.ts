@@ -6,12 +6,12 @@ import { User } from "src/modules/users/schemas/user.schema";
 import { Payment } from "src/modules/payments/schemas/payment.schema";
 
 export enum BlotStatus {
-  CREATED = "created",
-  ACCEPTED = "accepted",
-  GOT_IN_TOUCH = "getting_in_touch",
-  STARTED_WORK = "started_work",
-  FINALIZED = "finalized",
-  CANCELLED = "cancelled",
+  CREATED = "created", //1
+  ACCEPTED = "accepted", //2
+  GOT_IN_TOUCH = "getting_in_touch", //3
+  STARTED_WORK = "started_work", //4
+  FINALIZED = "finalized", //5
+  CANCELLED = "cancelled", //if previous status is not yet at stage //4
 }
 
 @Schema({

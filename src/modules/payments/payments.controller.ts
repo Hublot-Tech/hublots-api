@@ -1,5 +1,5 @@
 import { Controller, Get, HttpStatus, Param, Query } from "@nestjs/common";
-import { ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import {
   ApiCustomOkResponse,
   ApiOkPaginatedResponse,
@@ -14,6 +14,7 @@ import { PaymentsService } from "./payments.service";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 
+@ApiBearerAuth()
 @ApiTags("Payments")
 @Controller("payments")
 export class PaymentsController {
@@ -22,6 +23,11 @@ export class PaymentsController {
   @Get()
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiOkPaginatedResponse(PaymentEntity)
+  @ApiOperation({
+    summary: "Fecth payment done on the platform.",
+    description:
+      "Requires bearer token owner to have an `admin` or `support` (customer support) role",
+  })
   async findPayments(
     @Query() params: BulkQueryDto,
   ): Promise<PaginatedResponseDataDto<PaymentEntity>> {
@@ -36,6 +42,7 @@ export class PaymentsController {
 
   @Get(":id")
   @ApiCustomOkResponse(PaymentEntity)
+  @ApiOperation({ summary: "Fetch real-time payment data." })
   async findPayment(
     @Param("id") paymentId: string,
   ): Promise<ResponseDataDto<PaymentEntity>> {

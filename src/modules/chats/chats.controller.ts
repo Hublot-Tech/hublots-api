@@ -8,7 +8,7 @@ import {
   Query,
   Req,
 } from "@nestjs/common";
-import { ApiBearerAuth, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { Request } from "express";
 import {
   ApiCustomCreatedResponse,
@@ -32,6 +32,7 @@ export class ChatsController {
 
   @Post("/message")
   @ApiCustomCreatedResponse(MessageEntity)
+  @ApiOperation({ summary: "Message another user of platform." })
   async sendMessage(
     @Req() request: Request,
     @Body() payload: CreateMessageDto,
@@ -47,6 +48,9 @@ export class ChatsController {
 
   @Get()
   @ApiOkPaginatedResponse(MessageEntity)
+  @ApiOperation({
+    summary: "Fetch messages sent or received from interlocutor",
+  })
   async getMessages(
     @Req() request: Request,
     @Query() query: MessageQueryParamsDto,
@@ -66,6 +70,7 @@ export class ChatsController {
 
   @Get(":id")
   @ApiCustomOkResponse(MessageDetailsDto)
+  @ApiOperation({ summary: "Fetch message details." })
   async getMessageDetails(
     @Param("id") messageId: string,
   ): Promise<ResponseDataDto<MessageDetailsDto>> {

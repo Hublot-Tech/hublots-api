@@ -5,12 +5,12 @@ import {
   Delete,
   Get,
   HttpStatus,
-  NotAcceptableException,
   Param,
   Post,
   Put,
   Query,
   Req,
+  UnprocessableEntityException,
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
@@ -20,6 +20,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiNoContentResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -53,6 +54,11 @@ export class UsersController {
   @Get()
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiOkPaginatedResponse(UserEntity)
+  @ApiOperation({
+    summary: "Fetch all users.",
+    description:
+      "Requires authorized user to have an `admin` or `support` (customer support) access",
+  })
   async findAll(
     @Query() query: BulkQueryDto,
   ): Promise<PaginatedResponseDataDto<UserEntity>> {
@@ -68,6 +74,7 @@ export class UsersController {
 
   @Get("profile")
   @ApiCustomOkResponse(UserEntity)
+  @ApiOperation({ summary: "Fetch authorized user profile" })
   async getProfile(@Req() req: Request): Promise<ResponseDataDto<UserEntity>> {
     return new ResponseDataDto({
       data: new UserEntity(req.user.toJSON()),
@@ -78,6 +85,7 @@ export class UsersController {
 
   @Put("profile")
   @ApiCustomOkResponse(UserEntity)
+  @ApiOperation({ summary: "Update authorized user profile." })
   async updateProfile(
     @Req() req: Request,
     @Body() updateProfileDto: UpdateProfileDto,
@@ -93,6 +101,11 @@ export class UsersController {
   @Get(":id")
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiCustomOkResponse(UserEntity)
+  @ApiOperation({
+    summary: "Fetch user details.",
+    description:
+      "Requires authorized user to have an `admin` or `support` (customer support) access",
+  })
   async findOne(
     @Param("id") userId: string,
   ): Promise<ResponseDataDto<UserEntity>> {
@@ -108,6 +121,11 @@ export class UsersController {
   @Put(":id")
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiCustomOkResponse(UserEntity)
+  @ApiOperation({
+    summary: "Update user information.",
+    description:
+      "Requires authorized user to have an `admin` or `support` (customer support) access",
+  })
   async update(
     @Param("id") userId: string,
     @Body() updateUserDto: UpdateUserDto,
@@ -117,8 +135,8 @@ export class UsersController {
         [Role.PROVIDER, Role.PARTNER].includes(role),
       )
     ) {
-      throw new NotAcceptableException(
-        "Please use the allocate endpoints to accept or mark as completed a blot",
+      throw new UnprocessableEntityException(
+        "Please use the allocate endpoints to assign provider and pathner roles to a user",
       );
     }
 
@@ -135,6 +153,10 @@ export class UsersController {
   @ApiNoContentResponse({
     type: ResponseMetadataDto,
     description: "User successfully deleted",
+  })
+  @ApiOperation({
+    summary: "Delete a user.",
+    description: "Requires authorized user to have a `admin` access",
   })
   async delete(@Param("id") userId: string): Promise<ResponseMetadataDto> {
     await this.usersService.delete(userId);
@@ -161,6 +183,7 @@ export class UsersController {
     },
   })
   @UseInterceptors(FilesInterceptor("kycFiles"))
+  @ApiOperation({ summary: "Upload KYC images." })
   async uploadKYCImages(
     @Req() req: Request,
     @UploadedFiles() files: Array<Express.Multer.File>,
@@ -181,6 +204,11 @@ export class UsersController {
   @Post("/new")
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiCustomCreatedResponse(UserEntity)
+  @ApiOperation({
+    summary: "Create a new user.",
+    description:
+      "Requires authorized user to have an `admin` or `support` (customer support) access",
+  })
   async createUser(
     @Req() req: Request,
     @Body() newUser: CreateAccountDto,

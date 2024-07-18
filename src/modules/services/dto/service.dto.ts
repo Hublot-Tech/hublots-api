@@ -51,7 +51,7 @@ export class CreateServiceDto {
     type: String,
     format: "binary",
     description:
-      "Binary file to be upload as service main image. This will be use to populate the mainImageRef",
+      "Binary file to be upload as service main image. This will be use to populate the `mainImageRef` field",
   })
   readonly file: string;
 

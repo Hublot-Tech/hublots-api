@@ -1,8 +1,8 @@
 import {
   ForbiddenException,
   Injectable,
-  NotAcceptableException,
   NotFoundException,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ObjectId } from "mongodb";
@@ -90,7 +90,9 @@ export class BlotsService {
   async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
     return this.blotModel
       .find({
-        ...query,
+        status: query.status,
+        provider: query.provider,
+        consumer: query.consumer,
         $or: [{ provider: activeUser }, { consumer: activeUser }],
       })
       .limit(query.perpage)
@@ -99,11 +101,17 @@ export class BlotsService {
       .exec();
   }
 
-  async delete(blotId: string, deletedBy: string): Promise<void> {
+  async cancel(blotId: string, deletedBy: string): Promise<void> {
     const blot = await this.blotModel.findById(blotId).exec();
     this.checkPrivileges(blot, deletedBy);
 
-    await blot.deleteOne().exec();
+    if ([BlotStatus.FINALIZED, BlotStatus.STARTED_WORK].includes(blot.status)) {
+      throw new UnprocessableEntityException(
+        `Blot cannot be cancelled if work was started or finalized`,
+      );
+    }
+
+    await blot.updateOne({ status: BlotStatus.CANCELLED }).exec();
   }
 
   async update(
@@ -113,35 +121,32 @@ export class BlotsService {
   ): Promise<Blot> {
     const blot = await this.blotModel.findById(blotId).exec();
     this.checkPrivileges(blot, updatedBy);
-    if (
-      data.status === BlotStatus.ACCEPTED &&
-      blot.consumer.toString() !== updatedBy
-    ) {
-      throw new ForbiddenException(
-        "Operation only permitted to consumer of the blot",
+
+    let allowedStatuses = [];
+    switch (data.status) {
+      case BlotStatus.ACCEPTED:
+        allowedStatuses = [BlotStatus.CREATED];
+        break;
+      case BlotStatus.GOT_IN_TOUCH:
+        allowedStatuses = [BlotStatus.ACCEPTED];
+        break;
+      case BlotStatus.STARTED_WORK:
+        allowedStatuses = [BlotStatus.ACCEPTED, BlotStatus.GOT_IN_TOUCH];
+        break;
+      case BlotStatus.FINALIZED:
+        allowedStatuses = [
+          BlotStatus.ACCEPTED,
+          BlotStatus.GOT_IN_TOUCH,
+          BlotStatus.STARTED_WORK,
+        ];
+    }
+    if (!allowedStatuses.includes(blot.status)) {
+      throw new UnprocessableEntityException(
+        `Blot status can only be update to ${blot.status} if found in one of the following states: ${allowedStatuses}`,
       );
     }
 
-    return this.execWithinTransaction(async (session) => {
-      let options = blot.options;
-      if (data.options) {
-        const newBlotOptions = await this.prepareBlotOptions(
-          data.options,
-          session,
-        );
-        const createdOptions = await this.blotOptionModel.insertMany(
-          newBlotOptions,
-          { session },
-        );
-        options = createdOptions.map(({ _id }) => new ObjectId(_id as string));
-      }
-      return blot
-        .updateOne(
-          { ...data, options, updatedAt: new Date() },
-          { session, new: true },
-        )
-        .exec();
-    });
+    return blot.updateOne({ ...data, updatedAt: new Date() }).exec();
   }
 
   async addOptions(
@@ -152,6 +157,12 @@ export class BlotsService {
     const blot = await this.blotModel.findById(blotId);
     if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
     this.checkPrivileges(blot, addedBy);
+
+    if (blot.status !== BlotStatus.CREATED) {
+      throw new UnprocessableEntityException(
+        `Cannot modify Blot options after it was accepted`,
+      );
+    }
 
     return this.execWithinTransaction(async (session) => {
       const newBlotOptions = await this.prepareBlotOptions(options, session);
@@ -170,6 +181,12 @@ export class BlotsService {
     const blot = await this.blotModel.findById(blotId);
     if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
     this.checkPrivileges(blot, deletedBy);
+
+    if (blot.status !== BlotStatus.CREATED) {
+      throw new UnprocessableEntityException(
+        `Cannot modify Blot options after it was accepted`,
+      );
+    }
 
     blot.options = blot.options.filter(
       (_) => !optionIds.includes(_._id.toString()),
@@ -197,22 +214,16 @@ export class BlotsService {
    * @param offer
    * @param actor
    */
-  private checkPrivileges(order: Blot, actor: string) {
-    if (!order) {
-      throw new NotFoundException(`Blot with id ${order.id} not found`);
+  private checkPrivileges(blot: Blot, actor: string) {
+    if (!blot) {
+      throw new NotFoundException(`Blot with id ${blot.id} not found`);
     }
 
     if (
-      order.provider.toString() !== actor &&
-      order.consumer.toString() !== actor
+      blot.provider.toString() !== actor &&
+      blot.consumer.toString() !== actor
     ) {
       throw new ForbiddenException(`Operation not permitted for active user`);
-    }
-
-    if (order.status !== BlotStatus.CREATED) {
-      throw new NotAcceptableException(
-        `Operation not permitted on Blot with status ${order.status}`,
-      );
     }
   }
 }

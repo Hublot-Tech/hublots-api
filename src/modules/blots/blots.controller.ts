@@ -5,18 +5,19 @@ import {
   ForbiddenException,
   Get,
   HttpStatus,
-  NotAcceptableException,
   Param,
   ParseArrayPipe,
   Post,
   Put,
   Query,
   Req,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
   ApiBody,
   ApiNoContentResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -57,6 +58,11 @@ export class BlotsController {
 
   @Get()
   @UseRoles()
+  @ApiOperation({
+    summary:
+      "Fetch all blots where the owner of the access token is either a consumer or a provider",
+    description: "Use Query params to override the default behavior",
+  })
   @ApiOkPaginatedResponse(BlotEntity)
   async finAll(
     @Req() request: Request,
@@ -92,6 +98,10 @@ export class BlotsController {
   }
 
   @Post("/new")
+  @ApiOperation({
+    summary: "Create new blot.",
+    description: "Requires bearer token owner to have a `provider` role",
+  })
   @ApiCustomCreatedResponse(BlotEntity)
   async create(
     @Req() request: Request,
@@ -112,15 +122,25 @@ export class BlotsController {
   }
 
   @Put(":id")
+  @ApiOperation({
+    summary: "Update blot.",
+    description: "Requires bearer token owner to have a `provider` role",
+  })
   @ApiCustomOkResponse(BlotEntity)
   async update(
     @Req() request: Request,
     @Param("id") blotId: string,
     @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    if (![BlotStatus.ACCEPTED, BlotStatus.FINALIZED].includes(payload.status)) {
-      throw new NotAcceptableException(
-        "Please use the allocate endpoints to accept or finalize a blot",
+    if (
+      ![
+        BlotStatus.ACCEPTED,
+        BlotStatus.FINALIZED,
+        BlotStatus.CANCELLED,
+      ].includes(payload.status)
+    ) {
+      throw new UnprocessableEntityException(
+        "Please use the allocate endpoints to accept, finalize or cancel a blot",
       );
     }
 
@@ -137,7 +157,13 @@ export class BlotsController {
     });
   }
 
+  @UseRoles(Role.CLIENT)
   @Put(":id/accept-offer")
+  @ApiOperation({
+    summary: "Accpet blot offer.",
+    description:
+      "Requires bearer token owner to have a `client` role and be the consumer of the blot",
+  })
   @ApiCustomOkResponse(BlotEntity)
   async acceptOffer(
     @Req() request: Request,
@@ -165,7 +191,13 @@ export class BlotsController {
     });
   }
 
+  @UseRoles(Role.CLIENT)
   @Put(":id/finalize")
+  @ApiOperation({
+    summary: "Finilize a blot marking it as successfully completed.",
+    description:
+      "Requires bearer token owner to have a `client` role and be the consumer of the blot",
+  })
   @ApiCustomOkResponse(BlotEntity)
   async finalizeBlot(
     @Req() request: Request,
@@ -198,20 +230,30 @@ export class BlotsController {
   }
 
   @Delete(":id")
+  @UseRoles(Role.CLIENT, Role.PROVIDER)
+  @ApiOperation({
+    summary: "Cancel a blot offer.",
+    description: `Blot with \`${BlotStatus.STARTED_WORK}\` or \`${BlotStatus.FINALIZED}\` status cannot be cancelled. 
+    Requires bearer token owner to have a \`client\` or \`provider\` role and be the consumer/provider of the blot`,
+  })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async delete(
     @Req() request: Request,
     @Param("id") blotId: string,
   ): Promise<ResponseMetadataDto> {
-    await this.blotsService.delete(blotId, request.user.id);
+    await this.blotsService.cancel(blotId, request.user.id);
 
     return new ResponseMetadataDto({
-      message: "Successfully updated blot",
+      message: "Blot offer was cancelled",
       status: HttpStatus.OK,
     });
   }
 
-  @Put(":id/options")
+  @Post(":id/options")
+  @ApiOperation({
+    summary: "Add personnalized options to blot.",
+    description: "Requires authorized user to have a `provider` role",
+  })
   @ApiBody({ type: [CreateBlotOptionDto] })
   @ApiCustomOkResponse(BlotEntity)
   async updateOptions(
@@ -234,6 +276,10 @@ export class BlotsController {
   }
 
   @Delete(":id/options")
+  @ApiOperation({
+    summary: "Delete a list of options from blot.",
+    description: "Requires authorized user to have a `provider` role",
+  })
   @ApiCustomOkResponse(BlotEntity)
   async deleteOptions(
     @Req() request: Request,
