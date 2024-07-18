@@ -17,7 +17,7 @@ export class OTPController {
 
   @Post("send")
   @ApiOperation({
-    description:
+    summary:
       "Send one time password to any phone number, provided the user in login",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
@@ -31,7 +31,7 @@ export class OTPController {
 
   @Post("verify")
   @ApiOperation({
-    description:
+    summary:
       "Verify the lastest one time password send to the provider phone number",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
@@ -40,7 +40,7 @@ export class OTPController {
   ): Promise<ResponseMetadataDto> {
     await this.otpService.verifyOTP(otpPayload.phoneNumber, otpPayload.otp);
     return new ResponseMetadataDto({
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
       message: "Successfully verified one time password",
     });
   }

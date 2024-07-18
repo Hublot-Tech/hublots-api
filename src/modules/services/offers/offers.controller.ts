@@ -14,6 +14,7 @@ import {
   ApiBearerAuth,
   ApiBody,
   ApiNoContentResponse,
+  ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
 import { Request } from "express";
@@ -41,6 +42,7 @@ export class OffersController {
 
   @Get(":id")
   @ApiCustomOkResponse(OfferDetailsDto)
+  @ApiOperation({ summary: "Fetch service offer." })
   async finOne(
     @Param("id") offerId: string,
   ): Promise<ResponseDataDto<OfferDetailsDto>> {
@@ -55,6 +57,11 @@ export class OffersController {
   @Post("new")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomCreatedResponse(OfferEntity)
+  @ApiOperation({
+    summary: "Create service offer.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async createOffer(
     @Req() request: Request,
     @Body() payload: CreateOfferDto,
@@ -71,6 +78,11 @@ export class OffersController {
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomCreatedResponse(OfferEntity, true)
   @ApiBody({ type: [CreateOfferDto] })
+  @ApiOperation({
+    summary: "Create multiple service offers.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async createManyOffers(
     @Req() request: Request,
     @Body(new ParseArrayPipe({ items: CreateOfferDto }))
@@ -90,6 +102,11 @@ export class OffersController {
   @Put(":id")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomOkResponse(OfferEntity)
+  @ApiOperation({
+    summary: "Update service offer.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async updateOffer(
     @Req() request: Request,
     @Param("id") offerId: string,
@@ -103,7 +120,7 @@ export class OffersController {
     return new ResponseDataDto({
       data: new OfferEntity(updatedOffer.toJSON()),
       message: "Offer updated successfully",
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
     });
   }
 
@@ -112,6 +129,11 @@ export class OffersController {
   @ApiNoContentResponse({
     type: ResponseMetadataDto,
   })
+  @ApiOperation({
+    summary: "Delete service offer.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async deleteOffer(
     @Req() request: Request,
     @Param("id") offerId: string,
@@ -119,13 +141,18 @@ export class OffersController {
     await this.offersService.delete(offerId, request.user.id);
     return new ResponseMetadataDto({
       message: "Offer deleted successfully",
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
     });
   }
 
-  @Put(":id/items")
+  @Post(":id/items")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomOkResponse(OfferDetailsDto)
+  @ApiOperation({
+    summary: "Add new offer items.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async addedOfferItems(
     @Req() request: Request,
     @Param("id") offerId: string,
@@ -139,14 +166,19 @@ export class OffersController {
     );
     return new ResponseDataDto({
       data: new OfferDetailsDto(updatedOffer.toJSON()),
-      message: "Offer items created successfully",
-      status: HttpStatus.CREATED,
+      message: "Offer items added successfully",
+      status: HttpStatus.OK,
     });
   }
 
   @Delete(":id/items")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomOkResponse(OfferDetailsDto)
+  @ApiOperation({
+    summary: "Delete offer items.",
+    description:
+      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+  })
   async removeOfferItems(
     @Req() request: Request,
     @Param("id") offerId: string,
@@ -161,7 +193,7 @@ export class OffersController {
     return new ResponseDataDto({
       data: new OfferDetailsDto(updatedOffer.toJSON()),
       message: "Offers items deleted successfully",
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
     });
   }
 }

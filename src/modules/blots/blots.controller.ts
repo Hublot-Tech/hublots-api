@@ -85,11 +85,18 @@ export class BlotsController {
   }
 
   @Get(":id")
+  @UseRoles(Role.PROVIDER, Role.CLIENT)
   @ApiCustomOkResponse(BlotDetailsDto)
+  @ApiOperation({
+    summary: "Fetch blot details.",
+    description:
+      "Requires authorized user to have a `client` or `provider` access.",
+  })
   async findOne(
+    @Req() request: Request,
     @Param("id") blotId: string,
   ): Promise<ResponseDataDto<BlotDetailsDto>> {
-    const blot = await this.blotsService.findOne(blotId);
+    const blot = await this.blotsService.findOne(blotId, request.user.id);
     return new ResponseDataDto({
       data: new BlotDetailsDto(blot.toJSON()),
       message: "Successfully retrieved blot details",
@@ -100,7 +107,7 @@ export class BlotsController {
   @Post("/new")
   @ApiOperation({
     summary: "Create new blot.",
-    description: "Requires bearer token owner to have a `provider` role",
+    description: "Requires access token owner to have a `provider` role",
   })
   @ApiCustomCreatedResponse(BlotEntity)
   async create(
@@ -124,7 +131,7 @@ export class BlotsController {
   @Put(":id")
   @ApiOperation({
     summary: "Update blot.",
-    description: "Requires bearer token owner to have a `provider` role",
+    description: "Requires access token owner to have a `provider` role",
   })
   @ApiCustomOkResponse(BlotEntity)
   async update(
@@ -162,7 +169,7 @@ export class BlotsController {
   @ApiOperation({
     summary: "Accpet blot offer.",
     description:
-      "Requires bearer token owner to have a `client` role and be the consumer of the blot",
+      "Requires access token owner to have a `client` role and be the consumer of the blot",
   })
   @ApiCustomOkResponse(BlotEntity)
   async acceptOffer(
@@ -170,7 +177,7 @@ export class BlotsController {
     @Param("id") blotId: string,
     @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    let blot = await this.blotsService.findOne(blotId);
+    let blot = await this.blotsService.findOne(blotId, request.user.id);
     const [initializedPayment, chargePayment] =
       await this.paymentsService.initializeAndCharge(
         request,
@@ -196,14 +203,14 @@ export class BlotsController {
   @ApiOperation({
     summary: "Finilize a blot marking it as successfully completed.",
     description:
-      "Requires bearer token owner to have a `client` role and be the consumer of the blot",
+      "Requires access token owner to have a `client` role and be the consumer of the blot",
   })
   @ApiCustomOkResponse(BlotEntity)
   async finalizeBlot(
     @Req() request: Request,
     @Param("id") blotId: string,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    let blot = await this.blotsService.findOne(blotId);
+    let blot = await this.blotsService.findOne(blotId, request.user.id);
     const { provider, price } = new BlotDetailsDto(blot.toJSON());
     const payment = await this.paymentsService.transfer(
       {
@@ -234,7 +241,7 @@ export class BlotsController {
   @ApiOperation({
     summary: "Cancel a blot offer.",
     description: `Blot with \`${BlotStatus.STARTED_WORK}\` or \`${BlotStatus.FINALIZED}\` status cannot be cancelled. 
-    Requires bearer token owner to have a \`client\` or \`provider\` role and be the consumer/provider of the blot`,
+    Requires access token owner to have a \`client\` or \`provider\` role and be the consumer/provider of the blot`,
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async delete(

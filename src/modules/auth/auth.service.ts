@@ -172,7 +172,7 @@ export class AuthService {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
 
     if (type !== "Bearer" || !token) {
-      throw new UnauthorizedException("No bearer token found!");
+      throw new UnauthorizedException("No access token found!");
     }
 
     return token;

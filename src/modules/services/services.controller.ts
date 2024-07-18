@@ -212,7 +212,7 @@ export class ServicesController {
     return new ResponseDataDto({
       data: new ServiceEntity(service.toJSON()),
       message: "Sucessfully uploaded service images",
-      status: HttpStatus.CREATED,
+      status: HttpStatus.OK,
     });
   }
 }

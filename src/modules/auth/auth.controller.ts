@@ -66,7 +66,7 @@ export class AuthController {
   })
   @ApiOperation({
     summary:
-      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provided in the registration payload",
   })
   async googleSignIn(
     @Body() signInDto: GoogleSignInDto,
@@ -83,7 +83,7 @@ export class AuthController {
   @Post("register")
   @ApiOperation({
     summary:
-      "Sign up a new user. A successfully sign up will send a OTP to the phone number provied in the registration payload",
+      "Sign up a new user. A successfully sign up will send a OTP to the phone number provided in the registration payload",
   })
   @ApiCustomCreatedResponse(SignUpResponseDto)
   async register(

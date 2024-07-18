@@ -26,7 +26,7 @@ export class PaymentsController {
   @ApiOperation({
     summary: "Fecth payment done on the platform.",
     description:
-      "Requires bearer token owner to have an `admin` or `support` (customer support) role",
+      "Requires access token owner to have an `admin` or `support` (customer support) role",
   })
   async findPayments(
     @Query() params: BulkQueryDto,
