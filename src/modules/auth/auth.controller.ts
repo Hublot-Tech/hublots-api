@@ -26,6 +26,7 @@ import {
   SignUpResponseDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
+import { VerifyOTPDto } from "../otp/dto/otp.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -107,6 +108,22 @@ export class AuthController {
       data: tokens,
       status: HttpStatus.CREATED,
       message: "Successfully generate new authorization tokens",
+    });
+  }
+
+  @Post("verify")
+  @ApiOperation({
+    description: "Verify one time password sent to user on sign up/in",
+  })
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async verifyOTP(
+    @Body() otpPayload: VerifyOTPDto,
+    @Req() request: Request,
+  ): Promise<ResponseMetadataDto> {
+    await this.authService.verifyUserOTP(otpPayload, request.user.id);
+    return new ResponseMetadataDto({
+      status: HttpStatus.OK,
+      message: "Successfully verified user phone number",
     });
   }
 

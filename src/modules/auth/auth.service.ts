@@ -13,6 +13,7 @@ import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { AuthTokensDto } from "./dto/auth.dto";
 import { OTPService } from "../otp/otp.service";
+import { VerifyOTPDto } from "../otp/dto/otp.dto";
 
 type TokenType = "access_token" | "refresh_token";
 interface IJWTPayload {
@@ -130,6 +131,14 @@ export class AuthService {
     }
 
     return this.login(existingUser);
+  }
+
+  async verifyUserOTP(otpPayload: VerifyOTPDto, userId: string) {
+    await this.otpService.verifyOTP(
+      otpPayload.phoneNumber,
+      otpPayload.phoneNumber,
+    );
+    await this.usersService.update(userId, { isOTPVerified: true });
   }
 
   private async login(user: User): Promise<AuthTokensDto> {
