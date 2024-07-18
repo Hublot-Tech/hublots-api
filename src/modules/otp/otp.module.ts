@@ -11,7 +11,7 @@ import { MongooseModule } from "@nestjs/mongoose";
     HttpModule.register({
       baseURL: `https://graph.facebook.com/v20.0/${process.env.META_PHONE_NUMBER_ID}`,
       headers: {
-        Authorization: `Bearer ${process.env.META_TEMP_ACCESS_TOKEN}`,
+        Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}`,
       },
     }),
   ],
