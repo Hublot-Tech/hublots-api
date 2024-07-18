@@ -1,13 +1,11 @@
-import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
+import { ApiProperty } from "@nestjs/swagger";
 import { IsOptional, IsString, Length } from "class-validator";
 
 export class SendOTPDto {
   @IsString()
   @IsOptional()
-  @ApiPropertyOptional({
-    description: "Defaults to the connected user phone number",
-  })
-  phoneNumber?: string;
+  @ApiProperty({ description: "WhatsApp phone number" })
+  phoneNumber: string;
 
   constructor(otp: SendOTPDto) {
     Object.assign(this, otp);
