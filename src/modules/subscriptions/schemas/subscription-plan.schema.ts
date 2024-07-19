@@ -52,6 +52,9 @@ export class SubscriptionPlan extends Document {
   @Prop({ type: Date, default: Date.now })
   createdAt: Date;
 
+  @Prop({ type: Date, required: true, default: Date.now })
+  updatedAt: Date;
+
   // reference to subscriber
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   createdBy: Types.ObjectId;

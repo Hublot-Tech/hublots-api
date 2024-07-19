@@ -30,7 +30,6 @@ export class AnnouncementsService {
       ...data,
       createdBy,
       amountPaid,
-      updatedAt: new Date(),
       provider: data.provider ?? createdBy,
     }).save();
   }

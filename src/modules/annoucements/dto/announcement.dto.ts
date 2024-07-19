@@ -26,7 +26,7 @@ export class CreateAnnouncementDto {
   @IsDateString()
   @ApiProperty({
     description: "Date to start show the annoucement",
-    default: "Date.now()",
+    default: () => Date.now(),
   })
   startsAt: Date;
 
@@ -62,7 +62,7 @@ export class AnnouncementEntity extends CreateAnnouncementDto {
   @ApiProperty()
   id: string;
 
-  @ApiProperty()
+  @ApiProperty({ default: () => Date.now() })
   createdAt: Date;
 
   @ApiProperty()

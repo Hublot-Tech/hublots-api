@@ -47,8 +47,6 @@ export class OffersService {
         serviceId,
         provider: service.provider,
         items: createdItemIds,
-        updatedAt: new Date(),
-        createdAt: new Date(),
       }).save({ session });
     });
   }
@@ -80,7 +78,6 @@ export class OffersService {
               serviceId,
               provider: services.find(({ _id }) => _id === serviceId)?.provider,
               items: createdItemIds,
-              updatedAt: new Date(),
               createdAt: new Date(),
             }),
           );
@@ -135,6 +132,7 @@ export class OffersService {
       );
 
       offer.items.push(...newItems.map((_) => _.id));
+      offer.updatedAt = new Date();
       return (await offer.save({ session })).populate("items");
     });
   }

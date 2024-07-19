@@ -39,7 +39,6 @@ export class BlotsService {
       return new this.blotModel({
         ...payload,
         createdBy,
-        updatedAt: new Date(),
         options: createdOptions.map((_) => _._id),
       }).save({ session });
     });
@@ -64,7 +63,6 @@ export class BlotsService {
       newBlotOptions.push(
         new this.blotOptionModel({
           item: new ObjectId(item),
-          updatedAt: new Date(),
           quantity,
         }),
       );

@@ -39,7 +39,7 @@ export class Message extends Document {
   readAt: Date;
 
   @Prop({ type: Date, default: Date.now })
-  sendAt: Date;
+  sentAt: Date;
 }
 
 export const MessageSchema = SchemaFactory.createForClass(Message);

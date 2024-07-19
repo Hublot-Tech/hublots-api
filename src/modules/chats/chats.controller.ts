@@ -49,7 +49,7 @@ export class ChatsController {
   @Get()
   @ApiOkPaginatedResponse(MessageEntity)
   @ApiOperation({
-    summary: "Fetch messages sent or received from interlocutor",
+    summary: "Fetch messages sent or received from interlocutors",
   })
   async getMessages(
     @Req() request: Request,

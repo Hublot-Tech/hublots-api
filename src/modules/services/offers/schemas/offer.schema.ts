@@ -33,6 +33,13 @@ export class Offer extends Document {
   })
   createdAt: Date;
 
+  @Prop({
+    type: Date,
+    required: true,
+    default: Date.now,
+  })
+  updatedAt: Date;
+
   // reference to service
   @Prop({ required: true, type: Types.ObjectId, ref: "Service" })
   serviceId: string;

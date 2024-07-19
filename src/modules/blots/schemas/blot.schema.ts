@@ -31,7 +31,7 @@ export class Blot extends Document {
   @Prop({ type: String })
   description: string;
 
-  @Prop({ type: String, required: true, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   startDate: Date;
 
   @Prop({ type: Number, required: true })
@@ -45,10 +45,10 @@ export class Blot extends Document {
   })
   status: BlotStatus;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: Date, required: true, default: Date.now })
   updatedAt: Date;
 
-  @Prop({ type: String, required: true, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   createdAt: Date;
 
   // reference to offer

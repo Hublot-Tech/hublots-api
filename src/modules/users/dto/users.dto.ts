@@ -94,9 +94,7 @@ export class UserEntity extends CreateUserDto {
   @IsDateString()
   updatedAt: Date;
 
-  @ApiProperty({
-    description: "Timestamp of creation",
-  })
+  @ApiProperty({ default: () => Date.now() })
   @IsDateString()
   createdAt: Date;
 

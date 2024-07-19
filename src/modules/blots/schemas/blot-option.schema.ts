@@ -21,10 +21,10 @@ export class BlotOption extends Document {
   @Prop({ type: Types.ObjectId, ref: OfferItem.name, required: true })
   item: Types.ObjectId;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: Date, required: true, default: Date.now })
   updatedAt: Date;
 
-  @Prop({ type: String, required: true, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   createdAt: Date;
 }
 

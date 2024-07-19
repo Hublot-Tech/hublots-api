@@ -19,7 +19,6 @@ export class ServicesService {
     return new this.serviceModel({
       ...data,
       createdBy,
-      updatedAt: new Date(),
       provider: data.provider ?? createdBy,
     }).save();
   }

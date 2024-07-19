@@ -19,16 +19,13 @@ export class Log extends Document {
   })
   loginAt: Date;
 
-  @Prop({
-    type: Date,
-    required: false,
-  })
+  @Prop({ type: Date })
   logoutAt: Date;
 
   @Prop({
     type: Number,
     required: true,
-    default: process.env.MAX_AGE,
+    default: process.env.MAX_AGE ?? 86400000,
   })
   tokenDuration: number;
 }

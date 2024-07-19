@@ -151,6 +151,7 @@ export class PaymentsService {
       customer: transfer.beneficiary,
       type: TransactionType.PAY_OUT,
       payer: transferedBy,
+      updatedAt: new Date(),
     }).save();
   }
 

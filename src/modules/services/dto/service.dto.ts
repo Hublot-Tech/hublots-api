@@ -69,9 +69,7 @@ export class ServiceEntity extends CreateServiceDto {
   })
   updatedAt: Date;
 
-  @ApiProperty({
-    description: "Timestamp of creation",
-  })
+  @ApiProperty({ default: () => Date.now() })
   createdAt: Date;
 
   @ApiProperty({
@@ -90,6 +88,10 @@ export class ServiceEntity extends CreateServiceDto {
   @IsString()
   @ApiProperty()
   mainImageRef: string;
+
+  @IsString({ each: true })
+  @ApiProperty()
+  imageRefs: string[];
 
   constructor(service: ServiceEntity) {
     super(service);

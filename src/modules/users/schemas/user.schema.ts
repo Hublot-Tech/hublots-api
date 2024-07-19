@@ -96,14 +96,12 @@ export class User extends Document {
 
   @Prop({
     type: Date,
-    required: false,
+    required: true,
+    default: Date.now,
   })
   updatedAt: Date;
 
-  @Prop({
-    type: Date,
-    required: false,
-  })
+  @Prop({ type: Date })
   deletedAt: Date;
 
   //reference to images

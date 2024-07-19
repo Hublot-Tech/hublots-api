@@ -26,10 +26,10 @@ export class Announcement extends Document {
   @Prop({ type: Date, default: Date.now })
   startsAt: Date;
 
-  @Prop({ type: String, required: true })
+  @Prop({ type: Date, required: true, default: Date.now })
   updatedAt: Date;
 
-  @Prop({ type: String, required: true, default: Date.now })
+  @Prop({ type: Date, required: true, default: Date.now })
   createdAt: Date;
 
   //reference to images

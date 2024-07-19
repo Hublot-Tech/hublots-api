@@ -38,6 +38,9 @@ export class Payment extends Document {
   @Prop({ type: Date, required: true, default: Date.now })
   createdAt: Date;
 
+  @Prop({ type: Date, required: true, default: Date.now })
+  updatedAt: Date;
+
   @Prop({ type: String, required: true })
   customer: string;
 
