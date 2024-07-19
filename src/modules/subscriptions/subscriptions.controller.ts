@@ -44,7 +44,7 @@ export class SubscriptionsController {
   @ApiOkPaginatedResponse(SubscriptionEntity)
   @ApiOperation({
     summary: "Fetch all subscriptions.",
-    description: "Requires authorized user to have an `admin` access.",
+    description: "Requires authorized user to have an `admin` role access.",
   })
   async findAll(): Promise<PaginatedResponseDataDto<SubscriptionEntity>> {
     const subscriptions = await this.subscriptionsService.findSubscriptions();
@@ -64,7 +64,7 @@ export class SubscriptionsController {
   @ApiCustomOkResponse(SubscriptionEntity)
   @ApiOperation({
     summary: "Fetch provider subscription.",
-    description: "Requires authorized user to have an `provider` access.",
+    description: "Requires authorized user to have an `provider` role access.",
   })
   async findOne(
     @Param("id") subscriptionId: string,
@@ -83,7 +83,7 @@ export class SubscriptionsController {
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   @ApiOperation({
     summary: "Subscribe to subscription plan.",
-    description: "Requires authorized user to have a `provider` access.",
+    description: "Requires authorized user to have a `provider` role access.",
   })
   async subscribe(
     @Req() request: Request,
@@ -132,7 +132,7 @@ export class SubscriptionsController {
   @ApiCustomCreatedResponse(SubscriptionPlanEntity)
   @ApiOperation({
     summary: "Create subscription plan.",
-    description: "Requires authorized user to have an `admin` access.",
+    description: "Requires authorized user to have an `admin` role access.",
   })
   async createPlan(
     @Req() request: Request,
@@ -155,7 +155,7 @@ export class SubscriptionsController {
   @ApiCustomOkResponse(SubscriptionPlanEntity)
   @ApiOperation({
     summary: "Update subscription plan.",
-    description: "Requires authorized user to have an `admin` access.",
+    description: "Requires authorized user to have an `admin` role access.",
   })
   async updatePlan(
     @Param("id") subscriptionPlanId: string,

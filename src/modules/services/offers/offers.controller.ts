@@ -60,7 +60,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Create service offer.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async createOffer(
     @Req() request: Request,
@@ -81,7 +81,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Create multiple service offers.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async createManyOffers(
     @Req() request: Request,
@@ -105,7 +105,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Update service offer.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async updateOffer(
     @Req() request: Request,
@@ -132,7 +132,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Delete service offer.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async deleteOffer(
     @Req() request: Request,
@@ -151,7 +151,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Add new offer items.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async addedOfferItems(
     @Req() request: Request,
@@ -177,7 +177,7 @@ export class OffersController {
   @ApiOperation({
     summary: "Delete offer items.",
     description:
-      "Requires authorized user to have a `provider` or `support` access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
   async removeOfferItems(
     @Req() request: Request,

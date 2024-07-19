@@ -1,8 +1,8 @@
-import { IsEnum, IsString } from "class-validator";
-import { MsgContentType } from "../schemas/chat.schema";
-import { ApiHideProperty, ApiProperty, OmitType } from "@nestjs/swagger";
-import { UserEntity } from "src/modules/users/dto";
+import { ApiProperty, OmitType } from "@nestjs/swagger";
+import { ArrayMaxSize, IsEnum, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
+import { UserEntity } from "src/modules/users/dto";
+import { MsgContentType } from "../schemas/chat.schema";
 
 export class CreateMessageDto {
   @IsString()
@@ -14,7 +14,7 @@ export class CreateMessageDto {
   contentType: MsgContentType;
 
   @IsString()
-  @ApiProperty({ type: "Mesage receiver ID" })
+  @ApiProperty({ type: String })
   receiver: string;
 
   constructor(message: CreateMessageDto) {
@@ -61,12 +61,10 @@ export class MessageDetailsDto extends OmitType(MessageEntity, [
 }
 
 export class MessageQueryParamsDto extends BulkQueryDto {
-  @IsString()
-  @ApiProperty()
-  receiver: string;
-
-  @ApiHideProperty()
-  sender: string;
+  @ArrayMaxSize(2)
+  @IsString({ each: true })
+  @ApiProperty({ description: "Should not provide more than 02 interlocutors" })
+  interlocutors: string[];
 
   constructor(params: MessageQueryParamsDto) {
     super(params);

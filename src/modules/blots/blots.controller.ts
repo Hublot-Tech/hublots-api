@@ -90,7 +90,7 @@ export class BlotsController {
   @ApiOperation({
     summary: "Fetch blot details.",
     description:
-      "Requires authorized user to have a `client` or `provider` access.",
+      "Requires authorized user to have a `client` or `provider` role access.",
   })
   async findOne(
     @Req() request: Request,

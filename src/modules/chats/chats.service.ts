@@ -23,15 +23,14 @@ export class ChatsService {
   }
 
   async findAll({
-    receiver,
-    sender,
+    interlocutors,
     ...query
   }: MessageQueryParamsDto): Promise<Message[]> {
     return this.chatModel
       .find({
         $or: [
-          { sender, receiver },
-          { receiver: sender, sender: receiver },
+          { receiver: interlocutors[0], sender: interlocutors[1] },
+          { receiver: interlocutors[1], sender: interlocutors[0] },
         ],
       })
       .limit(query.perpage)

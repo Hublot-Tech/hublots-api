@@ -53,18 +53,19 @@ export class ChatsController {
   })
   async getMessages(
     @Req() request: Request,
-    @Query() query: MessageQueryParamsDto,
+    @Query() queryParams: MessageQueryParamsDto,
   ) {
-    const messages = await this.chatsService.findAll({
-      ...query,
-      sender: request.user.id,
-    });
+    if (queryParams.interlocutors.length < 2) {
+      queryParams.interlocutors.push(request.user.id);
+    }
+
+    const messages = await this.chatsService.findAll(queryParams);
     return new PaginatedResponseDataDto({
       data: messages.map((message) => new MessageEntity(message.toJSON())),
       status: HttpStatus.OK,
       message: "Successfully retrieved messages",
-      page: query.page,
-      perpage: query.perpage,
+      page: queryParams.page,
+      perpage: queryParams.perpage,
     });
   }
 

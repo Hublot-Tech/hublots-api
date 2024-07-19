@@ -41,8 +41,8 @@ import {
   CreateServiceDto,
   ServiceDetailsDto,
   ServiceEntity,
+  UpdateServiceDto,
 } from "./dto/service.dto";
-import { UpdateOfferDto } from "./offers/dto/offer.dto";
 import { ServicesService } from "./services.service";
 
 @ApiBearerAuth()
@@ -132,11 +132,11 @@ export class ServicesController {
   @ApiOperation({
     summary: "Update service.",
     description:
-      "Requires authorized user to have a `provider` or `support` (customer support) access Support must be creator of the service",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the service",
   })
   async update(
     @Req() request: Request,
-    @Body() payload: UpdateOfferDto,
+    @Body() payload: UpdateServiceDto,
     @Param("id") serviceId: string,
   ): Promise<ResponseDataDto<ServiceDetailsDto>> {
     const service = await this.serviceService.update(
@@ -160,7 +160,7 @@ export class ServicesController {
   @ApiOperation({
     summary: "Delete a service.",
     description:
-      "Requires authorized user to have a `provider` or `support` (customer support) access Support must be creator of the service",
+      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the service",
   })
   async delete(
     @Req() request: Request,
