@@ -40,6 +40,10 @@ export class UsersService {
     return this.userModel.findOne({ email }).exec();
   }
 
+  async findByPhoneNumber(phoneNumber: string): Promise<User> {
+    return this.userModel.findOne({ phoneNumber }).exec();
+  }
+
   async findAll(query: BulkQueryDto): Promise<User[]> {
     return this.userModel.find().limit(query.perpage).skip(query.page).exec();
   }

@@ -11,6 +11,7 @@ import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
 import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
 import { ApiCustomCreatedResponse } from "src/helpers/api-decorator";
 import { ResponseDataDto } from "src/helpers/api-dto";
+import { Public } from "../auth/decorator/auth.decorator";
 
 @ApiBearerAuth()
 @ApiTags("Files")
@@ -18,6 +19,7 @@ import { ResponseDataDto } from "src/helpers/api-dto";
 export class FilesController {
   constructor() {}
 
+  @Public()
   @Post("upload")
   @UseInterceptors(FileInterceptor("file"))
   @ApiBody({

@@ -34,8 +34,12 @@ export class OTPService {
       .sort({ createdAt: -1 })
       .exec();
 
-    if (!userOTP || userOTP.expiresAt.getTime() < Date.now()) {
+    if (!userOTP) {
       throw new UnauthorizedException(`Incorrect One time password`);
+    }
+
+    if (userOTP.expiresAt.getTime() < Date.now()) {
+      throw new UnauthorizedException(`One time password has expired`);
     }
   }
 

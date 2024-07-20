@@ -114,7 +114,23 @@ export class AuthController {
     });
   }
 
-  @ApiBearerAuth()
+  @Public()
+  @Post("send")
+  @ApiOperation({
+    summary: "Send one time password. Use endpoint to resend OTP if required",
+  })
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  async sendOTP(
+    @Body() otpPayload: VerifyOTPDto,
+  ): Promise<ResponseMetadataDto> {
+    await this.authService.sendUserOTP(otpPayload);
+    return new ResponseMetadataDto({
+      status: HttpStatus.OK,
+      message: "Successfully send user phone number",
+    });
+  }
+
+  @Public()
   @Post("verify")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
@@ -122,9 +138,8 @@ export class AuthController {
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async verifyOTP(
     @Body() otpPayload: VerifyOTPDto,
-    @Req() request: Request,
   ): Promise<ResponseMetadataDto> {
-    await this.authService.verifyUserOTP(otpPayload, request.user.id);
+    await this.authService.verifyUserOTP(otpPayload);
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
       message: "Successfully verified user phone number",

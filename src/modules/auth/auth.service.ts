@@ -1,6 +1,7 @@
 import {
   ForbiddenException,
   Injectable,
+  NotFoundException,
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
@@ -137,12 +138,24 @@ export class AuthService {
     return this.login(existingUser);
   }
 
-  async verifyUserOTP(otpPayload: VerifyOTPDto, userId: string) {
-    await this.otpService.verifyOTP(
-      otpPayload.phoneNumber,
+  async sendUserOTP(otpPayload: VerifyOTPDto) {
+    const user = await this.usersService.findByPhoneNumber(
       otpPayload.phoneNumber,
     );
-    await this.usersService.update(userId, { isOTPVerified: true });
+    if (!user) {
+      throw new NotFoundException(
+        `No user was found with phone number: ${otpPayload.phoneNumber}`,
+      );
+    }
+    await this.otpService.sendOTP(otpPayload.phoneNumber);
+  }
+
+  async verifyUserOTP(otpPayload: VerifyOTPDto) {
+    const user = await this.usersService.findByPhoneNumber(
+      otpPayload.phoneNumber,
+    );
+    await this.otpService.verifyOTP(otpPayload.phoneNumber, otpPayload.otp);
+    await this.usersService.update(user.id, { isOTPVerified: true });
   }
 
   private async login(user: User): Promise<AuthTokensDto> {
