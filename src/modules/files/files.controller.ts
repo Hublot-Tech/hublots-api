@@ -8,12 +8,8 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
-import {
-  ApiBearerAuth,
-  ApiBody,
-  ApiCreatedResponse,
-  ApiTags,
-} from "@nestjs/swagger";
+import { ApiBearerAuth, ApiBody, ApiConsumes, ApiTags } from "@nestjs/swagger";
+import { ApiCustomCreatedResponse } from "src/helpers/api-decorator";
 import { ResponseDataDto } from "src/helpers/api-dto";
 
 @ApiBearerAuth()
@@ -36,10 +32,8 @@ export class FilesController {
       },
     },
   })
-  @ApiCreatedResponse({
-    type: ResponseDataDto<string>,
-    description: "Returns the uploaded file",
-  })
+  @ApiCustomCreatedResponse(String)
+  @ApiConsumes("multipart/form-data")
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
   ): ResponseDataDto<string> {
@@ -67,10 +61,8 @@ export class FilesController {
       },
     },
   })
-  @ApiCreatedResponse({
-    type: ResponseDataDto<string[]>,
-    description: "Returns the uploaded file",
-  })
+  @ApiCustomCreatedResponse(String, true)
+  @ApiConsumes("multipart/form-data")
   uploadFiles(
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): ResponseDataDto<string[]> {
