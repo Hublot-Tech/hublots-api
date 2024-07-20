@@ -20,6 +20,8 @@ interface IJWTPayload {
   username: string;
   sub: string;
   type?: TokenType;
+  iat?: number;
+  exp?: number;
 }
 
 @Injectable()
@@ -81,7 +83,9 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       });
     } catch (error) {
-      throw new UnauthorizedException("Invalid access token!");
+      throw new UnauthorizedException(
+        `Error validating access token: ${error.message}`,
+      );
     }
 
     if (payload.type !== type) {
