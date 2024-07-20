@@ -1,11 +1,20 @@
 import {
+  BadRequestException,
   Controller,
+  HttpStatus,
   Post,
   UploadedFile,
+  UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor } from "@nestjs/platform-express";
-import { ApiBearerAuth, ApiCreatedResponse, ApiTags } from "@nestjs/swagger";
+import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
+import {
+  ApiBearerAuth,
+  ApiBody,
+  ApiCreatedResponse,
+  ApiTags,
+} from "@nestjs/swagger";
+import { ResponseDataDto } from "src/helpers/api-dto";
 
 @ApiBearerAuth()
 @ApiTags("Files")
@@ -15,8 +24,64 @@ export class FilesController {
 
   @Post("upload")
   @UseInterceptors(FileInterceptor("file"))
-  @ApiCreatedResponse({ description: "returns the uploaded file" })
-  async uploadFile(@UploadedFile() file: Express.Multer.File) {
-    return file;
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        images: {
+          type: "string",
+          format: "binary",
+          description: "Binary files to upload",
+        },
+      },
+    },
+  })
+  @ApiCreatedResponse({
+    type: ResponseDataDto<string>,
+    description: "Returns the uploaded file",
+  })
+  uploadFile(
+    @UploadedFile() file: Express.Multer.File,
+  ): ResponseDataDto<string> {
+    if (!file) {
+      throw new BadRequestException("File is required");
+    }
+    return new ResponseDataDto({
+      data: `${process.env.PUBLIC_URL}/${file.filename}`,
+      message: "File successfully uploaded",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Post("bulk-upload")
+  @UseInterceptors(FilesInterceptor("files", 10))
+  @ApiBody({
+    schema: {
+      type: "object",
+      properties: {
+        images: {
+          type: "array",
+          format: "binary",
+          description: "Array of binary files to upload",
+        },
+      },
+    },
+  })
+  @ApiCreatedResponse({
+    type: ResponseDataDto<string[]>,
+    description: "Returns the uploaded file",
+  })
+  uploadFiles(
+    @UploadedFiles() files: Array<Express.Multer.File>,
+  ): ResponseDataDto<string[]> {
+    if (!files || files.length === 0) {
+      throw new BadRequestException("Files is required");
+    }
+
+    return new ResponseDataDto({
+      data: files.map((file) => `${process.env.PUBLIC_URL}/${file.filename}`),
+      message: "Files successfully uploaded",
+      status: HttpStatus.OK,
+    });
   }
 }
