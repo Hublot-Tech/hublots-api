@@ -84,6 +84,10 @@ export class ServicesController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createServiceDto: CreateServiceDto,
   ): Promise<ResponseDataDto<ServiceEntity>> {
+    if (!file) {
+      throw new BadRequestException("File is required");
+    }
+
     if (
       !createServiceDto.provider &&
       !request.user.roles.includes(Role.PROVIDER)
@@ -93,13 +97,11 @@ export class ServicesController {
 
     const newService: CreateServiceDto = {
       ...createServiceDto,
+      mainImageRef: `${process.env.PUBLIC_URL}/${file.filename}`,
       provider: request.user.roles.includes(Role.PROVIDER)
         ? request.user.id
         : createServiceDto.provider,
     };
-    if (file) {
-      newService.mainImageRef = `${process.env.PUBLIC_URL}/${file.filename}`;
-    }
 
     const service = await this.serviceService.create(
       newService,
@@ -199,8 +201,8 @@ export class ServicesController {
     @Param("id") serviceId: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<ResponseDataDto<ServiceEntity>> {
-    if (!Array.isArray(files)) {
-      throw new BadRequestException("Except an array of files");
+    if (!files || files.length === 0) {
+      throw new BadRequestException("Image files are required");
     }
 
     const imageRefs: string[] = [];

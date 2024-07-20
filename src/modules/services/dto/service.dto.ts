@@ -90,7 +90,10 @@ export class ServiceEntity extends CreateServiceDto {
   mainImageRef: string;
 
   @IsString({ each: true })
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      "Should not be provided on update except one wants to completely override the previous images",
+  })
   imageRefs: string[];
 
   constructor(service: ServiceEntity) {
@@ -100,7 +103,12 @@ export class ServiceEntity extends CreateServiceDto {
 }
 
 export class UpdateServiceDto extends PartialType(
-  PickType(ServiceEntity, ["name", "description"] as const),
+  PickType(ServiceEntity, [
+    "name",
+    "description",
+    "mainImageRef",
+    "imageRefs",
+  ] as const),
 ) {}
 
 export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
