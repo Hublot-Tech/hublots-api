@@ -5,9 +5,11 @@ import { OffersModule } from "./offers/offers.module";
 import { Service, ServiceSchema } from "./schemas/service.schema";
 import { ServicesController } from "./services.controller";
 import { ServicesService } from "./services.service";
+import { FilesModule } from "../files/files.module";
 
 @Module({
   imports: [
+    FilesModule,
     UsersModule,
     OffersModule,
     MongooseModule.forFeature([{ name: Service.name, schema: ServiceSchema }]),

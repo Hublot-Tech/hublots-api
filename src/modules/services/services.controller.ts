@@ -84,7 +84,7 @@ export class ServicesController {
     @UploadedFile() file: Express.Multer.File,
     @Body() createServiceDto: CreateServiceDto,
   ): Promise<ResponseDataDto<ServiceEntity>> {
-    if (!file?.filename) {
+    if (!file) {
       throw new BadRequestException("File is required");
     }
 

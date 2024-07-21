@@ -1,9 +1,8 @@
-import { Global, Module } from "@nestjs/common";
+import { Module } from "@nestjs/common";
 import { MulterModule } from "@nestjs/platform-express";
-import { FilesService } from "./files.service";
 import { FilesController } from "./files.controller";
+import { FilesService } from "./files.service";
 
-@Global()
 @Module({
   imports: [
     MulterModule.registerAsync({
@@ -12,6 +11,6 @@ import { FilesController } from "./files.controller";
   ],
   controllers: [FilesController],
   providers: [FilesService],
-  exports: [FilesService],
+  exports: [MulterModule],
 })
 export class FilesModule {}
