@@ -37,11 +37,19 @@ export class UsersService {
   }
 
   async findByEmail(email: string): Promise<User> {
-    return this.userModel.findOne({ email }).exec();
+    const user = await this.userModel.findOne({ email }).exec();
+    if (!user)
+      throw new NotFoundException(`User with email ${email} not found`);
+    return user;
   }
 
   async findByPhoneNumber(phoneNumber: string): Promise<User> {
-    return this.userModel.findOne({ phoneNumber }).exec();
+    const user = await this.userModel.findOne({ phoneNumber }).exec();
+    if (!user)
+      throw new NotFoundException(
+        `User with phone number ${phoneNumber} not found`,
+      );
+    return user;
   }
 
   async findAll(query: BulkQueryDto): Promise<User[]> {

@@ -155,19 +155,21 @@ export class PaymentsService {
     }).save();
   }
 
-  async findOne(paymentIdOrRef: string): Promise<Payment> {
+  async findOne(paymentRefOrID: string): Promise<Payment> {
     const paymentDocument = await this.paymentModel
       .findOne({
         $or: [
-          { id: paymentIdOrRef },
-          { reference: paymentIdOrRef },
-          { internal_reference: paymentIdOrRef },
+          { id: paymentRefOrID },
+          { reference: paymentRefOrID },
+          { internal_reference: paymentRefOrID },
         ],
       })
       .exec();
 
     if (!paymentDocument) {
-      throw new NotFoundException("Payment not found");
+      throw new NotFoundException(
+        `Payment with reference or ID ${paymentRefOrID} not found`,
+      );
     }
 
     const { data: paymentData } = await this.httpService.axiosRef.get<

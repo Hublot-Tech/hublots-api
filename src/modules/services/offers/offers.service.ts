@@ -89,8 +89,16 @@ export class OffersService {
     });
   }
 
-  async findOne(serviceId: string): Promise<Offer> {
-    return this.offerModel.findById(serviceId).populate("items").exec();
+  async findOne(offerId: string): Promise<Offer> {
+    const offer = await this.offerModel
+      .findById(offerId)
+      .populate("items")
+      .exec();
+
+    if (!offer) {
+      throw new NotFoundException(`Offer with id ${offerId} not found`);
+    }
+    return offer;
   }
 
   async findAll(query: BulkQueryDto): Promise<Offer[]> {

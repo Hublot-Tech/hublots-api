@@ -24,11 +24,16 @@ export class ServicesService {
   }
 
   async findOne(serviceId: string): Promise<Service> {
-    return this.serviceModel
+    const service = await this.serviceModel
       .findById(serviceId)
       .populate("offers")
       .populate("provider")
       .exec();
+
+    if (!service) {
+      throw new NotFoundException(`Service with id ${serviceId} not found`);
+    }
+    return service;
   }
 
   async findAll(query: BulkQueryDto): Promise<Service[]> {

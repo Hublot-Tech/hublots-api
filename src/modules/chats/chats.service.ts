@@ -1,4 +1,4 @@
-import { Injectable } from "@nestjs/common";
+import { Injectable, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { CreateMessageDto, MessageQueryParamsDto } from "./dto/chat.dto";
@@ -15,11 +15,16 @@ export class ChatsService {
   }
 
   async findOne(chatId: string): Promise<Message> {
-    return this.chatModel
+    const message = this.chatModel
       .findById(chatId)
       .populate("sender")
       .populate("receiver")
       .exec();
+
+    if (!message) {
+      throw new NotFoundException(`Message with  chat id ${chatId} not found`);
+    }
+    return message;
   }
 
   async findAll({
