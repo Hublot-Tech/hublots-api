@@ -53,7 +53,7 @@ export class AnnouncementsService {
     const announcement = await this.announcementModel
       .findById(announcementId)
       .exec();
-    this.checkPrivileges(announcement, deletedBy);
+    this.checkPrivileges(announcementId, announcement, deletedBy);
 
     await announcement.deleteOne().exec();
   }
@@ -66,7 +66,7 @@ export class AnnouncementsService {
     const announcement = await this.announcementModel
       .findById(announcementId)
       .exec();
-    this.checkPrivileges(announcement, updatedBy);
+    this.checkPrivileges(announcementId, announcement, updatedBy);
 
     await announcement
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
@@ -79,10 +79,14 @@ export class AnnouncementsService {
    * @param offer
    * @param actor
    */
-  private checkPrivileges(announcement: Announcement, actor: string) {
+  private checkPrivileges(
+    announcementId: string,
+    announcement: Announcement,
+    actor: string,
+  ) {
     if (!announcement) {
       throw new NotFoundException(
-        `Announcement with id ${announcement._id} not found`,
+        `Announcement with id ${announcementId} not found`,
       );
     }
     if (

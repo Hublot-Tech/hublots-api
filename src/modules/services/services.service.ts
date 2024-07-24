@@ -49,7 +49,7 @@ export class ServicesService {
 
   async delete(serviceId: string, deletedBy: string): Promise<void> {
     const service = await this.serviceModel.findById(serviceId).exec();
-    this.checkPrivileges(service, deletedBy);
+    this.checkPrivileges(serviceId, service, deletedBy);
 
     await service.deleteOne().exec();
   }
@@ -60,7 +60,7 @@ export class ServicesService {
     updatedBy: string,
   ): Promise<Service> {
     const service = await this.serviceModel.findById(serviceId).exec();
-    this.checkPrivileges(service, updatedBy);
+    this.checkPrivileges(serviceId, service, updatedBy);
 
     await service
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
@@ -68,10 +68,14 @@ export class ServicesService {
     return service;
   }
 
-  async addImages(serviceId: string, imageRefs: string[]): Promise<Service> {
+  async addImages(
+    serviceId: string,
+    imageRefs: string[],
+    addedBy: string,
+  ): Promise<Service> {
     const service = await this.serviceModel.findById(serviceId);
-    if (!service)
-      throw new NotFoundException(`Service with id ${serviceId} not found`);
+    this.checkPrivileges(serviceId, service, addedBy);
+
     service.imageRefs.push(...imageRefs);
     return service.save();
   }
@@ -81,9 +85,9 @@ export class ServicesService {
    * @param offer
    * @param actor
    */
-  private checkPrivileges(service: Service, actor: string) {
+  private checkPrivileges(serviceId: string, service: Service, actor: string) {
     if (!service) {
-      throw new NotFoundException(`Service with id ${service._id} not found`);
+      throw new NotFoundException(`Service with id ${serviceId} not found`);
     }
     if (
       service.createdBy.toString() !== actor &&

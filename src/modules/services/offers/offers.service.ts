@@ -41,13 +41,16 @@ export class OffersService {
         createdItemIds = createdItems.map((_) => _.id);
       }
 
-      return new this.offerModel({
+      const offer = await new this.offerModel({
         ...data,
         createdBy,
-        service: serviceId,
         provider: service.provider,
         items: createdItemIds,
       }).save({ session });
+
+      service.offers.push(offer.id);
+      service.save({ session });
+      return offer;
     });
   }
 
@@ -55,15 +58,19 @@ export class OffersService {
     bulkData: CreateOfferDto[],
     createdBy: string,
   ): Promise<Offer[]> {
-    const services = await this.serviceModel.find({
-      $or: bulkData.map((_) => ({ _id: _.service })),
-    });
-    if (services.length !== bulkData.length) {
-      throw new NotFoundException(`Some service ids were not found`);
+    const serviceId = bulkData[0]?.service;
+    const service = await this.serviceModel.findOne({ id: serviceId });
+    if (!service) {
+      throw new NotFoundException(`Service with ID ${serviceId} not found`);
     }
+
+    if (bulkData.find((data) => data.service !== service.id)) {
+      throw new NotFoundException(`All service IDs must the identical`);
+    }
+
     return this.execWithinTransaction(async (session) => {
       let newOffers: Offer[] = [];
-      for (const { items, service: serviceId, ...data } of bulkData) {
+      for (const { items, ...data } of bulkData) {
         let createdItemIds: string[] = [];
         if (items.length > 0) {
           const createdItems = await this.offerItemModel.insertMany(
@@ -75,8 +82,7 @@ export class OffersService {
             new this.offerModel({
               ...data,
               createdBy,
-              service: serviceId,
-              provider: services.find(({ id }) => id === serviceId)?.provider,
+              provider: service.provider,
               items: createdItemIds,
               createdAt: new Date(),
             }),
@@ -84,7 +90,8 @@ export class OffersService {
         }
       }
       newOffers = await this.offerModel.insertMany(newOffers, { session });
-      await session.commitTransaction();
+      service.offers.push(...newOffers.map((_) => _.id));
+      service.save({ session });
       return newOffers;
     });
   }
@@ -111,7 +118,7 @@ export class OffersService {
 
   async delete(offerId: string, deletedBy: string): Promise<void> {
     const offer = await this.offerModel.findById(offerId).exec();
-    this.checkPrivileges(offer, deletedBy);
+    this.checkPrivileges(offerId, offer, deletedBy);
 
     await offer.deleteOne().exec();
   }
@@ -122,7 +129,7 @@ export class OffersService {
     updatedBy: string,
   ): Promise<Offer> {
     const offer = await this.offerModel.findById(offerId).exec();
-    this.checkPrivileges(offer, updatedBy);
+    this.checkPrivileges(offerId, offer, updatedBy);
 
     await offer.updateOne({ ...data, updatedAt: new Date() }).exec();
     return offer;
@@ -134,7 +141,7 @@ export class OffersService {
     addedBy: string,
   ): Promise<Offer> {
     const offer = await this.offerModel.findById(offerId);
-    this.checkPrivileges(offer, addedBy);
+    this.checkPrivileges(offerId, offer, addedBy);
 
     return this.execWithinTransaction(async (session) => {
       const newItems = await this.offerItemModel.insertMany(
@@ -154,7 +161,7 @@ export class OffersService {
     removedBy: string,
   ): Promise<Offer> {
     const offer = await this.offerModel.findById(offerId);
-    this.checkPrivileges(offer, removedBy);
+    this.checkPrivileges(offerId, offer, removedBy);
 
     return this.execWithinTransaction(async (session) => {
       await this.offerItemModel.deleteMany(
@@ -174,7 +181,9 @@ export class OffersService {
     const session = await this.offerModel.startSession();
     session.startTransaction();
     try {
-      return callback(session);
+      const result = await callback(session);
+      await session.commitTransaction();
+      return result;
     } catch (error) {
       session.abortTransaction();
       throw error;
@@ -188,11 +197,14 @@ export class OffersService {
    * @param offer
    * @param actor
    */
-  private checkPrivileges(offer: Offer, actor: string) {
+  private checkPrivileges(offerId: string, offer: Offer, actor: string) {
     if (!offer) {
-      throw new NotFoundException(`Offer with id ${offer._id} not found`);
+      throw new NotFoundException(`Offer with id ${offerId} not found`);
     }
-    if (offer.createdBy !== actor && offer.provider.toString() !== actor) {
+    if (
+      offer.createdBy.toString() !== actor &&
+      offer.provider.toString() !== actor
+    ) {
       throw new ForbiddenException("Operation not permitted for active user");
     }
   }

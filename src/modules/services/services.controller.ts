@@ -199,6 +199,7 @@ export class ServicesController {
       "Requires authorized user to have a `provider` or `support` (customer support) role",
   })
   async uploadImages(
+    @Req() request: Request,
     @Param("id", MongoIdPipe) serviceId: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<ResponseDataDto<ServiceEntity>> {
@@ -211,7 +212,11 @@ export class ServicesController {
       imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
     }
 
-    const service = await this.serviceService.addImages(serviceId, imageRefs);
+    const service = await this.serviceService.addImages(
+      serviceId,
+      imageRefs,
+      request.user.id,
+    );
     return new ResponseDataDto({
       data: new ServiceEntity(service.toJSON()),
       message: "Sucessfully uploaded service images",

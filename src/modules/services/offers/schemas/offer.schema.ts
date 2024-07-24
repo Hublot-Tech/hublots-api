@@ -53,11 +53,11 @@ export class Offer extends Document {
 
   // reference to provider
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })
-  provider: string;
+  provider: Types.ObjectId;
 
   // reference to creator
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })
-  createdBy: string;
+  createdBy: Types.ObjectId;
 }
 
 export const OfferSchema = SchemaFactory.createForClass(Offer);

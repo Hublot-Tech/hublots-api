@@ -9,6 +9,7 @@ import {
   Post,
   Put,
   Req,
+  UnprocessableEntityException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -160,6 +161,11 @@ export class OffersController {
     @Body(new ParseArrayPipe({ items: CreateOfferItemDto }))
     payload: CreateOfferItemDto[],
   ): Promise<ResponseDataDto<OfferDetailsDto>> {
+    if (!payload.length) {
+      throw new UnprocessableEntityException(
+        "Expected at least one offer item",
+      );
+    }
     const updatedOffer = await this.offersService.addItems(
       offerId,
       payload,

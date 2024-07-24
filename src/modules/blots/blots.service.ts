@@ -104,7 +104,7 @@ export class BlotsService {
 
   async cancel(blotId: string, deletedBy: string): Promise<void> {
     const blot = await this.blotModel.findById(blotId).exec();
-    this.checkPrivileges(blot, deletedBy);
+    this.checkPrivileges(blotId, blot, deletedBy);
 
     if ([BlotStatus.FINALIZED, BlotStatus.STARTED_WORK].includes(blot.status)) {
       throw new UnprocessableEntityException(
@@ -121,7 +121,7 @@ export class BlotsService {
     updatedBy: string,
   ): Promise<Blot> {
     const blot = await this.blotModel.findById(blotId).exec();
-    this.checkPrivileges(blot, updatedBy);
+    this.checkPrivileges(blotId, blot, updatedBy);
 
     let allowedStatuses = [];
     switch (data.status) {
@@ -158,7 +158,7 @@ export class BlotsService {
   ): Promise<Blot> {
     const blot = await this.blotModel.findById(blotId);
     if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
-    this.checkPrivileges(blot, addedBy);
+    this.checkPrivileges(blotId, blot, addedBy);
 
     if (blot.status !== BlotStatus.CREATED) {
       throw new UnprocessableEntityException(
@@ -182,7 +182,7 @@ export class BlotsService {
   async removeOptions(blotId: string, optionIds: string[], deletedBy: string) {
     const blot = await this.blotModel.findById(blotId);
     if (!blot) throw new NotFoundException(`Blot with id ${blotId} not found`);
-    this.checkPrivileges(blot, deletedBy);
+    this.checkPrivileges(blotId, blot, deletedBy);
 
     if (blot.status !== BlotStatus.CREATED) {
       throw new UnprocessableEntityException(
@@ -216,9 +216,9 @@ export class BlotsService {
    * @param offer
    * @param actor
    */
-  private checkPrivileges(blot: Blot, actor: string) {
+  private checkPrivileges(blotId: string, blot: Blot, actor: string) {
     if (!blot) {
-      throw new NotFoundException(`Blot with id ${blot.id} not found`);
+      throw new NotFoundException(`Blot with id ${blotId} not found`);
     }
 
     if (

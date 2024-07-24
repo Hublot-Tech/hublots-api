@@ -99,6 +99,7 @@ export class ServiceEntity extends CreateServiceDto {
 
   @ApiProperty()
   @IsString({ each: true })
+  @Transform(({ value }) => value.map((val) => val.toString("hex")))
   offers: string[];
 
   @IsString({ each: true })
