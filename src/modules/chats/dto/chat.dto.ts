@@ -3,6 +3,7 @@ import { ArrayMaxSize, IsEnum, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { MsgContentType } from "../schemas/chat.schema";
+import { Transform } from "class-transformer";
 
 export class CreateMessageDto {
   @IsString()
@@ -24,6 +25,7 @@ export class CreateMessageDto {
 
 export class MessageEntity extends CreateMessageDto {
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   @ApiProperty()
@@ -49,9 +51,11 @@ export class MessageDetailsDto extends OmitType(MessageEntity, [
   "receiver",
 ]) {
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   sender: UserEntity;
 
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   receiver: UserEntity;
 
   constructor(message: MessageDetailsDto) {

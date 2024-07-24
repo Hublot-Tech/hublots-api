@@ -5,6 +5,7 @@ import {
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import {
   IsDateString,
   IsIn,
@@ -60,6 +61,7 @@ export class UpdateAnnouncementDto extends PartialType(
 
 export class AnnouncementEntity extends CreateAnnouncementDto {
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   @ApiProperty({ default: () => Date.now() })
@@ -81,6 +83,7 @@ export class AnnouncementDetailsDto extends OmitType(AnnouncementEntity, [
   "provider",
 ]) {
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   provider: UserEntity;
 
   constructor(announcement: AnnouncementDetailsDto) {

@@ -6,11 +6,11 @@ import {
   PartialType,
   PickType,
 } from "@nestjs/swagger";
+import { Exclude, Transform } from "class-transformer";
 import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
 import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "../offers/dto/offer.dto";
 import { Category } from "../schemas/service.schema";
-import { Exclude } from "class-transformer";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -62,6 +62,7 @@ export class CreateServiceDto {
 
 export class ServiceEntity extends CreateServiceDto {
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   @ApiProperty({
@@ -89,12 +90,20 @@ export class ServiceEntity extends CreateServiceDto {
   @ApiProperty()
   mainImageRef: string;
 
+  @ApiProperty()
+  @IsString({ each: true })
+  offers: string[];
+
   @IsString({ each: true })
   @ApiProperty({
     description:
       "Should not be provided on update except one wants to completely override the previous images",
   })
   imageRefs: string[];
+
+  @Exclude()
+  @ApiHideProperty()
+  createdBy: string;
 
   constructor(service: ServiceEntity) {
     super(service);
@@ -111,11 +120,16 @@ export class UpdateServiceDto extends PartialType(
   ] as const),
 ) {}
 
-export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
+export class ServiceDetailsDto extends OmitType(ServiceEntity, [
+  "provider",
+  "offers",
+]) {
   @ApiProperty({ type: [OfferEntity] })
+  @Transform(({ value }) => value.map((val) => new OfferEntity(val)))
   offers: OfferEntity[];
 
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   provider: UserEntity;
 
   constructor(service: ServiceDetailsDto) {

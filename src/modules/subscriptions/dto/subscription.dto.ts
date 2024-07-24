@@ -1,6 +1,7 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
 import { IsBoolean, IsEnum, IsNumber, IsString } from "class-validator";
 import { SubscriptionPlanType } from "../schemas/subscription-plan.schema";
+import { Transform } from "class-transformer";
 
 export class CreateSubscriptionPlanDto {
   @IsEnum(SubscriptionPlanType)
@@ -50,6 +51,7 @@ export class UpdateSubscriptionPlanDto extends PartialType(
 
 export class SubscriptionPlanEntity extends CreateSubscriptionPlanDto {
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   constructor(subscription: SubscriptionPlanEntity) {

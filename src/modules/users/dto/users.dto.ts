@@ -1,4 +1,10 @@
-import { ApiProperty, OmitType, PartialType } from "@nestjs/swagger";
+import {
+  ApiHideProperty,
+  ApiProperty,
+  OmitType,
+  PartialType,
+} from "@nestjs/swagger";
+import { Exclude, Transform } from "class-transformer";
 import {
   IsBoolean,
   IsDateString,
@@ -7,7 +13,6 @@ import {
   IsOptional,
   IsPhoneNumber,
   IsString,
-  IsUUID,
   MinLength,
 } from "class-validator";
 
@@ -84,7 +89,7 @@ export class CreateUserDto {
 }
 
 export class UserEntity extends CreateUserDto {
-  @IsUUID()
+  @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
   id: string;
 
@@ -129,6 +134,10 @@ export class UserEntity extends CreateUserDto {
   @IsBoolean()
   @ApiProperty({ default: false })
   isOTPVerified: boolean = false;
+
+  @Exclude()
+  @ApiHideProperty()
+  logs: string[];
 
   constructor(user: UserEntity) {
     super(user);

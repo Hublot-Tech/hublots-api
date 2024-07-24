@@ -23,7 +23,7 @@ export class OffersService {
   ) {}
 
   async create(
-    { items, serviceId, ...data }: CreateOfferDto,
+    { items, service: serviceId, ...data }: CreateOfferDto,
     createdBy: string,
   ): Promise<Offer> {
     const service = await this.serviceModel.findById(serviceId);
@@ -44,7 +44,7 @@ export class OffersService {
       return new this.offerModel({
         ...data,
         createdBy,
-        serviceId,
+        service: serviceId,
         provider: service.provider,
         items: createdItemIds,
       }).save({ session });
@@ -56,14 +56,14 @@ export class OffersService {
     createdBy: string,
   ): Promise<Offer[]> {
     const services = await this.serviceModel.find({
-      $or: bulkData.map((_) => ({ _id: _.serviceId })),
+      $or: bulkData.map((_) => ({ _id: _.service })),
     });
     if (services.length !== bulkData.length) {
       throw new NotFoundException(`Some service ids were not found`);
     }
     return this.execWithinTransaction(async (session) => {
       let newOffers: Offer[] = [];
-      for (const { items, serviceId, ...data } of bulkData) {
+      for (const { items, service: serviceId, ...data } of bulkData) {
         let createdItemIds: string[] = [];
         if (items.length > 0) {
           const createdItems = await this.offerItemModel.insertMany(
@@ -75,8 +75,8 @@ export class OffersService {
             new this.offerModel({
               ...data,
               createdBy,
-              serviceId,
-              provider: services.find(({ _id }) => _id === serviceId)?.provider,
+              service: serviceId,
+              provider: services.find(({ id }) => id === serviceId)?.provider,
               items: createdItemIds,
               createdAt: new Date(),
             }),

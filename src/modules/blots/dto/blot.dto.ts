@@ -5,12 +5,11 @@ import {
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
-import { Exclude, Type } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import {
   IsArray,
   IsDateString,
   IsEnum,
-  IsMongoId,
   IsNumber,
   IsObject,
   IsOptional,
@@ -42,7 +41,7 @@ export class CreateBlotOptionDto {
 }
 
 export class BlotOptionEntity extends CreateBlotOptionDto {
-  @IsString()
+  @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
   id: string;
 
@@ -111,7 +110,7 @@ export class UpdateBlotDto extends PartialType(
 }
 
 export class BlotEntity extends CreateBlotDto {
-  @IsString()
+  @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
   id: string;
 
@@ -120,11 +119,11 @@ export class BlotEntity extends CreateBlotDto {
   @ApiProperty({ type: BlotOptionEntity })
   options: BlotOptionEntity[];
 
-  @IsString()
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   provider: string;
 
-  @IsMongoId()
+  @Transform(({ value }) => value.toString("hex"))
   @ApiProperty({ description: "Reference payment for this blot" })
   payment: string;
 
@@ -159,12 +158,15 @@ export class BlotDetailsDto extends OmitType(BlotEntity, [
   "provider",
 ]) {
   @ApiPropertyOptional({ type: OfferEntity })
+  @Transform(({ value }) => new OfferEntity(value))
   offer: OfferEntity;
 
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   consumer: UserEntity;
 
   @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
   provider: UserEntity;
 
   constructor(blotDetails: BlotDetailsDto) {

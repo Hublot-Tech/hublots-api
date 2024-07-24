@@ -4,9 +4,15 @@ import {
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
-import { IsArray, IsNumber, IsString, ValidateNested } from "class-validator";
+import {
+  IsArray,
+  IsMongoId,
+  IsNumber,
+  IsString,
+  ValidateNested,
+} from "class-validator";
 import { CreateOfferItemDto, OfferItemDto } from "./ofer-item.dto";
-import { Type } from "class-transformer";
+import { Transform, Type } from "class-transformer";
 
 export class CreateOfferDto {
   @IsString()
@@ -18,12 +24,14 @@ export class CreateOfferDto {
   price: number;
 
   @IsNumber()
-  @ApiProperty()
+  @ApiProperty({
+    description: "Estimated duration for work completion in hours",
+  })
   estimatedDuration: number;
 
-  @IsString()
-  @ApiProperty()
-  serviceId: string;
+  @IsMongoId()
+  @ApiProperty({ description: "Related service id" })
+  service: string;
 
   @IsArray()
   @Type(() => CreateOfferItemDto)
@@ -40,22 +48,31 @@ export class OfferWithoutItemsDto extends OmitType(CreateOfferDto, ["items"]) {}
 export class UpdateOfferDto extends PartialType(OfferWithoutItemsDto) {}
 
 export class OfferEntity extends OfferWithoutItemsDto {
-  @IsString()
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
-  @ApiProperty({ type: [OfferItemDto] })
+  @ApiProperty()
   @IsString({ each: true })
   items: string[];
+
+  constructor(offer: OfferEntity) {
+    super(offer);
+    Object.assign(this, offer);
+  }
 }
 
 export class OfferDetailsDto extends OfferWithoutItemsDto {
-  @IsString()
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   @ApiProperty({ type: [OfferItemDto] })
-  @Type(() => OfferItemDto)
-  @ValidateNested({ each: true })
+  @Transform(({ value }) => value.map((val) => new OfferItemDto(val)))
   items: OfferItemDto[];
+
+  constructor(offer: OfferEntity) {
+    super(offer);
+    Object.assign(this, offer);
+  }
 }

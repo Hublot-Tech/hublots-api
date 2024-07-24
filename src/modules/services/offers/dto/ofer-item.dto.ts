@@ -1,4 +1,5 @@
 import { ApiProperty, PartialType } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { IsString } from "class-validator";
 
 export class CreateOfferItemDto {
@@ -9,12 +10,21 @@ export class CreateOfferItemDto {
   @IsString()
   @ApiProperty()
   value: string;
+
+  constructor(item: CreateOfferItemDto) {
+    Object.assign(this, item);
+  }
 }
 
 export class UpdateOfferItemDto extends PartialType(CreateOfferItemDto) {}
 
 export class OfferItemDto extends CreateOfferItemDto {
-  @IsString()
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
+
+  constructor(item: OfferItemDto) {
+    super(item);
+    Object.assign(this, item);
+  }
 }

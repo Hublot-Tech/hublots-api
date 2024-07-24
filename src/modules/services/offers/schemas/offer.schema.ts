@@ -42,7 +42,7 @@ export class Offer extends Document {
 
   // reference to service
   @Prop({ required: true, type: Types.ObjectId, ref: "Service" })
-  serviceId: string;
+  service: Types.ObjectId;
 
   //reference to offer items
   @Prop({
