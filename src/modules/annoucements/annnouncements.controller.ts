@@ -34,6 +34,7 @@ import {
   AnnouncementEntity,
   CreateAnnouncementDto,
 } from "./dto/announcement.dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 
 @ApiTags("Announcements")
 @Controller("announcements")
@@ -61,7 +62,7 @@ export class AnnouncementsController {
   @Get(":id")
   @ApiCustomOkResponse(AnnouncementDetailsDto)
   async finOne(
-    @Param("id") announcementId: string,
+    @Param("id", MongoIdPipe) announcementId: string,
   ): Promise<ResponseDataDto<AnnouncementDetailsDto>> {
     const announcement =
       await this.annonucementsService.findOne(announcementId);
@@ -99,7 +100,7 @@ export class AnnouncementsController {
   @ApiCustomCreatedResponse(AnnouncementEntity)
   async update(
     @Req() request: Request,
-    @Param("id") announcementId: string,
+    @Param("id", MongoIdPipe) announcementId: string,
     @Body() payload: CreateAnnouncementDto,
   ): Promise<ResponseDataDto<AnnouncementEntity>> {
     const announcement = await this.annonucementsService.update(
@@ -120,7 +121,7 @@ export class AnnouncementsController {
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async delete(
     @Req() request: Request,
-    @Param("id") announcementId: string,
+    @Param("id", MongoIdPipe) announcementId: string,
   ): Promise<ResponseMetadataDto> {
     await this.annonucementsService.delete(announcementId, request.user.id);
 

@@ -35,6 +35,7 @@ import {
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import {
   CreateAccountDto,
@@ -107,7 +108,7 @@ export class UsersController {
       "Requires authorized user to have an `admin` or `support` (customer support) access",
   })
   async findOne(
-    @Param("id") userId: string,
+    @Param("id", MongoIdPipe) userId: string,
   ): Promise<ResponseDataDto<UserEntity>> {
     const user = await this.usersService.findOne(userId);
 
@@ -127,7 +128,7 @@ export class UsersController {
       "Requires authorized user to have an `admin` or `support` (customer support) access",
   })
   async update(
-    @Param("id") userId: string,
+    @Param("id", MongoIdPipe) userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ResponseDataDto<UserEntity>> {
     if (
@@ -158,7 +159,9 @@ export class UsersController {
     summary: "Delete a user.",
     description: "Requires authorized user to have a `admin` access",
   })
-  async delete(@Param("id") userId: string): Promise<ResponseMetadataDto> {
+  async delete(
+    @Param("id", MongoIdPipe) userId: string,
+  ): Promise<ResponseMetadataDto> {
     await this.usersService.delete(userId);
     return new ResponseMetadataDto({
       message: "Successfully deleted user",

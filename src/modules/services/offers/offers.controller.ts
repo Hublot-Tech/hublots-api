@@ -23,6 +23,7 @@ import {
   ApiCustomOkResponse,
 } from "src/helpers/api-decorator";
 import { ResponseDataDto, ResponseMetadataDto } from "src/helpers/api-dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { UseRoles } from "src/modules/auth/decorator/auth.decorator";
 import { Role } from "src/modules/users/dto";
 import { CreateOfferItemDto } from "./dto/ofer-item.dto";
@@ -44,7 +45,7 @@ export class OffersController {
   @ApiCustomOkResponse(OfferDetailsDto)
   @ApiOperation({ summary: "Fetch service offer." })
   async finOne(
-    @Param("id") offerId: string,
+    @Param("id", MongoIdPipe) offerId: string,
   ): Promise<ResponseDataDto<OfferDetailsDto>> {
     const offer = await this.offersService.findOne(offerId);
     return new ResponseDataDto({
@@ -109,7 +110,7 @@ export class OffersController {
   })
   async updateOffer(
     @Req() request: Request,
-    @Param("id") offerId: string,
+    @Param("id", MongoIdPipe) offerId: string,
     @Body() payload: UpdateOfferDto,
   ): Promise<ResponseDataDto<OfferEntity>> {
     const updatedOffer = await this.offersService.update(
@@ -136,7 +137,7 @@ export class OffersController {
   })
   async deleteOffer(
     @Req() request: Request,
-    @Param("id") offerId: string,
+    @Param("id", MongoIdPipe) offerId: string,
   ): Promise<ResponseMetadataDto> {
     await this.offersService.delete(offerId, request.user.id);
     return new ResponseMetadataDto({
@@ -155,7 +156,7 @@ export class OffersController {
   })
   async addedOfferItems(
     @Req() request: Request,
-    @Param("id") offerId: string,
+    @Param("id", MongoIdPipe) offerId: string,
     @Body(new ParseArrayPipe({ items: CreateOfferItemDto }))
     payload: CreateOfferItemDto[],
   ): Promise<ResponseDataDto<OfferDetailsDto>> {
@@ -181,7 +182,7 @@ export class OffersController {
   })
   async removeOfferItems(
     @Req() request: Request,
-    @Param("id") offerId: string,
+    @Param("id", MongoIdPipe) offerId: string,
     @Body(new ParseArrayPipe({ items: String }))
     itemIds: string[],
   ): Promise<ResponseDataDto<OfferDetailsDto>> {

@@ -45,6 +45,7 @@ import {
   UpdateBlotDto,
 } from "./dto/blot.dto";
 import { BlotStatus } from "./schemas/blot.schema";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
@@ -94,7 +95,7 @@ export class BlotsController {
   })
   async findOne(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
   ): Promise<ResponseDataDto<BlotDetailsDto>> {
     const blot = await this.blotsService.findOne(blotId, request.user.id);
     return new ResponseDataDto({
@@ -136,7 +137,7 @@ export class BlotsController {
   @ApiCustomOkResponse(BlotEntity)
   async update(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
     @Body() payload: UpdateBlotDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
     if (
@@ -174,7 +175,7 @@ export class BlotsController {
   @ApiCustomOkResponse(BlotEntity)
   async acceptOffer(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
     @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
     let blot = await this.blotsService.findOne(blotId, request.user.id);
@@ -208,7 +209,7 @@ export class BlotsController {
   @ApiCustomOkResponse(BlotEntity)
   async finalizeBlot(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
   ): Promise<ResponseDataDto<BlotEntity>> {
     let blot = await this.blotsService.findOne(blotId, request.user.id);
     const { provider, price } = new BlotDetailsDto(blot.toJSON());
@@ -246,7 +247,7 @@ export class BlotsController {
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async delete(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
   ): Promise<ResponseMetadataDto> {
     await this.blotsService.cancel(blotId, request.user.id);
 
@@ -265,7 +266,7 @@ export class BlotsController {
   @ApiCustomOkResponse(BlotEntity)
   async updateOptions(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
     @Body(new ParseArrayPipe({ items: CreateBlotOptionDto }))
     blotOptions: CreateBlotOptionDto[],
   ): Promise<ResponseDataDto<BlotEntity>> {
@@ -290,7 +291,7 @@ export class BlotsController {
   @ApiCustomOkResponse(BlotEntity)
   async deleteOptions(
     @Req() request: Request,
-    @Param("id") blotId: string,
+    @Param("id", MongoIdPipe) blotId: string,
     @Query(new ParseArrayPipe({ items: String }))
     optionIds: string[],
   ): Promise<ResponseDataDto<BlotEntity>> {

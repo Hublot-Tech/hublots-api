@@ -35,6 +35,7 @@ import {
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { Public, UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 import {
@@ -119,7 +120,7 @@ export class ServicesController {
   @ApiCustomOkResponse(ServiceDetailsDto)
   @ApiOperation({ summary: "Fetch service details." })
   async findOne(
-    @Param("id") serviceId: string,
+    @Param("id", MongoIdPipe) serviceId: string,
   ): Promise<ResponseDataDto<ServiceDetailsDto>> {
     const service = await this.serviceService.findOne(serviceId); // Call the findOne method with the serviceId parameter
     return new ResponseDataDto({
@@ -139,7 +140,7 @@ export class ServicesController {
   async update(
     @Req() request: Request,
     @Body() payload: UpdateServiceDto,
-    @Param("id") serviceId: string,
+    @Param("id", MongoIdPipe) serviceId: string,
   ): Promise<ResponseDataDto<ServiceDetailsDto>> {
     const service = await this.serviceService.update(
       serviceId,
@@ -166,7 +167,7 @@ export class ServicesController {
   })
   async delete(
     @Req() request: Request,
-    @Param("id") serviceId: string,
+    @Param("id", MongoIdPipe) serviceId: string,
   ): Promise<ResponseMetadataDto> {
     await this.serviceService.delete(serviceId, request.user.id);
     return new ResponseMetadataDto({
@@ -198,7 +199,7 @@ export class ServicesController {
       "Requires authorized user to have a `provider` or `support` (customer support) role",
   })
   async uploadImages(
-    @Param("id") serviceId: string,
+    @Param("id", MongoIdPipe) serviceId: string,
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): Promise<ResponseDataDto<ServiceEntity>> {
     if (!files || files.length === 0) {

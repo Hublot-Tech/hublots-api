@@ -16,6 +16,7 @@ import {
   ApiOkPaginatedResponse,
 } from "src/helpers/api-decorator";
 import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { ChatsService } from "./chats.service";
 import {
   CreateMessageDto,
@@ -73,7 +74,7 @@ export class ChatsController {
   @ApiCustomOkResponse(MessageDetailsDto)
   @ApiOperation({ summary: "Fetch message details." })
   async getMessageDetails(
-    @Param("id") messageId: string,
+    @Param("id", MongoIdPipe) messageId: string,
   ): Promise<ResponseDataDto<MessageDetailsDto>> {
     const message = await this.chatsService.findOne(messageId);
     return new ResponseDataDto({

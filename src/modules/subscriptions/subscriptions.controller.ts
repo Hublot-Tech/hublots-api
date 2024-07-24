@@ -31,6 +31,7 @@ import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 import { PaymentsService } from "../payments/payments.service";
 import { DirectChargePaymentDto } from "../payments/dto/payment.dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 
 @ApiTags("Subscriptions")
 @Controller("subscriptions")
@@ -67,7 +68,7 @@ export class SubscriptionsController {
     description: "Requires authorized user to have an `provider` role access.",
   })
   async findOne(
-    @Param("id") subscriptionId: string,
+    @Param("id", MongoIdPipe) subscriptionId: string,
   ): Promise<ResponseDataDto<SubscriptionEntity>> {
     const subscription =
       await this.subscriptionsService.findSubscription(subscriptionId);
@@ -87,7 +88,7 @@ export class SubscriptionsController {
   })
   async subscribe(
     @Req() request: Request,
-    @Param("id") subscriptionPlanId: string,
+    @Param("id", MongoIdPipe) subscriptionPlanId: string,
     @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseDataDto<SubscriptionEntity>> {
     const subscriptionPlan =
@@ -158,7 +159,7 @@ export class SubscriptionsController {
     description: "Requires authorized user to have an `admin` role access.",
   })
   async updatePlan(
-    @Param("id") subscriptionPlanId: string,
+    @Param("id", MongoIdPipe) subscriptionPlanId: string,
     @Body() payload: UpdateSubscriptionPlanDto,
   ) {
     const subscriptionPlan = await this.subscriptionsService.update(
@@ -176,7 +177,7 @@ export class SubscriptionsController {
   @ApiCustomOkResponse(SubscriptionPlanEntity)
   @ApiOperation({ summary: "Fetch subscription plan details." })
   async findPlan(
-    @Param(":id") subscriptionPlanId: string,
+    @Param("id", MongoIdPipe) subscriptionPlanId: string,
   ): Promise<ResponseDataDto<SubscriptionPlanEntity>> {
     const subscriptionPlan =
       await this.subscriptionsService.findOne(subscriptionPlanId);
