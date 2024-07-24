@@ -147,7 +147,8 @@ export class BlotsService {
       );
     }
 
-    return blot.updateOne({ ...data, updatedAt: new Date() }).exec();
+    await blot.updateOne({ ...data, updatedAt: new Date() }).exec();
+    return blot;
   }
 
   async addOptions(

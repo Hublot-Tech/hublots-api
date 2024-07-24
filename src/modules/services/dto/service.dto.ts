@@ -17,16 +17,16 @@ export class CreateServiceDto {
     example: "Plomberie et sanitaire",
     description: "Name of the service",
   })
-  @IsString({ message: "name is required" })
-  @MinLength(3, { message: "Service Name must be at least 3 characters long" })
+  @IsString()
+  @MinLength(3)
   name: string;
 
   @ApiProperty({
     example: "Nettoyage des canalisations, installation de robinetterie, etc.",
     description: "Description of the service",
   })
-  @IsString({ message: "Service description is required" })
-  @MinLength(30, { message: "description must be at least 40 characters long" })
+  @IsString()
+  @MinLength(30)
   description: string;
 
   @IsEnum(Category)

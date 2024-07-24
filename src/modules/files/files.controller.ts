@@ -68,8 +68,8 @@ export class FilesController {
   uploadFiles(
     @UploadedFiles() files: Array<Express.Multer.File>,
   ): ResponseDataDto<string[]> {
-    if (!files || files.length === 0) {
-      throw new BadRequestException("Files is required");
+    if (!files || files.length < 2) {
+      throw new BadRequestException("At least 02 files are required");
     }
 
     return new ResponseDataDto({

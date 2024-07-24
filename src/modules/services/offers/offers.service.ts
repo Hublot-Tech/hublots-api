@@ -108,13 +108,12 @@ export class OffersService {
     offerId: string,
     data: UpdateOfferDto,
     updatedBy: string,
-  ): Promise<Service> {
+  ): Promise<Offer> {
     const offer = await this.offerModel.findById(offerId).exec();
     this.checkPrivileges(offer, updatedBy);
 
-    return offer
-      .updateOne({ ...data, updatedAt: new Date() }, { new: true })
-      .exec();
+    await offer.updateOne({ ...data, updatedAt: new Date() }).exec();
+    return offer;
   }
 
   async addItems(

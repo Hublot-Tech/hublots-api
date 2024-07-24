@@ -54,9 +54,10 @@ export class ServicesService {
     const service = await this.serviceModel.findById(serviceId).exec();
     this.checkPrivileges(service, updatedBy);
 
-    return service
+    await service
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
       .exec();
+    return service;
   }
 
   async addImages(serviceId: string, imageRefs: string[]): Promise<Service> {

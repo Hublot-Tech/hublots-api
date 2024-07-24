@@ -68,9 +68,10 @@ export class AnnouncementsService {
       .exec();
     this.checkPrivileges(announcement, updatedBy);
 
-    return announcement
+    await announcement
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
       .exec();
+    return announcement;
   }
 
   /**

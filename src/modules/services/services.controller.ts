@@ -148,7 +148,7 @@ export class ServicesController {
     );
     return new ResponseDataDto({
       data: new ServiceDetailsDto(service.toJSON()),
-      message: "Successfully retrieved service",
+      message: "Successfully updated service",
       status: HttpStatus.OK,
     });
   }
