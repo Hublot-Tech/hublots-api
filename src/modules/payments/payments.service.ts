@@ -195,7 +195,7 @@ export class PaymentsService {
     return this.paymentModel
       .find(query)
       .limit(query.perpage)
-      .skip(query.page)
+      .skip(query.perpage * (query.page - 1))
       .exec();
   }
 }

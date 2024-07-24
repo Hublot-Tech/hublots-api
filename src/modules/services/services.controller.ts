@@ -30,7 +30,6 @@ import {
   ApiOkPaginatedResponse,
 } from "src/helpers/api-decorator";
 import {
-  BulkQueryDto,
   PaginatedResponseDataDto,
   ResponseDataDto,
   ResponseMetadataDto,
@@ -42,6 +41,7 @@ import {
   CreateServiceDto,
   ServiceDetailsDto,
   ServiceEntity,
+  ServiceParamsDto,
   UpdateServiceDto,
 } from "./dto/service.dto";
 import { ServicesService } from "./services.service";
@@ -57,7 +57,7 @@ export class ServicesController {
   @ApiOkPaginatedResponse(ServiceEntity)
   @ApiOperation({ summary: "Fetch all services." })
   async findAll(
-    @Query() query: BulkQueryDto,
+    @Query() query: ServiceParamsDto,
   ): Promise<PaginatedResponseDataDto<ServiceEntity>> {
     const services = await this.serviceService.findAll(query);
     return new PaginatedResponseDataDto({

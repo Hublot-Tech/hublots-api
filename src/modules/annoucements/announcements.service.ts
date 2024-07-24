@@ -4,13 +4,13 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Announcement } from "./schemas/announcement.schema";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import {
   CreateAnnouncementDto,
   UpdateAnnouncementDto,
 } from "./dto/announcement.dto";
+import { Announcement } from "./schemas/announcement.schema";
 
 @Injectable()
 export class AnnouncementsService {
@@ -45,7 +45,7 @@ export class AnnouncementsService {
     return this.announcementModel
       .find()
       .limit(query.perpage)
-      .skip(query.page)
+      .skip(query.perpage * (query.page - 1))
       .exec();
   }
 

@@ -39,7 +39,7 @@ export class ChatsService {
         ],
       })
       .limit(query.perpage)
-      .skip(query.page)
+      .skip(query.perpage * (query.page - 1))
       .exec();
   }
 }

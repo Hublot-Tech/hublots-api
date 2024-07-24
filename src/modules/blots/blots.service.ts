@@ -97,7 +97,7 @@ export class BlotsService {
         $or: [{ provider: activeUser }, { consumer: activeUser }],
       })
       .limit(query.perpage)
-      .skip(query.page)
+      .skip(query.perpage * (query.page - 1))
       .populate("options")
       .exec();
   }

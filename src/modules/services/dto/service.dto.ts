@@ -7,7 +7,14 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import { Exclude, Transform } from "class-transformer";
-import { IsEnum, IsOptional, IsString, MinLength } from "class-validator";
+import {
+  IsEnum,
+  IsMongoId,
+  IsOptional,
+  IsString,
+  MinLength,
+} from "class-validator";
+import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { OfferEntity } from "../offers/dto/offer.dto";
 import { Category } from "../schemas/service.schema";
@@ -133,6 +140,28 @@ export class ServiceDetailsDto extends OmitType(ServiceEntity, [
   provider: UserEntity;
 
   constructor(service: ServiceDetailsDto) {
+    super(service);
+    Object.assign(this, service);
+  }
+}
+
+export class ServiceParamsDto extends BulkQueryDto {
+  @IsMongoId()
+  @IsOptional()
+  @ApiPropertyOptional()
+  createdBy: string;
+
+  @IsMongoId()
+  @IsOptional()
+  @ApiPropertyOptional()
+  provider: string;
+
+  @IsOptional()
+  @IsEnum(Category)
+  @ApiPropertyOptional({ enum: Category, description: "Service category" })
+  category: Category;
+
+  constructor(service: ServiceParamsDto) {
     super(service);
     Object.assign(this, service);
   }

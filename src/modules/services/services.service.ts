@@ -5,8 +5,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { BulkQueryDto } from "../../helpers/api-dto";
-import { CreateServiceDto, UpdateServiceDto } from "./dto";
+import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
 import { Service } from "./schemas/service.schema";
 
 @Injectable()
@@ -36,11 +35,15 @@ export class ServicesService {
     return service;
   }
 
-  async findAll(query: BulkQueryDto): Promise<Service[]> {
+  async findAll({
+    page,
+    perpage,
+    ...parmas
+  }: ServiceParamsDto): Promise<Service[]> {
     return this.serviceModel
-      .find()
-      .limit(query.perpage)
-      .skip(query.page)
+      .find({ ...parmas })
+      .limit(perpage)
+      .skip(perpage * (page - 1))
       .exec();
   }
 
