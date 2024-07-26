@@ -40,10 +40,6 @@ export class Offer extends Document {
   })
   updatedAt: Date;
 
-  // reference to service
-  @Prop({ required: true, type: Types.ObjectId, ref: "Service" })
-  service: Types.ObjectId;
-
   //reference to offer items
   @Prop({
     type: [{ type: Types.ObjectId, ref: OfferItem.name, required: true }],

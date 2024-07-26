@@ -133,7 +133,8 @@ export class ServiceDetailsDto extends OmitType(ServiceEntity, [
   "offers",
 ]) {
   @ApiProperty({ type: [OfferEntity] })
-  @Transform(({ value }) => value.map((val) => new OfferEntity(val)))
+  // @Transform(({ value }) => value.map((val) => new OfferEntity(val)))
+  @Transform(({ value }) => value.map((val) => val.toString("hex")))
   offers: OfferEntity[];
 
   @ApiProperty({ type: UserEntity })
