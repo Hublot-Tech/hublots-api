@@ -1,4 +1,4 @@
-import { ApiProperty } from "@nestjs/swagger";
+import { ApiProperty, PickType } from "@nestjs/swagger";
 import { IsEmail, IsString } from "class-validator";
 import { ResponseMetadataDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
@@ -56,9 +56,11 @@ export class AuthGoogleLoginDto {
 }
 
 export class AuthTokensDto {
+  @IsString()
   @ApiProperty({ description: "Access token live is 24h" })
   accessToken: string;
 
+  @IsString()
   @ApiProperty({
     description:
       "Use refresh token to request of new access token. Refresh token live is 7d",
@@ -69,3 +71,7 @@ export class AuthTokensDto {
     Object.assign(this, tokens);
   }
 }
+
+export class RefreshTokenDto extends PickType(AuthTokensDto, [
+  "refreshToken",
+]) {}

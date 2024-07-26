@@ -21,6 +21,7 @@ import { AuthService } from "./auth.service";
 import { Public } from "./decorator/auth.decorator";
 import {
   AuthTokensDto,
+  RefreshTokenDto,
   SignInDto,
   SignInResponseDto,
   SignUpResponseDto,
@@ -104,9 +105,11 @@ export class AuthController {
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async requestAccessToken(
-    @Body("refreshToken") refreshToken: string,
+    @Body() payload: RefreshTokenDto,
   ): Promise<ResponseDataDto<AuthTokensDto>> {
-    const tokens = await this.authService.requestAuthzToken(refreshToken);
+    const tokens = await this.authService.requestAuthzToken(
+      payload.refreshToken,
+    );
     return new ResponseDataDto({
       data: tokens,
       status: HttpStatus.CREATED,
