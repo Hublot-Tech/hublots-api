@@ -16,6 +16,7 @@ import {
 } from "./dto/blot.dto";
 import { BlotOption } from "./schemas/blot-option.schema";
 import { Blot, BlotStatus } from "./schemas/blot.schema";
+import { TransactionManager } from "src/helpers/tx-manager";
 
 @Injectable()
 export class BlotsService {
@@ -24,13 +25,14 @@ export class BlotsService {
     @InjectModel(BlotOption.name)
     private readonly blotOptionModel: Model<BlotOption>,
     @InjectModel(OfferItem.name) private readonly itemModel: Model<OfferItem>,
+    private readonly txManager: TransactionManager,
   ) {}
 
   async create(
     { options, ...payload }: CreateBlotDto,
     createdBy: string,
   ): Promise<Blot> {
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       const newBlotOptions = await this.prepareBlotOptions(options, session);
       const createdOptions = await this.blotOptionModel.insertMany(
         newBlotOptions,
@@ -166,7 +168,7 @@ export class BlotsService {
       );
     }
 
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       const newBlotOptions = await this.prepareBlotOptions(options, session);
       const createdOptions = await this.blotOptionModel.insertMany(
         newBlotOptions,
@@ -175,7 +177,7 @@ export class BlotsService {
       blot.options.push(
         ...createdOptions.map((opt) => new ObjectId(opt.id as string)),
       );
-      return blot.save({ session });
+      return await blot.save({ session });
     });
   }
 
@@ -194,21 +196,6 @@ export class BlotsService {
       (_) => !optionIds.includes(_._id.toString()),
     );
     return blot.save();
-  }
-
-  private async execWithinTransaction<T>(
-    callback: (session: ClientSession) => T | Promise<T>,
-  ) {
-    const session = await this.blotModel.startSession();
-    session.startTransaction();
-    try {
-      return callback(session);
-    } catch (error) {
-      session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
   }
 
   /**

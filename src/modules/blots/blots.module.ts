@@ -9,6 +9,7 @@ import { BlotsController } from "./blots.controller";
 import { BlotsService } from "./blots.service";
 import { BlotOption, BlotOptionSchema } from "./schemas/blot-option.schema";
 import { Blot, BlotSchema } from "./schemas/blot.schema";
+import { TransactionManager } from "src/helpers/tx-manager";
 
 @Module({
   imports: [
@@ -20,6 +21,6 @@ import { Blot, BlotSchema } from "./schemas/blot.schema";
     ]),
   ],
   controllers: [BlotsController],
-  providers: [BlotsService],
+  providers: [BlotsService, TransactionManager],
 })
 export class BlotsModule {}

@@ -5,6 +5,7 @@ import { Offer, OfferSchema } from "./schemas/offer.schema";
 import { OfferItem, OfferItemSchema } from "./schemas/offer-item.schema";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Service, ServiceSchema } from "../schemas/service.schema";
+import { TransactionManager } from "src/helpers/tx-manager";
 
 @Module({
   imports: [
@@ -14,7 +15,7 @@ import { Service, ServiceSchema } from "../schemas/service.schema";
       { name: OfferItem.name, schema: OfferItemSchema },
     ]),
   ],
-  providers: [OffersService],
+  providers: [OffersService, TransactionManager],
   controllers: [OffersController],
 })
 export class OffersModule {}

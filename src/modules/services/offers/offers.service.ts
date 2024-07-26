@@ -5,8 +5,9 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { ObjectId } from "mongodb";
-import { ClientSession, Model } from "mongoose";
+import { Model } from "mongoose";
 import { BulkQueryDto } from "src/helpers/api-dto";
+import { TransactionManager } from "src/helpers/tx-manager";
 import { Service } from "../schemas/service.schema";
 import { CreateOfferItemDto } from "./dto/ofer-item.dto";
 import { CreateOfferDto, UpdateOfferDto } from "./dto/offer.dto";
@@ -20,6 +21,7 @@ export class OffersService {
     @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
     @InjectModel(OfferItem.name)
     private readonly offerItemModel: Model<OfferItem>,
+    private readonly txManager: TransactionManager,
   ) {}
 
   async create(
@@ -31,7 +33,7 @@ export class OffersService {
       throw new NotFoundException(`Service with ID ${serviceId} not found`);
     }
 
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       let createdItemIds: string[] = [];
       if (items.length > 0) {
         const createdItems = await this.offerItemModel.insertMany(
@@ -41,15 +43,17 @@ export class OffersService {
         createdItemIds = createdItems.map((_) => _.id);
       }
 
-      const offer = await new this.offerModel({
+      const offer = new this.offerModel({
         ...data,
         createdBy,
         provider: service.provider,
         items: createdItemIds,
-      }).save({ session });
+      });
+      service.offers.push(new ObjectId(offer.id as string));
 
-      service.offers.push(offer.id);
-      service.save({ session });
+      await offer.save({ session });
+      await service.save({ session });
+
       return offer;
     });
   }
@@ -68,7 +72,7 @@ export class OffersService {
       throw new NotFoundException(`All service IDs must the identical`);
     }
 
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       let newOffers: Offer[] = [];
       for (const { items, ...data } of bulkData) {
         let createdItemIds: string[] = [];
@@ -82,16 +86,17 @@ export class OffersService {
             new this.offerModel({
               ...data,
               createdBy,
-              provider: service.provider,
               items: createdItemIds,
-              createdAt: new Date(),
+              provider: service.provider,
             }),
           );
         }
       }
       newOffers = await this.offerModel.insertMany(newOffers, { session });
-      service.offers.push(...newOffers.map((_) => _.id));
-      service.save({ session });
+      service.offers.push(
+        ...newOffers.map((_) => new ObjectId(_.id as string)),
+      );
+      await service.save({ session });
       return newOffers;
     });
   }
@@ -143,13 +148,13 @@ export class OffersService {
     const offer = await this.offerModel.findById(offerId);
     this.checkPrivileges(offerId, offer, addedBy);
 
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       const newItems = await this.offerItemModel.insertMany(
         items.map((item) => new this.offerItemModel(item)),
         { session },
       );
 
-      offer.items.push(...newItems.map((_) => _.id));
+      offer.items.push(...newItems.map((_) => new ObjectId(_.id as string)));
       offer.updatedAt = new Date();
       return (await offer.save({ session })).populate("items");
     });
@@ -163,7 +168,7 @@ export class OffersService {
     const offer = await this.offerModel.findById(offerId);
     this.checkPrivileges(offerId, offer, removedBy);
 
-    return this.execWithinTransaction(async (session) => {
+    return this.txManager.withTransaction(async (session) => {
       await this.offerItemModel.deleteMany(
         itemIds.map((id) => new ObjectId(id)),
         { session },
@@ -173,23 +178,6 @@ export class OffersService {
       );
       return (await offer.save({ session })).populate("items");
     });
-  }
-
-  private async execWithinTransaction<T>(
-    callback: (session: ClientSession) => T | Promise<T>,
-  ) {
-    const session = await this.offerModel.startSession();
-    session.startTransaction();
-    try {
-      const result = await callback(session);
-      await session.commitTransaction();
-      return result;
-    } catch (error) {
-      session.abortTransaction();
-      throw error;
-    } finally {
-      session.endSession();
-    }
   }
 
   /**
