@@ -27,7 +27,7 @@ import { ResponseDataDto, ResponseMetadataDto } from "src/helpers/api-dto";
 import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { UseRoles } from "src/modules/auth/decorator/auth.decorator";
 import { Role } from "src/modules/users/dto";
-import { CreateOfferItemDto } from "./dto/ofer-item.dto";
+import { CreateOfferItemDto, OfferItemEntity } from "./dto/ofer-item.dto";
 import {
   CreateOfferDto,
   OfferDetailsDto,
@@ -56,6 +56,22 @@ export class OffersController {
     });
   }
 
+  @Get(":id/items")
+  @ApiCustomCreatedResponse(OfferItemEntity, true)
+  @ApiOperation({ summary: "Fetch service offer items." })
+  async finItems(
+    @Param("id", MongoIdPipe) offerId: string,
+  ): Promise<ResponseDataDto<OfferItemEntity[]>> {
+    const offerItems = await this.offersService.findItems(offerId);
+    return new ResponseDataDto({
+      data: offerItems.map(
+        (offerItem) => new OfferItemEntity(offerItem.toJSON()),
+      ),
+      message: "Fetched offer item successfully",
+      status: HttpStatus.OK,
+    });
+  }
+
   @Post("new")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
   @ApiCustomCreatedResponse(OfferEntity)
@@ -77,13 +93,13 @@ export class OffersController {
   }
 
   @Post("bulk-insert")
-  @UseRoles(Role.SUPPORT, Role.PROVIDER)
+  @UseRoles(Role.SUPPORT)
   @ApiCustomCreatedResponse(OfferEntity, true)
   @ApiBody({ type: [CreateOfferDto] })
   @ApiOperation({
     summary: "Create multiple service offers.",
     description:
-      "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
+      "Requires authorized user to have a `support` role access. Customer support must be the creator of the offer",
   })
   async createManyOffers(
     @Req() request: Request,
@@ -149,38 +165,38 @@ export class OffersController {
 
   @Post(":id/items")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
-  @ApiCustomOkResponse(OfferDetailsDto)
+  @ApiCustomCreatedResponse(OfferItemEntity, true)
   @ApiOperation({
     summary: "Add new offer items.",
     description:
       "Requires authorized user to have a `provider` or `support` role access. Customer support must be the creator of the offer",
   })
-  async addedOfferItems(
+  async addItems(
     @Req() request: Request,
     @Param("id", MongoIdPipe) offerId: string,
     @Body(new ParseArrayPipe({ items: CreateOfferItemDto }))
     payload: CreateOfferItemDto[],
-  ): Promise<ResponseDataDto<OfferDetailsDto>> {
+  ): Promise<ResponseDataDto<OfferItemEntity[]>> {
     if (!payload.length) {
       throw new UnprocessableEntityException(
         "Expected at least one offer item",
       );
     }
-    const updatedOffer = await this.offersService.addItems(
+    const offerItems = await this.offersService.addItems(
       offerId,
       payload,
       request.user.id,
     );
     return new ResponseDataDto({
-      data: new OfferDetailsDto(updatedOffer.toJSON()),
+      data: offerItems.map((item) => new OfferItemEntity(item.toJSON())),
       message: "Offer items added successfully",
-      status: HttpStatus.OK,
+      status: HttpStatus.CREATED,
     });
   }
 
   @Delete(":id/items")
   @UseRoles(Role.SUPPORT, Role.PROVIDER)
-  @ApiCustomOkResponse(OfferDetailsDto)
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
   @ApiOperation({
     summary: "Delete offer items.",
     description:
@@ -191,16 +207,11 @@ export class OffersController {
     @Param("id", MongoIdPipe) offerId: string,
     @Body(new ParseArrayPipe({ items: String }))
     itemIds: string[],
-  ): Promise<ResponseDataDto<OfferDetailsDto>> {
-    const updatedOffer = await this.offersService.removedItems(
-      offerId,
-      itemIds,
-      request.user.id,
-    );
-    return new ResponseDataDto({
-      data: new OfferDetailsDto(updatedOffer.toJSON()),
+  ): Promise<ResponseMetadataDto> {
+    await this.offersService.removedItems(offerId, itemIds, request.user.id);
+    return new ResponseMetadataDto({
       message: "Offers items deleted successfully",
-      status: HttpStatus.OK,
+      status: HttpStatus.NO_CONTENT,
     });
   }
 }

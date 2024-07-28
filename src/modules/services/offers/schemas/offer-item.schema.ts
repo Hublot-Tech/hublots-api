@@ -1,6 +1,7 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
 import { User } from "src/modules/users/schemas/user.schema";
+import { Offer } from "./offer.schema";
 
 @Schema({
   toJSON: {
@@ -17,7 +18,7 @@ export class OfferItem extends Document {
     type: String,
     required: true,
   })
-  description: string;
+  name: string;
 
   @Prop({
     type: String,
@@ -31,6 +32,10 @@ export class OfferItem extends Document {
     default: Date.now,
   })
   createdAt: Date;
+
+  //reference to offer items
+  @Prop({ type: Types.ObjectId, ref: Offer.name, required: true })
+  offer: Types.ObjectId;
 
   // reference to creator
   @Prop({ required: true, type: Types.ObjectId, ref: User.name })

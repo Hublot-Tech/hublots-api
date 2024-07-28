@@ -46,15 +46,11 @@ export class OffersService {
       const offer = new this.offerModel({
         ...data,
         createdBy,
-        provider: service.provider,
+        service: serviceId,
         items: createdItemIds,
+        provider: service.provider,
       });
-      service.offers.push(new ObjectId(offer.id as string));
-
-      await offer.save({ session });
-      await service.save({ session });
-
-      return offer;
+      return await offer.save({ session });
     });
   }
 
@@ -73,44 +69,42 @@ export class OffersService {
     }
 
     return this.txManager.withTransaction(async (session) => {
-      let newOffers: Offer[] = [];
+      const newOffers: Offer[] = [];
       for (const { items, ...data } of bulkData) {
-        let createdItemIds: string[] = [];
+        const newOffer = new this.offerModel({
+          ...data,
+          createdBy,
+          service: serviceId,
+          provider: service.provider,
+        });
+
         if (items.length > 0) {
-          const createdItems = await this.offerItemModel.insertMany(
-            items.map((item) => ({ ...item, createdBy })),
+          await this.offerItemModel.insertMany(
+            items.map((item) => ({ ...item, offer: newOffer.id, createdBy })),
             { session },
           );
-          createdItemIds = createdItems.map((_) => _.id);
-          newOffers.push(
-            new this.offerModel({
-              ...data,
-              createdBy,
-              items: createdItemIds,
-              provider: service.provider,
-            }),
-          );
         }
+        newOffers.push(newOffer);
       }
-      newOffers = await this.offerModel.insertMany(newOffers, { session });
-      service.offers.push(
-        ...newOffers.map((_) => new ObjectId(_.id as string)),
-      );
-      await service.save({ session });
-      return newOffers;
+      return await this.offerModel.insertMany(newOffers, { session });
     });
   }
 
   async findOne(offerId: string): Promise<Offer> {
     const offer = await this.offerModel
       .findById(offerId)
-      .populate("items")
+      .populate("service")
+      .populate("provider")
       .exec();
 
     if (!offer) {
       throw new NotFoundException(`Offer with id ${offerId} not found`);
     }
     return offer;
+  }
+
+  async findItems(offerId: string): Promise<OfferItem[]> {
+    return this.offerItemModel.find({ offer: offerId }).exec();
   }
 
   async findAll(query: BulkQueryDto): Promise<Offer[]> {
@@ -144,40 +138,31 @@ export class OffersService {
     offerId: string,
     items: CreateOfferItemDto[],
     addedBy: string,
-  ): Promise<Offer> {
+  ): Promise<OfferItem[]> {
     const offer = await this.offerModel.findById(offerId);
     this.checkPrivileges(offerId, offer, addedBy);
 
-    return this.txManager.withTransaction(async (session) => {
-      const newItems = await this.offerItemModel.insertMany(
-        items.map((item) => new this.offerItemModel(item)),
-        { session },
-      );
-
-      offer.items.push(...newItems.map((_) => new ObjectId(_.id as string)));
-      offer.updatedAt = new Date();
-      return (await offer.save({ session })).populate("items");
-    });
+    return this.offerItemModel.insertMany(
+      items.map(
+        (item) =>
+          new this.offerItemModel({
+            ...item,
+            offer: offerId,
+            createdBy: addedBy,
+          }),
+      ),
+    );
   }
 
   async removedItems(
     offerId: string,
     itemIds: string[],
     removedBy: string,
-  ): Promise<Offer> {
+  ): Promise<void> {
     const offer = await this.offerModel.findById(offerId);
     this.checkPrivileges(offerId, offer, removedBy);
 
-    return this.txManager.withTransaction(async (session) => {
-      await this.offerItemModel.deleteMany(
-        itemIds.map((id) => new ObjectId(id)),
-        { session },
-      );
-      offer.items = offer.items.filter(
-        (item) => !itemIds.some((id) => item.toString() === id),
-      );
-      return (await offer.save({ session })).populate("items");
-    });
+    await this.offerItemModel.deleteMany(itemIds.map((id) => new ObjectId(id)));
   }
 
   /**

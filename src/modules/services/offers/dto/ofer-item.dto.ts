@@ -4,11 +4,15 @@ import { IsString } from "class-validator";
 
 export class CreateOfferItemDto {
   @IsString()
-  @ApiProperty()
-  description: string;
+  @ApiProperty({ examples: ["Nombre  de photos", "Couleur"] })
+  name: string;
 
   @IsString()
-  @ApiProperty()
+  @ApiProperty({
+    description:
+      "Value of the item, can be quantitatif, qualitatif or of any kind that well describes the item",
+    examples: [10, "Rouge", "25m"],
+  })
   value: string;
 
   constructor(item: CreateOfferItemDto) {
