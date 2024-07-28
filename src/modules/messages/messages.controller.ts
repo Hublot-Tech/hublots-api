@@ -2,6 +2,7 @@ import {
   BadRequestException,
   Body,
   Controller,
+  Delete,
   Get,
   HttpStatus,
   Param,
@@ -141,6 +142,20 @@ export class MessagesController {
     return new ResponseDataDto({
       data: new MessageEntity(message.toJSON()),
       message: "Successfully updated message content",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Delete(":id")
+  @ApiOperation({ summary: "Delete a sent message." })
+  async deleteMessage(
+    @Req() request: Request,
+    @Param("id", MongoIdPipe) messageId: string,
+  ): Promise<ResponseMetadataDto> {
+    await this.messagesService.delete(messageId, request.user.id);
+
+    return new ResponseMetadataDto({
+      message: "Successfully deleted message status",
       status: HttpStatus.OK,
     });
   }

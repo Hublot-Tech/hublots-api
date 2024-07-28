@@ -65,6 +65,12 @@ export class MessagesService {
     if (message.sender.toString() !== updatedBy) {
       throw new UnauthorizedException("Message can only be edited by sender");
     }
+    //only update messages not older than 5 min
+    if (message.createdAt.getTime() > Date.now() - 300_000) {
+      throw new UnprocessableEntityException(
+        "Cannot update messages older than 5 minutes",
+      );
+    }
 
     if (MsgContentType.TEXT === message.contentType && payload.fileRef) {
       throw new UnprocessableEntityException(
@@ -113,5 +119,26 @@ export class MessagesService {
         readAt: status === "read" ? new Date() : undefined,
       })
       .exec();
+  }
+
+  async delete(messageId: string, deletedBy: string) {
+    const message = await this.messageModel.findById(messageId).exec();
+
+    if (!message) {
+      throw new NotFoundException(`Message with  id ${messageId} not found`);
+    }
+    if (message.sender.toString() !== deletedBy) {
+      throw new UnauthorizedException(
+        "Message status can only be deleted by sender",
+      );
+    }
+    //only update messages not older than 5 min
+    if (message.createdAt.getTime() > Date.now() - 300_000) {
+      throw new UnprocessableEntityException(
+        "Cannot delete messages older than 5 minutes",
+      );
+    }
+
+    await message.deleteOne().exec();
   }
 }
