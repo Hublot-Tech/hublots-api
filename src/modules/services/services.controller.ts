@@ -44,6 +44,7 @@ import {
   ServiceParamsDto,
   UpdateServiceDto,
 } from "./dto/service.dto";
+import { OfferEntity } from "./offers/dto/offer.dto";
 import { ServicesService } from "./services.service";
 
 @ApiBearerAuth()
@@ -122,10 +123,25 @@ export class ServicesController {
   async findOne(
     @Param("id", MongoIdPipe) serviceId: string,
   ): Promise<ResponseDataDto<ServiceDetailsDto>> {
-    const service = await this.serviceService.findOne(serviceId); // Call the findOne method with the serviceId parameter
+    const service = await this.serviceService.findOne(serviceId);
     return new ResponseDataDto({
       data: new ServiceDetailsDto(service.toJSON()),
       message: "Successfully retrieved service",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Get(":id/offers")
+  @ApiCustomCreatedResponse(OfferEntity, true)
+  @ApiOperation({ summary: "Fetch service offers." })
+  async findOffers(
+    @Param("id", MongoIdPipe) serviceId: string,
+  ): Promise<ResponseDataDto<OfferEntity[]>> {
+    const offers = await this.serviceService.findOffers(serviceId);
+    console.log({ serviceId, offers });
+    return new ResponseDataDto({
+      data: offers.map((offer) => new OfferEntity(offer.toJSON())),
+      message: "Successfully retrieved service offers",
       status: HttpStatus.OK,
     });
   }

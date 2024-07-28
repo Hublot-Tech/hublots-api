@@ -4,14 +4,16 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model } from "mongoose";
+import { Model, Types } from "mongoose";
 import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
 import { Service } from "./schemas/service.schema";
+import { Offer } from "./offers/schemas/offer.schema";
 
 @Injectable()
 export class ServicesService {
   constructor(
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
+    @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
   ) {}
 
   async create(data: CreateServiceDto, createdBy: string): Promise<Service> {
@@ -25,7 +27,6 @@ export class ServicesService {
   async findOne(serviceId: string): Promise<Service> {
     const service = await this.serviceModel
       .findById(serviceId)
-      .populate("offers")
       .populate("provider")
       .exec();
 
@@ -35,13 +36,19 @@ export class ServicesService {
     return service;
   }
 
+  async findOffers(serviceId: string): Promise<Offer[]> {
+    return this.offerModel
+      .find({ service: new Types.ObjectId(serviceId) })
+      .exec();
+  }
+
   async findAll({
     page,
     perpage,
-    ...parmas
+    ...params
   }: ServiceParamsDto): Promise<Service[]> {
     return this.serviceModel
-      .find({ ...parmas })
+      .find({ ...params })
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
