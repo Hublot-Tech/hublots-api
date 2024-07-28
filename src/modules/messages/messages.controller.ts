@@ -5,6 +5,7 @@ import {
   Get,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Put,
   Query,
@@ -24,7 +25,11 @@ import {
   ApiCustomOkResponse,
   ApiOkPaginatedResponse,
 } from "src/helpers/api-decorator";
-import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
+import {
+  PaginatedResponseDataDto,
+  ResponseDataDto,
+  ResponseMetadataDto,
+} from "src/helpers/api-dto";
 import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { MessagesService } from "./messages.service";
 import {
@@ -136,6 +141,24 @@ export class MessagesController {
     return new ResponseDataDto({
       data: new MessageEntity(message.toJSON()),
       message: "Successfully updated message content",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Patch([":id/read", ":id/delivered"])
+  @ApiOperation({ summary: "Mark a message as read or delivered." })
+  async updateMessageStatus(
+    @Req() request: Request,
+    @Param("id", MongoIdPipe) messageId: string,
+  ): Promise<ResponseMetadataDto> {
+    await this.messagesService.updateStatus(
+      messageId,
+      request.url.includes("read") ? "read" : "delivered",
+      request.user.id,
+    );
+
+    return new ResponseMetadataDto({
+      message: "Successfully updated message status",
       status: HttpStatus.OK,
     });
   }

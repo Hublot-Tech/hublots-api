@@ -86,4 +86,32 @@ export class MessagesService {
       .exec();
     return this.messageModel.findById(messageId).exec();
   }
+
+  async updateStatus(
+    messageId: string,
+    status: "read" | "delivered",
+    updatedBy: string,
+  ): Promise<void> {
+    const message = await this.messageModel.findById(messageId).exec();
+
+    if (!message) {
+      throw new NotFoundException(`Message with  id ${messageId} not found`);
+    }
+    if (message.receiver.toString() !== updatedBy) {
+      throw new UnauthorizedException(
+        "Message status can only be updated by receiver",
+      );
+    }
+
+    if (message.readAt) {
+      throw new UnprocessableEntityException("Message was already read");
+    }
+
+    await message
+      .updateOne({
+        deliveredAt: message.deliveredAt ?? new Date(),
+        readAt: status === "read" ? new Date() : undefined,
+      })
+      .exec();
+  }
 }

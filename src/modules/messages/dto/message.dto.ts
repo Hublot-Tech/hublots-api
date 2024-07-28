@@ -7,7 +7,7 @@ import {
   PickType,
 } from "@nestjs/swagger";
 import { Exclude, Transform } from "class-transformer";
-import { ArrayMaxSize, IsEnum, IsOptional, IsString } from "class-validator";
+import { ArrayMinSize, IsEnum, IsOptional, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { MsgContentType } from "../schemas/message.schema";
@@ -97,7 +97,7 @@ export class MessageDetailsDto extends OmitType(MessageEntity, [
 }
 
 export class MessageQueryParamsDto extends BulkQueryDto {
-  @ArrayMaxSize(2)
+  @ArrayMinSize(1)
   @IsString({ each: true })
   @ApiProperty({ description: "Should not provide more than 02 interlocutors" })
   interlocutors: string[];
