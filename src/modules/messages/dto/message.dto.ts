@@ -1,9 +1,9 @@
-import { ApiProperty, OmitType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
+import { Transform } from "class-transformer";
 import { ArrayMaxSize, IsEnum, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
-import { MsgContentType } from "../schemas/chat.schema";
-import { Transform } from "class-transformer";
+import { MsgContentType } from "../schemas/message.schema";
 
 export class CreateMessageDto {
   @IsString()
@@ -22,6 +22,8 @@ export class CreateMessageDto {
     Object.assign(this, message);
   }
 }
+
+export class UpdateMessageDto extends PickType(CreateMessageDto, ["content"]) {}
 
 export class MessageEntity extends CreateMessageDto {
   @ApiProperty()

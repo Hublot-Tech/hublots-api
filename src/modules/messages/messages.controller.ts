@@ -17,7 +17,7 @@ import {
 } from "src/helpers/api-decorator";
 import { PaginatedResponseDataDto, ResponseDataDto } from "src/helpers/api-dto";
 import { MongoIdPipe } from "src/helpers/custom-pipes";
-import { ChatsService } from "./chats.service";
+import { MessagesService } from "./messages.service";
 import {
   CreateMessageDto,
   MessageDetailsDto,
@@ -27,11 +27,11 @@ import {
 
 @ApiBearerAuth()
 @ApiTags("Chats")
-@Controller("chats")
-export class ChatsController {
-  constructor(private chatsService: ChatsService) {}
+@Controller("messages")
+export class MessagesController {
+  constructor(private chatsService: MessagesService) {}
 
-  @Post("/message")
+  @Post("/new")
   @ApiCustomCreatedResponse(MessageEntity)
   @ApiOperation({ summary: "Message another user of platform." })
   async sendMessage(

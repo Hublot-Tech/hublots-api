@@ -1,6 +1,6 @@
 import { Module } from "@nestjs/common";
-import { ChatsService } from "./chats.service";
-import { ChatsController } from "./chats.controller";
+import { MessagesService } from "./messages.service";
+import { MessagesController } from "./messages.controller";
 import { MongooseModule } from "@nestjs/mongoose";
 import { Message, MessageSchema } from "./schemas/chat.schema";
 
@@ -8,7 +8,7 @@ import { Message, MessageSchema } from "./schemas/chat.schema";
   imports: [
     MongooseModule.forFeature([{ name: Message.name, schema: MessageSchema }]),
   ],
-  providers: [ChatsService],
-  controllers: [ChatsController],
+  providers: [MessagesService],
+  controllers: [MessagesController],
 })
-export class ChatsModule {}
+export class MessagesModule {}

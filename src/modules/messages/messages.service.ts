@@ -5,24 +5,24 @@ import { CreateMessageDto, MessageQueryParamsDto } from "./dto/chat.dto";
 import { Message } from "./schemas/chat.schema";
 
 @Injectable()
-export class ChatsService {
+export class MessagesService {
   constructor(
-    @InjectModel(Message.name) private readonly chatModel: Model<Message>,
+    @InjectModel(Message.name) private readonly messageModel: Model<Message>,
   ) {}
 
   async create(data: CreateMessageDto, createdBy: string): Promise<Message> {
-    return new this.chatModel({ ...data, sender: createdBy }).save();
+    return new this.messageModel({ ...data, sender: createdBy }).save();
   }
 
-  async findOne(chatId: string): Promise<Message> {
-    const message = this.chatModel
-      .findById(chatId)
+  async findOne(messageId: string): Promise<Message> {
+    const message = this.messageModel
+      .findById(messageId)
       .populate("sender")
       .populate("receiver")
       .exec();
 
     if (!message) {
-      throw new NotFoundException(`Message with  chat id ${chatId} not found`);
+      throw new NotFoundException(`Message with  id ${messageId} not found`);
     }
     return message;
   }
@@ -31,7 +31,7 @@ export class ChatsService {
     interlocutors,
     ...query
   }: MessageQueryParamsDto): Promise<Message[]> {
-    return this.chatModel
+    return this.messageModel
       .find({
         $or: [
           { receiver: interlocutors[0], sender: interlocutors[1] },

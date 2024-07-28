@@ -9,7 +9,7 @@ import { AnnouncementsModule } from "./modules/annoucements/annnouncements.modul
 import { AuthorizationGuard } from "./modules/auth/auth.guard";
 import { AuthModule } from "./modules/auth/auth.module";
 import { BlotsModule } from "./modules/blots/blots.module";
-import { ChatsModule } from "./modules/chats/chats.module";
+import { MessagesModule } from "./modules/messages/messages.module";
 import { FilesModule } from "./modules/files/files.module";
 import { PaymentsModule } from "./modules/payments/payments.module";
 import { ServicesModule } from "./modules/services/services.module";
@@ -25,7 +25,7 @@ import { UsersModule } from "./modules/users/users.module";
     MongooseModule.forRoot(process.env.DATABASE_HOST),
     AuthModule,
     UsersModule,
-    ChatsModule,
+    MessagesModule,
     ServicesModule,
     PaymentsModule,
     BlotsModule,
