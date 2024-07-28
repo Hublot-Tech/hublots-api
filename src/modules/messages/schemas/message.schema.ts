@@ -18,11 +18,14 @@ export enum MsgContentType {
   },
 })
 export class Message extends Document {
-  @Prop({ type: String, required: true })
-  content: string;
-
   @Prop({ type: String, enum: MsgContentType, required: true })
   contentType: MsgContentType;
+
+  @Prop({ type: String })
+  content: string;
+
+  @Prop({ type: String })
+  fileRef: string;
 
   // reference to sender
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

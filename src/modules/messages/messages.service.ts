@@ -1,8 +1,17 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnauthorizedException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { CreateMessageDto, MessageQueryParamsDto } from "./dto/chat.dto";
-import { Message } from "./schemas/chat.schema";
+import {
+  CreateMessageDto,
+  MessageQueryParamsDto,
+  UpdateMessageDto,
+} from "./dto/message.dto";
+import { Message, MsgContentType } from "./schemas/message.schema";
 
 @Injectable()
 export class MessagesService {
@@ -41,5 +50,40 @@ export class MessagesService {
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
       .exec();
+  }
+
+  async update(
+    messageId: string,
+    payload: Omit<UpdateMessageDto, "file">,
+    updatedBy: string,
+  ): Promise<Message> {
+    const message = await this.messageModel.findById(messageId).exec();
+
+    if (!message) {
+      throw new NotFoundException(`Message with  id ${messageId} not found`);
+    }
+    if (message.sender.toString() !== updatedBy) {
+      throw new UnauthorizedException("Message can only be edited by sender");
+    }
+
+    if (MsgContentType.TEXT === message.contentType && payload.fileRef) {
+      throw new UnprocessableEntityException(
+        "File is not supported for text content",
+      );
+    }
+
+    if (!payload.content && MsgContentType.TEXT === message.contentType) {
+      throw new UnprocessableEntityException("Message cannot be empty");
+    }
+
+    await message
+      .updateOne({
+        ...payload,
+        readAt: null,
+        deliveredAt: null,
+        updatedAt: new Date(),
+      })
+      .exec();
+    return this.messageModel.findById(messageId).exec();
   }
 }

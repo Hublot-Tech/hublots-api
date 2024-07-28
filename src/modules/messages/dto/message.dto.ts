@@ -1,29 +1,56 @@
-import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { ArrayMaxSize, IsEnum, IsString } from "class-validator";
+import {
+  ApiHideProperty,
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PartialType,
+  PickType,
+} from "@nestjs/swagger";
+import { Exclude, Transform } from "class-transformer";
+import { ArrayMaxSize, IsEnum, IsOptional, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { MsgContentType } from "../schemas/message.schema";
 
 export class CreateMessageDto {
-  @IsString()
-  @ApiProperty()
-  content: string;
-
   @IsEnum(MsgContentType)
   @ApiProperty({ enum: MsgContentType })
   contentType: MsgContentType;
 
   @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: "Must be present when content type is text",
+  })
+  content: string;
+
+  @IsString()
   @ApiProperty({ type: String })
   receiver: string;
+
+  @Exclude({ toClassOnly: true })
+  @ApiHideProperty()
+  fileRef: string;
+
+  @Exclude()
+  @ApiPropertyOptional({
+    type: String,
+    format: "binary",
+    description:
+      "Binary file to be upload as message. This will be use to populate the `fileRef` field",
+  })
+  readonly file: string;
 
   constructor(message: CreateMessageDto) {
     Object.assign(this, message);
   }
 }
 
-export class UpdateMessageDto extends PickType(CreateMessageDto, ["content"]) {}
+export class UpdateMessageDto extends PickType(PartialType(CreateMessageDto), [
+  "content",
+  "fileRef",
+  "file",
+]) {}
 
 export class MessageEntity extends CreateMessageDto {
   @ApiProperty()
@@ -37,10 +64,13 @@ export class MessageEntity extends CreateMessageDto {
   sentAt: Date;
 
   @ApiProperty({ type: Date, nullable: true })
-  deliveredAt: Date | null;
+  deliveredAt: Date;
 
   @ApiProperty({ type: Date, nullable: true })
-  readAt: Date | null;
+  readAt: Date;
+
+  @ApiProperty({ description: "Only present if content type is file" })
+  fileRef: string;
 
   constructor(message: MessageEntity) {
     super(message);
