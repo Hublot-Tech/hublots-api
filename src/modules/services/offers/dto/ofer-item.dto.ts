@@ -1,5 +1,5 @@
-import { ApiProperty, PartialType } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
+import { ApiHideProperty, ApiProperty, PartialType } from "@nestjs/swagger";
+import { Exclude, Transform } from "class-transformer";
 import { IsString } from "class-validator";
 
 export class CreateOfferItemDto {
@@ -26,6 +26,10 @@ export class OfferItemEntity extends CreateOfferItemDto {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
+
+  @Exclude()
+  @ApiHideProperty()
+  createdBy: string;
 
   constructor(item: OfferItemEntity) {
     super(item);
