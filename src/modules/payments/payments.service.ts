@@ -156,15 +156,7 @@ export class PaymentsService {
   }
 
   async findOne(paymentRefOrID: string): Promise<Payment> {
-    const paymentDocument = await this.paymentModel
-      .findOne({
-        $or: [
-          { id: paymentRefOrID },
-          { reference: paymentRefOrID },
-          { internal_reference: paymentRefOrID },
-        ],
-      })
-      .exec();
+    const paymentDocument = await getPayment();
 
     if (!paymentDocument) {
       throw new NotFoundException(
@@ -188,7 +180,19 @@ export class PaymentsService {
         .exec();
     }
 
-    return paymentDocument;
+    return getPayment();
+
+    async function getPayment() {
+      return await this.paymentModel
+        .findOne({
+          $or: [
+            { id: paymentRefOrID },
+            { reference: paymentRefOrID },
+            { internal_reference: paymentRefOrID },
+          ],
+        })
+        .exec();
+    }
   }
 
   async findAll(query: BulkQueryDto): Promise<Payment[]> {

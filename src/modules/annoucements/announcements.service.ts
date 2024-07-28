@@ -71,7 +71,7 @@ export class AnnouncementsService {
     await announcement
       .updateOne({ ...data, updatedAt: new Date() }, { new: true })
       .exec();
-    return announcement;
+    return this.announcementModel.findById(announcementId).exec();
   }
 
   /**

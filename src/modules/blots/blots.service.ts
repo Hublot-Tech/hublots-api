@@ -150,7 +150,7 @@ export class BlotsService {
     }
 
     await blot.updateOne({ ...data, updatedAt: new Date() }).exec();
-    return blot;
+    return this.blotModel.findById(blotId).exec();
   }
 
   async addOptions(

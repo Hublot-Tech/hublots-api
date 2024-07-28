@@ -131,7 +131,7 @@ export class OffersService {
     this.checkPrivileges(offerId, offer, updatedBy);
 
     await offer.updateOne({ ...data, updatedAt: new Date() }).exec();
-    return offer;
+    return this.offerModel.findById(offerId).exec();
   }
 
   async addItems(
