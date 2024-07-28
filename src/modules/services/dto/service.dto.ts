@@ -16,7 +16,6 @@ import {
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
-import { OfferEntity } from "../offers/dto/offer.dto";
 import { Category } from "../schemas/service.schema";
 
 export class CreateServiceDto {
@@ -49,7 +48,7 @@ export class CreateServiceDto {
   @IsOptional()
   provider: string;
 
-  @Exclude()
+  @Exclude({ toClassOnly: true })
   @ApiHideProperty()
   mainImageRef: string;
 
@@ -93,16 +92,9 @@ export class ServiceEntity extends CreateServiceDto {
   @IsString()
   availability: string;
 
-  @IsString()
   @ApiProperty()
   mainImageRef: string;
 
-  @ApiProperty()
-  @IsString({ each: true })
-  @Transform(({ value }) => value.map((val) => val.toString("hex")))
-  offers: string[];
-
-  @IsString({ each: true })
   @ApiProperty({
     description:
       "Should not be provided on update except one wants to completely override the previous images",
@@ -128,15 +120,7 @@ export class UpdateServiceDto extends PartialType(
   ] as const),
 ) {}
 
-export class ServiceDetailsDto extends OmitType(ServiceEntity, [
-  "provider",
-  "offers",
-]) {
-  @ApiProperty({ type: [OfferEntity] })
-  // @Transform(({ value }) => value.map((val) => new OfferEntity(val)))
-  @Transform(({ value }) => value.map((val) => val.toString("hex")))
-  offers: OfferEntity[];
-
+export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
   @ApiProperty({ type: UserEntity })
   @Transform(({ value }) => new UserEntity(value))
   provider: UserEntity;

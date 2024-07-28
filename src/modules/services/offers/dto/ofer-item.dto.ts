@@ -18,12 +18,12 @@ export class CreateOfferItemDto {
 
 export class UpdateOfferItemDto extends PartialType(CreateOfferItemDto) {}
 
-export class OfferItemDto extends CreateOfferItemDto {
+export class OfferItemEntity extends CreateOfferItemDto {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
 
-  constructor(item: OfferItemDto) {
+  constructor(item: OfferItemEntity) {
     super(item);
     Object.assign(this, item);
   }

@@ -1,9 +1,11 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
+import { Exclude, Transform, Type } from "class-transformer";
 import {
   IsArray,
   IsMongoId,
@@ -11,8 +13,9 @@ import {
   IsString,
   ValidateNested,
 } from "class-validator";
-import { CreateOfferItemDto, OfferItemDto } from "./ofer-item.dto";
-import { Transform, Type } from "class-transformer";
+import { ServiceEntity } from "../../dto";
+import { CreateOfferItemDto } from "./ofer-item.dto";
+import { UserEntity } from "src/modules/users/dto";
 
 export class CreateOfferDto {
   @IsString()
@@ -44,17 +47,24 @@ export class CreateOfferDto {
   }
 }
 
-export class OfferWithoutItemsDto extends OmitType(CreateOfferDto, ["items"]) {}
-export class UpdateOfferDto extends PartialType(OfferWithoutItemsDto) {}
+class ModifiableOfferDto extends OmitType(CreateOfferDto, [
+  "items",
+  "service",
+]) {}
+export class UpdateOfferDto extends PartialType(ModifiableOfferDto) {}
 
-export class OfferEntity extends OfferWithoutItemsDto {
+export class OfferEntity extends ModifiableOfferDto {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
 
-  @ApiProperty()
-  @IsString({ each: true })
-  items: string[];
+  @ApiProperty({ description: "Related service id" })
+  @Transform(({ value }) => value.toString("hex"))
+  service: string;
+
+  @Exclude()
+  @ApiHideProperty()
+  createdBy: string;
 
   constructor(offer: OfferEntity) {
     super(offer);
@@ -62,16 +72,24 @@ export class OfferEntity extends OfferWithoutItemsDto {
   }
 }
 
-export class OfferDetailsDto extends OfferWithoutItemsDto {
+export class OfferDetailsDto extends ModifiableOfferDto {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
 
-  @ApiProperty({ type: [OfferItemDto] })
-  @Transform(({ value }) => value.map((val) => new OfferItemDto(val)))
-  items: OfferItemDto[];
+  @ApiProperty({ type: ServiceEntity })
+  @Transform(({ value }) => new ServiceEntity(value))
+  service: ServiceEntity;
 
-  constructor(offer: OfferEntity) {
+  @ApiProperty({ type: UserEntity })
+  @Transform(({ value }) => new UserEntity(value))
+  provider: UserEntity;
+
+  @Exclude()
+  @ApiHideProperty()
+  createdBy: string;
+
+  constructor(offer: OfferDetailsDto) {
     super(offer);
     Object.assign(this, offer);
   }

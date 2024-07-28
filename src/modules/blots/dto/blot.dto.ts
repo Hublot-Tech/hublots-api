@@ -17,12 +17,12 @@ import {
   ValidateNested,
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
-import { OfferItemDto } from "src/modules/services/offers/dto/ofer-item.dto";
+import { OfferItemEntity } from "src/modules/services/offers/dto/ofer-item.dto";
 import { OfferEntity } from "src/modules/services/offers/dto/offer.dto";
 import { UserEntity } from "src/modules/users/dto";
 import { BlotStatus } from "../schemas/blot.schema";
 
-export class CreateBlotNestedItemDto extends PartialType(OfferItemDto) {}
+export class CreateBlotNestedItemDto extends PartialType(OfferItemEntity) {}
 
 export class CreateBlotOptionDto {
   @IsNumber()
