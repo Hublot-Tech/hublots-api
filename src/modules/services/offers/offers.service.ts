@@ -34,22 +34,19 @@ export class OffersService {
     }
 
     return this.txManager.withTransaction(async (session) => {
-      let createdItemIds: string[] = [];
-      if (items.length > 0) {
-        const createdItems = await this.offerItemModel.insertMany(
-          items.map((item) => ({ ...item, createdBy })),
-          { session },
-        );
-        createdItemIds = createdItems.map((_) => _.id);
-      }
-
       const offer = new this.offerModel({
         ...data,
         createdBy,
         service: serviceId,
-        items: createdItemIds,
         provider: service.provider,
       });
+
+      if (items.length > 0) {
+        await this.offerItemModel.insertMany(
+          items.map((item) => ({ ...item, offer: offer.id, createdBy })),
+          { session },
+        );
+      }
       return await offer.save({ session });
     });
   }
