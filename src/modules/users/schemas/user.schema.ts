@@ -1,5 +1,5 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
-import { Document, Types } from "mongoose";
+import { Document } from "mongoose";
 import { Locale, Role, VerificationStatus } from "../dto/users.dto";
 
 @Schema({
@@ -103,14 +103,6 @@ export class User extends Document {
 
   @Prop({ type: Date })
   deletedAt: Date;
-
-  //reference to images
-  @Prop({ type: [{ type: Types.ObjectId, ref: "Image", required: true }] })
-  kycImages: Types.ObjectId[];
-
-  //reference to logs
-  @Prop({ type: [{ type: Types.ObjectId, ref: "Log", required: true }] })
-  logs: Types.ObjectId[];
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

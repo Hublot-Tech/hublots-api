@@ -1,7 +1,6 @@
 import { NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
-import { ObjectId } from "mongodb";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import {
@@ -10,12 +9,12 @@ import {
   UpdateProfileDto,
   VerificationStatus,
 } from "./dto/users.dto";
-import { Log } from "./schemas/log.schema";
+import { KYC } from "./schemas/kyc.schema";
 import { User } from "./schemas/user.schema";
 
 export class UsersService {
   constructor(
-    @InjectModel(Log.name) private readonly logModel: Model<Log>,
+    @InjectModel(KYC.name) private readonly kycModel: Model<KYC>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
@@ -75,10 +74,12 @@ export class UsersService {
       .exec();
   }
 
-  async addKYCImages(userId: string, imageIds: string[]): Promise<User> {
+  async addKYCImages(userId: string, imageRefs: string[]): Promise<User> {
     const user = await this.userModel.findById(userId);
     if (!user) throw new NotFoundException(`User with id ${userId} not found`);
-    user.kycImages.push(...imageIds.map((id) => new ObjectId(id)));
+    await this.kycModel
+      .updateOne({ user: user._id, isNew: true }, { imageRefs, user: user._id })
+      .exec();
     user.verificationStatus = VerificationStatus.SUBMITTED;
     return user.save();
   }
@@ -87,24 +88,5 @@ export class UsersService {
     //FIXME: sent default password to user
     const password = "default-password";
     return this.register({ ...account, password });
-  }
-
-  async createSignInLog(userId: string): Promise<Log> {
-    const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
-    const log = await new this.logModel().save();
-    user.logs.push(new ObjectId(log.id as string));
-    await user.save();
-    return log;
-  }
-
-  async createSignOutLog(logId: string) {
-    await this.logModel
-      .findByIdAndUpdate(logId, { logoutAt: new Date() })
-      .exec();
-  }
-
-  async findUserLog(logId: string): Promise<Log> {
-    return this.logModel.findById(logId).exec();
   }
 }
