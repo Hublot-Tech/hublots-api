@@ -157,7 +157,7 @@ export class AuthController {
   })
   @ApiOperation({ summary: "Sign out." })
   async signOut(@Req() req: Request) {
-    await this.authService.signOut(req);
+    await this.authService.signOut(req.user.id);
     return new ResponseMetadataDto({
       message: "Successfully deleted user",
       status: HttpStatus.NO_CONTENT,

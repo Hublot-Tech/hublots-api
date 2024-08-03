@@ -15,12 +15,12 @@ import { UsersService } from "../users/users.service";
 import { AuthTokensDto } from "./dto/auth.dto";
 import { OTPService } from "../otp/otp.service";
 import { VerifyOTPDto } from "../otp/dto/otp.dto";
+import { LogsService } from "./logs.service";
 
 type TokenType = "access_token" | "refresh_token";
 interface IJWTPayload {
-  username: string;
   sub: string;
-  type?: TokenType;
+  type: TokenType;
   iat?: number;
   exp?: number;
 }
@@ -33,6 +33,7 @@ export class AuthService {
   constructor(
     private readonly jwtService: JwtService,
     private readonly otpService: OTPService,
+    private readonly logsService: LogsService,
     private readonly usersService: UsersService,
   ) {}
 
@@ -67,13 +68,6 @@ export class AuthService {
     return null;
   }
 
-  async signOut(request: Request) {
-    const accessToken = this.extractTokenFromHeader(request);
-
-    const payload = this.jwtService.decode<IJWTPayload>(accessToken);
-    await this.usersService.createSignOutLog(payload.sub);
-  }
-
   async authorizeUser(
     authzToken: string,
     type: TokenType = AuthService.ACCESS_TOKEN_TYPE,
@@ -93,17 +87,10 @@ export class AuthService {
       throw new UnauthorizedException("Invalid token type!");
     }
 
-    const [log, authorizedUser] = await Promise.all([
-      this.usersService.findUserLog(payload.sub),
-      this.usersService.findByEmail(payload.username),
-    ]);
+    const authorizedUser = await this.usersService.findByEmail(payload.sub);
 
-    if (!log || !authorizedUser) {
+    if (!authorizedUser) {
       throw new UnauthorizedException("Invalid token payload");
-    }
-
-    if (log.logoutAt) {
-      throw new UnauthorizedException("User was sign out!");
     }
 
     if (!authorizedUser.isOTPVerified) {
@@ -114,10 +101,16 @@ export class AuthService {
   }
 
   async requestAuthzToken(refreshToken: string) {
-    await this.authorizeUser(refreshToken, AuthService.REFRESH_TOKEN_TYPE);
-    const payload = this.jwtService.decode<IJWTPayload>(refreshToken);
+    const user = await this.authorizeUser(
+      refreshToken,
+      AuthService.REFRESH_TOKEN_TYPE,
+    );
 
-    return this.createAuthzTokens(payload.username, payload.sub);
+    // Invalidate old token
+    await this.logsService.invalidate(refreshToken);
+
+    // Generate new tokens
+    return this.createAuthzTokens(user.email);
   }
 
   async authenticateUser(data: TokenPayload) {
@@ -158,25 +151,29 @@ export class AuthService {
     await this.usersService.update(user.id, { isOTPVerified: true });
   }
 
+  async signOut(userId: string) {
+    await this.logsService.invalidate(userId);
+  }
+
   private async login(user: User): Promise<AuthTokensDto> {
     if (!user.isOTPVerified) {
       await this.otpService.sendOTP(user.phoneNumber);
     }
-    const log = await this.usersService.createSignInLog(user.id);
-    return this.createAuthzTokens(user.email, log.id);
+    const tokens = this.createAuthzTokens(user.email);
+    await this.logsService.create(user.id, tokens.refreshToken);
+    return tokens;
   }
 
-  private createAuthzTokens(username: string, sub: string) {
-    const payload: IJWTPayload = { username, sub };
+  private createAuthzTokens(subject: string) {
     const refreshToken = this.jwtService.sign(
-      { ...payload, type: "refresh_token" },
+      { sub: subject, type: "refresh_token" },
       {
         secret: jwtConstants.secret,
         expiresIn: "7d",
       },
     );
     const accessToken = this.jwtService.sign(
-      { ...payload, type: "access_token" },
+      { sub: subject, type: "access_token" },
       {
         secret: jwtConstants.secret,
         expiresIn: "24h",
