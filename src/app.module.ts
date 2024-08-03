@@ -15,14 +15,16 @@ import { PaymentsModule } from "./modules/payments/payments.module";
 import { ServicesModule } from "./modules/services/services.module";
 import { SubscriptionsModule } from "./modules/subscriptions/subscriptions.module";
 import { UsersModule } from "./modules/users/users.module";
+import { KYCModule } from "./modules/kyc/kyc.module";
 
 @Module({
   imports: [
+    MongooseModule.forRoot(process.env.DATABASE_HOST),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
     FilesModule,
-    MongooseModule.forRoot(process.env.DATABASE_HOST),
+    KYCModule,
     AuthModule,
     UsersModule,
     MessagesModule,

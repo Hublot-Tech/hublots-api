@@ -7,14 +7,11 @@ import {
   CreateAccountDto,
   CreateUserDto,
   UpdateProfileDto,
-  VerificationStatus,
 } from "./dto/users.dto";
-import { KYC } from "./schemas/kyc.schema";
 import { User } from "./schemas/user.schema";
 
 export class UsersService {
   constructor(
-    @InjectModel(KYC.name) private readonly kycModel: Model<KYC>,
     @InjectModel(User.name) private readonly userModel: Model<User>,
   ) {}
 
@@ -72,16 +69,6 @@ export class UsersService {
         { new: true },
       )
       .exec();
-  }
-
-  async addKYCImages(userId: string, imageRefs: string[]): Promise<User> {
-    const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
-    await this.kycModel
-      .updateOne({ user: user._id, isNew: true }, { imageRefs, user: user._id })
-      .exec();
-    user.verificationStatus = VerificationStatus.SUBMITTED;
-    return user.save();
   }
 
   async createAcount(account: CreateAccountDto) {

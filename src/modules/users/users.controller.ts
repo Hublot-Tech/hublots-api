@@ -11,14 +11,9 @@ import {
   Query,
   Req,
   UnprocessableEntityException,
-  UploadedFiles,
-  UseInterceptors,
 } from "@nestjs/common";
-import { FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
-  ApiBody,
-  ApiConsumes,
   ApiNoContentResponse,
   ApiOperation,
   ApiTags,
@@ -166,41 +161,6 @@ export class UsersController {
     return new ResponseMetadataDto({
       message: "Successfully deleted user",
       status: HttpStatus.NO_CONTENT,
-    });
-  }
-
-  @Post("kyc-images")
-  @UseRoles(Role.CLIENT)
-  @ApiCustomOkResponse(UserEntity)
-  @ApiConsumes("multipart/form-data")
-  @ApiBody({
-    schema: {
-      type: "object",
-      properties: {
-        kycFiles: {
-          type: "array",
-          format: "binary",
-          description: "Array of Identity files to be verified",
-        },
-      },
-    },
-  })
-  @UseInterceptors(FilesInterceptor("kycFiles"))
-  @ApiOperation({ summary: "Upload KYC images." })
-  async uploadKYCImages(
-    @Req() req: Request,
-    @UploadedFiles() files: Array<Express.Multer.File>,
-  ): Promise<ResponseDataDto<UserEntity>> {
-    const imageRefs = [];
-    for (const file of files) {
-      imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
-    }
-
-    const user = await this.usersService.addKYCImages(req.user.id, imageRefs);
-    return new ResponseDataDto({
-      data: new UserEntity(user.toJSON()),
-      message: "Successfully uploaded user KYC images",
-      status: HttpStatus.OK,
     });
   }
 
