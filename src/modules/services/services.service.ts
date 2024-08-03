@@ -4,10 +4,10 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import { Model, Types } from "mongoose";
+import { Model } from "mongoose";
 import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
-import { Service } from "./schemas/service.schema";
 import { Offer } from "./offers/schemas/offer.schema";
+import { Service } from "./schemas/service.schema";
 
 @Injectable()
 export class ServicesService {
@@ -37,9 +37,7 @@ export class ServicesService {
   }
 
   async findOffers(serviceId: string): Promise<Offer[]> {
-    return this.offerModel
-      .find({ service: new Types.ObjectId(serviceId) })
-      .exec();
+    return this.offerModel.find({ service: serviceId }).exec();
   }
 
   async findAll({
