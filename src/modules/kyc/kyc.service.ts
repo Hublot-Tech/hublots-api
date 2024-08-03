@@ -19,7 +19,7 @@ export class KYCService {
     await this.kycModel
       .updateOne({ user: user.id, isNew: true }, { imageRefs, user: user.id })
       .exec();
-    user.verificationStatus = VerificationStatus.SUBMITTED;
+    user.kycStatus = VerificationStatus.SUBMITTED;
     await user.save();
     return this.kycModel.findOne({ user: userId }).exec();
   }
@@ -37,7 +37,7 @@ export class KYCService {
         { status: kycStatus, message, user: user.id, validatedBy },
       )
       .exec();
-    user.verificationStatus = kycStatus;
+    user.kycStatus = kycStatus;
     await user.save();
     return this.kycModel.findOne({ user: kycId }).exec();
   }

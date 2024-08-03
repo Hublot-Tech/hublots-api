@@ -64,7 +64,7 @@ export class User extends Document {
     required: true,
     default: VerificationStatus.NOT_SUBMITTED,
   })
-  verificationStatus: VerificationStatus;
+  kycStatus: VerificationStatus;
 
   @Prop({
     type: Boolean,

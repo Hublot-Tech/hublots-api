@@ -39,7 +39,7 @@ export class AuthorizationGuard implements CanActivate {
       allowedRoles &&
       !allowedRoles.some((r) => authenticatedUser.roles.includes(r))
     ) {
-      throw new UnauthorizedException();
+      throw new UnauthorizedException("Insufficient privileges");
     }
 
     request.user = authenticatedUser;
