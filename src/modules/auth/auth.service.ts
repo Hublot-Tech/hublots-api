@@ -110,7 +110,7 @@ export class AuthService {
     await this.logsService.invalidate(refreshToken);
 
     // Generate new tokens
-    return this.createAuthzTokens(user.email);
+    return this.generateTokens(user);
   }
 
   async authenticateUser(data: TokenPayload) {
@@ -159,26 +159,26 @@ export class AuthService {
     if (!user.isOTPVerified) {
       await this.otpService.sendOTP(user.phoneNumber);
     }
-    const tokens = this.createAuthzTokens(user.email);
-    await this.logsService.create(user.id, tokens.refreshToken);
-    return tokens;
+    return this.generateTokens(user);
   }
 
-  private createAuthzTokens(subject: string) {
+  private async generateTokens(user: User) {
     const refreshToken = this.jwtService.sign(
-      { sub: subject, type: "refresh_token" },
+      { sub: user.email, type: "refresh_token" },
       {
         secret: jwtConstants.secret,
         expiresIn: "7d",
       },
     );
     const accessToken = this.jwtService.sign(
-      { sub: subject, type: "access_token" },
+      { sub: user.email, type: "access_token" },
       {
         secret: jwtConstants.secret,
         expiresIn: "24h",
       },
     );
+
+    await this.logsService.create(user.id, refreshToken);
     return new AuthTokensDto({ refreshToken, accessToken });
   }
 
