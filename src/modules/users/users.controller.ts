@@ -10,7 +10,6 @@ import {
   Put,
   Query,
   Req,
-  UnprocessableEntityException,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
@@ -126,16 +125,6 @@ export class UsersController {
     @Param("id", MongoIdPipe) userId: string,
     @Body() updateUserDto: UpdateUserDto,
   ): Promise<ResponseDataDto<UserEntity>> {
-    if (
-      !updateUserDto.roles.find((role) =>
-        [Role.PROVIDER, Role.PARTNER].includes(role),
-      )
-    ) {
-      throw new UnprocessableEntityException(
-        "Please use the allocate endpoints to assign provider and pathner roles to a user",
-      );
-    }
-
     const user = await this.usersService.update(userId, updateUserDto);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),
