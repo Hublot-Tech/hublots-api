@@ -27,7 +27,7 @@ import {
   SignUpResponseDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
-import { VerifyOTPDto } from "../otp/dto/otp.dto";
+import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -118,14 +118,12 @@ export class AuthController {
   }
 
   @Public()
-  @Post("send")
+  @Post("resend-code")
   @ApiOperation({
     summary: "Send one time password. Use endpoint to resend OTP if required",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
-  async sendOTP(
-    @Body() otpPayload: VerifyOTPDto,
-  ): Promise<ResponseMetadataDto> {
+  async sendOTP(@Body() otpPayload: SendOTPDto): Promise<ResponseMetadataDto> {
     await this.authService.sendUserOTP(otpPayload);
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
@@ -134,7 +132,7 @@ export class AuthController {
   }
 
   @Public()
-  @Post("verify")
+  @Post("verify-code")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })

@@ -14,7 +14,7 @@ import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { AuthTokensDto } from "./dto/auth.dto";
 import { OTPService } from "../otp/otp.service";
-import { VerifyOTPDto } from "../otp/dto/otp.dto";
+import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 import { LogsService } from "./logs.service";
 
 type TokenType = "access_token" | "refresh_token";
@@ -131,7 +131,7 @@ export class AuthService {
     return this.login(existingUser);
   }
 
-  async sendUserOTP(otpPayload: VerifyOTPDto) {
+  async sendUserOTP(otpPayload: SendOTPDto) {
     const user = await this.usersService.findByPhoneNumber(
       otpPayload.phoneNumber,
     );
