@@ -5,8 +5,8 @@ import { Transform } from "class-transformer";
 import { IsIn } from "class-validator";
 
 export class KYCEntity {
-  @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
+  @Transform(({ value }) => value.toString("hex"))
   id: string;
 
   @ApiProperty()

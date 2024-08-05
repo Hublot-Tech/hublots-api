@@ -17,7 +17,11 @@ export class KYCService {
     const user = await this.userModel.findById(userId);
     if (!user) throw new NotFoundException(`User with id ${userId} not found`);
     await this.kycModel
-      .updateOne({ user: user.id, isNew: true }, { imageRefs, user: user.id })
+      .updateOne(
+        { user: userId },
+        { $set: { imageRefs, user: userId, updatedAt: new Date() } },
+        { upsert: true },
+      )
       .exec();
     user.kycStatus = VerificationStatus.SUBMITTED;
     await user.save();

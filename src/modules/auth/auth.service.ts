@@ -79,7 +79,7 @@ export class AuthService {
       });
     } catch (error) {
       throw new UnauthorizedException(
-        `Error validating access token: ${error.message}`,
+        `Error validating token (type: ${type}): ${error.message}`,
       );
     }
 
