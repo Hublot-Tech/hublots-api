@@ -73,6 +73,7 @@ export class CreateUserDto {
     description: "The address is required to create a new account",
   })
   @IsString()
+  @IsOptional()
   address: string;
 
   @ApiProperty({

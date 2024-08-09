@@ -8,8 +8,6 @@ import {
 } from "@nestjs/common";
 import { HttpAdapterHost } from "@nestjs/core";
 import { AxiosError } from "axios";
-import { MongoError } from "mongodb";
-import { MongooseError } from "mongoose";
 
 @Catch()
 export class AllExceptionsFilter implements ExceptionFilter {
@@ -28,12 +26,6 @@ export class AllExceptionsFilter implements ExceptionFilter {
     if (exception instanceof HttpException) {
       errorMessage = exception.getResponse()["message"];
       httpStatus = exception.getStatus();
-    } else if (
-      exception instanceof MongoError ||
-      exception instanceof MongooseError
-    ) {
-      errorMessage = exception.message;
-      httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
     } else if (exception instanceof AxiosError) {
       // Handle Axios-specific errors
       const { status, data } = exception.response;
@@ -45,6 +37,12 @@ export class AllExceptionsFilter implements ExceptionFilter {
         exception["error"] ??
         exception.toString() ??
         errorMessage;
+
+      if (errorMessage.includes("validation")) {
+        httpStatus = HttpStatus.UNPROCESSABLE_ENTITY;
+      } else if (errorMessage.includes("duplicate")) {
+        httpStatus = HttpStatus.CONFLICT;
+      }
     }
 
     const responseBody = {

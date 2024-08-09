@@ -1,4 +1,4 @@
-import { NotFoundException } from "@nestjs/common";
+import { ConflictException, NotFoundException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
 import { Model } from "mongoose";
@@ -16,6 +16,13 @@ export class UsersService {
   ) {}
 
   async register(userData: CreateUserDto): Promise<User> {
+    const user = await this.userModel.findOne({
+      $or: [{ email: userData.email }, { phoneNumber: userData.phoneNumber }],
+    });
+    if (user) {
+      throw new ConflictException("Email or phone number already taken!");
+    }
+
     const newUser = new this.userModel({
       ...userData,
       password: bcrypt.hashSync(
