@@ -32,7 +32,7 @@ export class AuthorizationGuard implements CanActivate {
     const authenticatedUser = await this.authService.authorizeUser(authzToken);
 
     if (!authenticatedUser.isOTPVerified && !request.url.includes("auth")) {
-      throw new ForbiddenException("OTP verification not completed");
+      throw new ForbiddenException("Phone number not verified");
     }
 
     const allowedRoles = this.reflector.getAllAndOverride<Role[] | null>(

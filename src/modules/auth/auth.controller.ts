@@ -4,6 +4,7 @@ import {
   Delete,
   HttpStatus,
   Param,
+  Patch,
   Post,
   Req,
 } from "@nestjs/common";
@@ -132,7 +133,7 @@ export class AuthController {
     });
   }
 
-  @Post("verify-code/:code")
+  @Patch("verify-code/:code")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })
