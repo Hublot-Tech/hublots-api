@@ -107,3 +107,21 @@ export class MessageQueryParamsDto extends BulkQueryDto {
     Object.assign(this, params);
   }
 }
+
+export class ChatEntity {
+  @ApiProperty()
+  interlocutor: string;
+
+  @ApiProperty()
+  name: string;
+
+  @ApiProperty()
+  lastMessage: string;
+
+  @ApiProperty()
+  updatedAt: Date;
+
+  constructor(chat: ChatEntity) {
+    Object.assign(this, chat);
+  }
+}

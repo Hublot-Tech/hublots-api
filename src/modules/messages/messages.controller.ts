@@ -45,11 +45,25 @@ import { MsgContentType } from "./schemas/message.schema";
 
 @ApiBearerAuth()
 @ApiTags("Chats")
-@Controller("messages")
+@Controller("chats")
 export class MessagesController {
   constructor(private messagesService: MessagesService) {}
 
-  @Post("/new")
+  @Get()
+  @ApiOkPaginatedResponse(MessageEntity)
+  @ApiOperation({ summary: "Fetch user chats" })
+  async getConversations(@Req() request: Request) {
+    const chats = await this.messagesService.findChats(request.user.id);
+    return new PaginatedResponseDataDto({
+      data: chats,
+      status: HttpStatus.OK,
+      message: "Successfully retrieved chats",
+      page: 1,
+      perpage: chats.length,
+    });
+  }
+
+  @Post("messages/new")
   @ApiCustomCreatedResponse(MessageEntity)
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
@@ -80,7 +94,7 @@ export class MessagesController {
     });
   }
 
-  @Get()
+  @Get("messages")
   @ApiOkPaginatedResponse(MessageEntity)
   @ApiOperation({
     summary: "Fetch messages sent or received from interlocutors",
@@ -103,7 +117,7 @@ export class MessagesController {
     });
   }
 
-  @Get(":id")
+  @Get("messages/:id")
   @ApiCustomOkResponse(MessageDetailsDto)
   @ApiOperation({ summary: "Fetch message details." })
   async getMessageDetails(
@@ -117,7 +131,7 @@ export class MessagesController {
     });
   }
 
-  @Put(":id")
+  @Put("messages/:id")
   @ApiCustomOkResponse(MessageEntity)
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
@@ -146,7 +160,7 @@ export class MessagesController {
     });
   }
 
-  @Delete(":id")
+  @Delete("messages/:id")
   @ApiOperation({ summary: "Delete a sent message." })
   async deleteMessage(
     @Req() request: Request,
@@ -160,7 +174,7 @@ export class MessagesController {
     });
   }
 
-  @Patch([":id/read", ":id/delivered"])
+  @Patch(["messages/:id/read", "messages/:id/delivered"])
   @ApiOperation({ summary: "Mark a message as read or delivered." })
   async updateMessageStatus(
     @Req() request: Request,

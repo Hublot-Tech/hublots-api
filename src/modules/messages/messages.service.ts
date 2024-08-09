@@ -7,11 +7,13 @@ import {
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import {
+  ChatEntity,
   CreateMessageDto,
   MessageQueryParamsDto,
   UpdateMessageDto,
 } from "./dto/message.dto";
 import { Message, MsgContentType } from "./schemas/message.schema";
+import { User } from "../users/schemas/user.schema";
 
 @Injectable()
 export class MessagesService {
@@ -50,6 +52,24 @@ export class MessagesService {
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
       .exec();
+  }
+
+  async findChats(userId: string): Promise<ChatEntity[]> {
+    const messages = await this.messageModel
+      .distinct("receiver")
+      .find({ sender: userId })
+      .populate("receiver")
+      .exec();
+
+    return messages.map(({ receiver, content }) => {
+      const receiverData = receiver as unknown as User;
+      return new ChatEntity({
+        interlocutor: receiverData.id,
+        lastMessage: content,
+        name: receiverData.fullname,
+        updatedAt: receiverData.updatedAt,
+      });
+    });
   }
 
   async update(
