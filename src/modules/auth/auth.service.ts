@@ -78,23 +78,19 @@ export class AuthService {
         secret: process.env.JWT_SECRET,
       });
     } catch (error) {
-      throw new UnauthorizedException(
+      throw new ForbiddenException(
         `Error validating token (type: ${type}): ${error.message}`,
       );
     }
 
     if (payload.type !== type) {
-      throw new UnauthorizedException("Invalid token type!");
+      throw new ForbiddenException("Invalid token type!");
     }
 
     const authorizedUser = await this.usersService.findByEmail(payload.sub);
 
     if (!authorizedUser) {
-      throw new UnauthorizedException("Invalid token payload");
-    }
-
-    if (!authorizedUser.isOTPVerified) {
-      throw new UnauthorizedException("OTP verification not completed");
+      throw new ForbiddenException("Invalid token payload");
     }
 
     return authorizedUser;
@@ -186,7 +182,7 @@ export class AuthService {
     const [type, token] = request.headers.authorization?.split(" ") ?? [];
 
     if (type !== "Bearer" || !token) {
-      throw new UnauthorizedException("No access token found!");
+      throw new ForbiddenException("No access token found!");
     }
 
     return token;

@@ -1,8 +1,8 @@
 import {
   CanActivate,
   ExecutionContext,
+  ForbiddenException,
   Injectable,
-  UnauthorizedException,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
@@ -31,6 +31,10 @@ export class AuthorizationGuard implements CanActivate {
     const authzToken = this.authService.extractTokenFromHeader(request);
     const authenticatedUser = await this.authService.authorizeUser(authzToken);
 
+    if (!authenticatedUser.isOTPVerified && !request.url.includes("auth")) {
+      throw new ForbiddenException("OTP verification not completed");
+    }
+
     const allowedRoles = this.reflector.getAllAndOverride<Role[] | null>(
       ROLES_KEY,
       [context.getHandler(), context.getClass()],
@@ -39,7 +43,7 @@ export class AuthorizationGuard implements CanActivate {
       allowedRoles &&
       !allowedRoles.some((r) => authenticatedUser.roles.includes(r))
     ) {
-      throw new UnauthorizedException("Insufficient privileges");
+      throw new ForbiddenException("Insufficient privileges");
     }
 
     request.user = authenticatedUser;

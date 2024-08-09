@@ -3,6 +3,7 @@ import {
   Controller,
   Delete,
   HttpStatus,
+  Param,
   Post,
   Req,
 } from "@nestjs/common";
@@ -16,6 +17,7 @@ import {
 import { Request } from "express";
 import { ApiCustomCreatedResponse } from "src/helpers/api-decorator";
 import { ResponseDataDto, ResponseMetadataDto } from "src/helpers/api-dto";
+import { SendOTPDto } from "../otp/dto/otp.dto";
 import { CreateUserDto, GoogleSignInDto } from "../users/dto/users.dto";
 import { AuthService } from "./auth.service";
 import { Public } from "./decorator/auth.decorator";
@@ -27,7 +29,6 @@ import {
   SignUpResponseDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
-import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -131,16 +132,19 @@ export class AuthController {
     });
   }
 
-  @Public()
-  @Post("verify-code")
+  @Post("verify-code/:code")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async verifyOTP(
-    @Body() otpPayload: VerifyOTPDto,
+    @Req() req: Request,
+    @Param("code") otpCode: string,
   ): Promise<ResponseMetadataDto> {
-    await this.authService.verifyUserOTP(otpPayload);
+    await this.authService.verifyUserOTP({
+      otp: otpCode,
+      phoneNumber: req.user.phoneNumber,
+    });
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
       message: "Successfully verified user phone number",
