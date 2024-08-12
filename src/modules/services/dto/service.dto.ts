@@ -6,17 +6,19 @@ import {
   PartialType,
   PickType,
 } from "@nestjs/swagger";
-import { Exclude, Transform } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import {
   IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
   MinLength,
+  ValidateNested,
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { Category } from "../schemas/service.schema";
+import { CreatePlaceDto, PlaceEntity } from "src/modules/places/dto/place.dto";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -47,6 +49,13 @@ export class CreateServiceDto {
   @IsString()
   @IsOptional()
   provider: string;
+
+  @ValidateNested()
+  @Type(() => CreatePlaceDto)
+  @ApiPropertyOptional({
+    description: "Address where the service will be provided",
+  })
+  place: CreatePlaceDto;
 
   @Exclude({ toClassOnly: true })
   @ApiHideProperty()
@@ -84,7 +93,7 @@ export class ServiceEntity extends CreateServiceDto {
   })
   deletedAt: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: "Available from 9 AM to 5 PM",
     description: "Availability times for the service",
   })
@@ -100,6 +109,9 @@ export class ServiceEntity extends CreateServiceDto {
       "Should not be provided on update except one wants to completely override the previous images",
   })
   imageRefs: string[];
+
+  @ApiProperty({ type: PlaceEntity, nullable: true })
+  place: PlaceEntity;
 
   @Exclude()
   @ApiHideProperty()

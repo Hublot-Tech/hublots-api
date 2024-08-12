@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
+import { Place } from "src/modules/places/schemas/place.schema";
 import { User } from "src/modules/users/schemas/user.schema";
 
 export enum Category {
@@ -55,6 +56,9 @@ export class Service extends Document {
   // reference to main image
   @Prop({ type: String, required: true })
   mainImageRef: string;
+
+  @Prop({ type: Types.ObjectId, ref: Place.name })
+  place: Types.ObjectId;
 
   //reference to the provider
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })

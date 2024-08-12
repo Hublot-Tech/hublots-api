@@ -28,6 +28,7 @@ export class ServicesService {
     const service = await this.serviceModel
       .findById(serviceId)
       .populate("provider")
+      .populate("place")
       .exec();
 
     if (!service) {
