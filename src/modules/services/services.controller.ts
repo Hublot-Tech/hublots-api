@@ -58,13 +58,13 @@ export class ServicesController {
   @ApiOkPaginatedResponse(ServiceEntity)
   @ApiOperation({ summary: "Fetch all services." })
   async findAll(
-    @Query() query: ServiceParamsDto,
+    @Query() params: ServiceParamsDto,
   ): Promise<PaginatedResponseDataDto<ServiceEntity>> {
-    const services = await this.serviceService.findAll(query);
+    const services = await this.serviceService.findAll(params);
     return new PaginatedResponseDataDto({
       data: services.map((service) => new ServiceEntity(service.toJSON())),
-      page: query.page,
-      perpage: query.perpage,
+      page: params.page,
+      perpage: params.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved services",
     });

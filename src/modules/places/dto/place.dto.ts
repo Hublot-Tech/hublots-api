@@ -1,6 +1,6 @@
-import { ApiProperty, OmitType } from "@nestjs/swagger";
+import { ApiProperty, ApiPropertyOptional, OmitType } from "@nestjs/swagger";
 import { Transform } from "class-transformer";
-import { IsNumber, IsString } from "class-validator";
+import { IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreatePlaceDto {
   @IsString()
@@ -33,8 +33,12 @@ export class PlaceEntity extends CreatePlaceDto {
 
 export class PlaceQueryParams extends OmitType(CreatePlaceDto, ["name"]) {
   @IsNumber()
-  @ApiProperty()
-  maxDistance: number;
+  @IsOptional()
+  @ApiPropertyOptional({
+    default: 10000,
+    description: "Most distant point from location in meters",
+  })
+  maxDistance: number = 10000;
 
   constructor(place: CreatePlaceDto) {
     super(place);

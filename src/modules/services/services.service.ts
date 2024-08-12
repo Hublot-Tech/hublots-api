@@ -5,6 +5,8 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import { PlacesService } from "../places/places.service";
+import { Place } from "../places/schemas/place.schema";
 import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
 import { Offer } from "./offers/schemas/offer.schema";
 import { Service } from "./schemas/service.schema";
@@ -14,6 +16,7 @@ export class ServicesService {
   constructor(
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
     @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
+    private readonly placesService: PlacesService,
   ) {}
 
   async create(data: CreateServiceDto, createdBy: string): Promise<Service> {
@@ -44,10 +47,21 @@ export class ServicesService {
   async findAll({
     page,
     perpage,
+    search,
+    location,
     ...params
   }: ServiceParamsDto): Promise<Service[]> {
+    let places: Place[];
+    if (location) {
+      places = await this.placesService.findNearby(location);
+    }
+
     return this.serviceModel
-      .find({ ...params })
+      .find({
+        ...params,
+        $text: { $search: search },
+        $or: places ? places.map((pl) => ({ place: pl.id })) : undefined,
+      })
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();

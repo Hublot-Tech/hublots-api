@@ -70,3 +70,6 @@ export class Service extends Document {
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);
+
+// creating text index on name and description
+ServiceSchema.index({ name: "text", description: "text" });

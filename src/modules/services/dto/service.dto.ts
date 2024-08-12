@@ -18,7 +18,11 @@ import {
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { Category } from "../schemas/service.schema";
-import { CreatePlaceDto, PlaceEntity } from "src/modules/places/dto/place.dto";
+import {
+  CreatePlaceDto,
+  PlaceEntity,
+  PlaceQueryParams,
+} from "src/modules/places/dto/place.dto";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -147,20 +151,33 @@ export class ServiceParamsDto extends BulkQueryDto {
   @IsMongoId()
   @IsOptional()
   @ApiPropertyOptional()
-  createdBy: string;
+  createdBy?: string;
 
   @IsMongoId()
   @IsOptional()
   @ApiPropertyOptional()
-  provider: string;
+  provider?: string;
 
   @IsOptional()
   @IsEnum(Category)
   @ApiPropertyOptional({ enum: Category, description: "Service category" })
-  category: Category;
+  category?: Category;
 
-  constructor(service: ServiceParamsDto) {
-    super(service);
-    Object.assign(this, service);
+  @IsString()
+  @ApiProperty({ description: "Search string" })
+  search: string;
+
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => PlaceQueryParams)
+  @ApiPropertyOptional({
+    type: PlaceQueryParams,
+    description: "Coordinates of the client running the search",
+  })
+  location?: PlaceQueryParams;
+
+  constructor(search: ServiceParamsDto) {
+    super(search);
+    Object.assign(this, search);
   }
 }

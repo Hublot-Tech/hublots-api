@@ -8,5 +8,6 @@ import { Place, PlaceSchema } from "./schemas/place.schema";
     MongooseModule.forFeature([{ name: Place.name, schema: PlaceSchema }]),
   ],
   providers: [PlacesService],
+  exports: [PlacesService],
 })
 export class PlacesModule {}
