@@ -55,13 +55,19 @@ export class MessagesService {
   }
 
   async findChats(userId: string): Promise<ChatEntity[]> {
+    const receivers = await this.messageModel
+      .distinct("receiver", { sender: userId })
+      .exec();
     const messages = await this.messageModel
-      .distinct("receiver")
-      .find({ sender: userId })
+      .find({ $or: receivers.map((receiver) => ({ receiver })) })
       .populate("receiver")
+      .sort({ updatedAt: -1 })
       .exec();
 
-    return messages.map(({ receiver, content }) => {
+    return receivers.map((id) => {
+      const { receiver, content } = messages.find(
+        (_) => _.receiver.id.toString() === id.toString(),
+      );
       const receiverData = receiver as unknown as User;
       return new ChatEntity({
         interlocutor: receiverData.id,

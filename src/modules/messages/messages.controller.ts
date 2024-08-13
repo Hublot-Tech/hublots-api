@@ -34,6 +34,7 @@ import {
 import { MongoIdPipe } from "src/helpers/custom-pipes";
 import { MessagesService } from "./messages.service";
 import {
+  ChatEntity,
   CreateMessageDto,
   MessageDetailsDto,
   MessageEntity,
@@ -50,7 +51,7 @@ export class MessagesController {
   constructor(private messagesService: MessagesService) {}
 
   @Get()
-  @ApiOkPaginatedResponse(MessageEntity)
+  @ApiOkPaginatedResponse(ChatEntity)
   @ApiOperation({ summary: "Fetch user chats" })
   async getConversations(@Req() request: Request) {
     const chats = await this.messagesService.findChats(request.user.id);
