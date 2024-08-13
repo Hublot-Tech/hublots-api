@@ -32,6 +32,11 @@ export class PlaceEntity extends CreatePlaceDto {
 }
 
 export class PlaceQueryParams extends OmitType(CreatePlaceDto, ["name"]) {
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional()
+  keywords: string;
+
   @IsNumber()
   @IsOptional()
   @ApiPropertyOptional({

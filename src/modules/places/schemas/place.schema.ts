@@ -37,4 +37,4 @@ export class Place extends Document {
 export const PlaceSchema = SchemaFactory.createForClass(Place);
 
 // Add 2dsphere index
-PlaceSchema.index({ location: "2dsphere" });
+PlaceSchema.index({ location: "2dsphere", name: "text" });
