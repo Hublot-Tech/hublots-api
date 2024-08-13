@@ -60,7 +60,8 @@ export class MessagesService {
       .exec();
     const messages = await this.messageModel
       .find({ $or: receivers.map((receiver) => ({ receiver })) })
-      .populate("receiver");
+      .populate("receiver")
+      .exec();
 
     return messages.map(({ receiver, content }) => {
       const receiverData = receiver as unknown as User;
