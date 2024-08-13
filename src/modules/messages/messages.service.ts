@@ -61,9 +61,13 @@ export class MessagesService {
     const messages = await this.messageModel
       .find({ $or: receivers.map((receiver) => ({ receiver })) })
       .populate("receiver")
+      .sort({ updatedAt: -1 })
       .exec();
 
-    return messages.map(({ receiver, content }) => {
+    return receivers.map((id) => {
+      const { receiver, content } = messages.find(
+        (_) => _.receiver.id.toString() === id.toString(),
+      );
       const receiverData = receiver as unknown as User;
       return new ChatEntity({
         interlocutor: receiverData.id,
