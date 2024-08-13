@@ -19,10 +19,19 @@ export class ServicesService {
     private readonly placesService: PlacesService,
   ) {}
 
-  async create(data: CreateServiceDto, createdBy: string): Promise<Service> {
+  async create(
+    { place, ...data }: CreateServiceDto,
+    createdBy: string,
+  ): Promise<Service> {
+    let newPlace: Place;
+    if (place) {
+      newPlace = await this.placesService.create(place);
+    }
+
     return new this.serviceModel({
       ...data,
       createdBy,
+      place: newPlace.id,
       provider: data.provider ?? createdBy,
     }).save();
   }
