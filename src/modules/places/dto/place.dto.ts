@@ -1,4 +1,9 @@
-import { ApiProperty, ApiPropertyOptional, OmitType } from "@nestjs/swagger";
+import {
+  ApiProperty,
+  ApiPropertyOptional,
+  OmitType,
+  PartialType,
+} from "@nestjs/swagger";
 import { Transform } from "class-transformer";
 import { IsNumber, IsOptional, IsString } from "class-validator";
 
@@ -33,7 +38,9 @@ export class PlaceEntity extends CreatePlaceDto {
   }
 }
 
-export class PlaceQueryParams extends OmitType(CreatePlaceDto, ["name"]) {
+export class PlaceQueryParams extends PartialType(
+  OmitType(CreatePlaceDto, ["name"]),
+) {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
