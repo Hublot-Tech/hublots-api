@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
+import { Place } from "src/modules/places/schemas/place.schema";
 import { User } from "src/modules/users/schemas/user.schema";
 
 export enum Category {
@@ -56,6 +57,9 @@ export class Service extends Document {
   @Prop({ type: String, required: true })
   mainImageRef: string;
 
+  @Prop({ type: Types.ObjectId, ref: Place.name })
+  place: Types.ObjectId;
+
   //reference to the provider
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
   provider: Types.ObjectId;
@@ -66,3 +70,6 @@ export class Service extends Document {
 }
 
 export const ServiceSchema = SchemaFactory.createForClass(Service);
+
+// creating text index on name and description
+ServiceSchema.index({ name: "text", description: "text" });

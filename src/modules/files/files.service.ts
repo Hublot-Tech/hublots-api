@@ -17,7 +17,7 @@ export class FilesService implements MulterOptionsFactory {
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join("");
-          const filename = `${randomName}${extname(file.originalname)}`;
+          const filename = `${randomName}${extname(file.originalname.toLowerCase())}`;
           callback(null, filename);
         },
       }),
@@ -26,7 +26,7 @@ export class FilesService implements MulterOptionsFactory {
         fileSize: 1024 * 1024 * 10, // Limit file size to 10MB
       },
       fileFilter: (req, file, callback) => {
-        if (!file.originalname.match(/\.(jpg|jpeg|png|gif)$/)) {
+        if (!file.originalname.toLowerCase().match(/\.(jpg|jpeg|png|gif)$/)) {
           return callback(
             new BadRequestException("Only image files are allowed!"),
             false,

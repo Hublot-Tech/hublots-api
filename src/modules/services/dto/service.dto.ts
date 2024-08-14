@@ -2,21 +2,28 @@ import {
   ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
+  IntersectionType,
   OmitType,
   PartialType,
   PickType,
 } from "@nestjs/swagger";
-import { Exclude, Transform } from "class-transformer";
+import { Exclude, Transform, Type } from "class-transformer";
 import {
   IsEnum,
   IsMongoId,
   IsOptional,
   IsString,
   MinLength,
+  ValidateNested,
 } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { UserEntity } from "src/modules/users/dto";
 import { Category } from "../schemas/service.schema";
+import {
+  CreatePlaceDto,
+  PlaceEntity,
+  PlaceQueryParams,
+} from "src/modules/places/dto/place.dto";
 
 export class CreateServiceDto {
   @ApiProperty({
@@ -48,6 +55,16 @@ export class CreateServiceDto {
   @IsOptional()
   provider: string;
 
+  @IsOptional()
+  @ValidateNested()
+  @Type(() => CreatePlaceDto)
+  @Transform(({ value }) => new CreatePlaceDto(JSON.parse(value)))
+  @ApiPropertyOptional({
+    description: "Address where the service will be provided",
+    type: CreatePlaceDto,
+  })
+  place: CreatePlaceDto;
+
   @Exclude({ toClassOnly: true })
   @ApiHideProperty()
   mainImageRef: string;
@@ -66,7 +83,7 @@ export class CreateServiceDto {
   }
 }
 
-export class ServiceEntity extends CreateServiceDto {
+export class ServiceEntity extends OmitType(CreateServiceDto, ["place"]) {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
@@ -84,7 +101,7 @@ export class ServiceEntity extends CreateServiceDto {
   })
   deletedAt: Date;
 
-  @ApiProperty({
+  @ApiPropertyOptional({
     example: "Available from 9 AM to 5 PM",
     description: "Availability times for the service",
   })
@@ -100,6 +117,10 @@ export class ServiceEntity extends CreateServiceDto {
       "Should not be provided on update except one wants to completely override the previous images",
   })
   imageRefs: string[];
+
+  @ApiProperty({ type: String, nullable: true })
+  @Transform(({ value }) => new PlaceEntity(value))
+  place: PlaceEntity;
 
   @Exclude()
   @ApiHideProperty()
@@ -131,24 +152,32 @@ export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
   }
 }
 
-export class ServiceParamsDto extends BulkQueryDto {
+export class ServiceParamsDto extends IntersectionType(
+  BulkQueryDto,
+  PlaceQueryParams,
+) {
   @IsMongoId()
   @IsOptional()
   @ApiPropertyOptional()
-  createdBy: string;
+  createdBy?: string;
 
   @IsMongoId()
   @IsOptional()
   @ApiPropertyOptional()
-  provider: string;
+  provider?: string;
 
   @IsOptional()
   @IsEnum(Category)
   @ApiPropertyOptional({ enum: Category, description: "Service category" })
-  category: Category;
+  category?: Category;
 
-  constructor(service: ServiceParamsDto) {
-    super(service);
-    Object.assign(this, service);
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({ description: "Search string" })
+  keywords: string;
+
+  constructor(search: ServiceParamsDto) {
+    super(search);
+    Object.assign(this, search);
   }
 }

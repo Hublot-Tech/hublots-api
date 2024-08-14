@@ -5,6 +5,8 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
+import { PlacesService } from "../places/places.service";
+import { Place } from "../places/schemas/place.schema";
 import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
 import { Offer } from "./offers/schemas/offer.schema";
 import { Service } from "./schemas/service.schema";
@@ -14,20 +16,32 @@ export class ServicesService {
   constructor(
     @InjectModel(Service.name) private readonly serviceModel: Model<Service>,
     @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
+    private readonly placesService: PlacesService,
   ) {}
 
-  async create(data: CreateServiceDto, createdBy: string): Promise<Service> {
-    return new this.serviceModel({
+  async create(
+    { place, ...data }: CreateServiceDto,
+    createdBy: string,
+  ): Promise<Service> {
+    let newPlace: Place;
+    if (place) {
+      newPlace = await this.placesService.create(place);
+    }
+
+    const newService = await new this.serviceModel({
       ...data,
       createdBy,
+      place: newPlace?.id,
       provider: data.provider ?? createdBy,
     }).save();
+    return newService.populate("place");
   }
 
   async findOne(serviceId: string): Promise<Service> {
     const service = await this.serviceModel
       .findById(serviceId)
       .populate("provider")
+      .populate("place")
       .exec();
 
     if (!service) {
@@ -43,10 +57,30 @@ export class ServicesService {
   async findAll({
     page,
     perpage,
+    keywords,
+    latitude,
+    longitude,
+    maxDistance,
+    placeName,
     ...params
   }: ServiceParamsDto): Promise<Service[]> {
+    let places: Place[];
+    if (placeName || (latitude && longitude && maxDistance)) {
+      places = await this.placesService.findNearby({
+        latitude,
+        longitude,
+        maxDistance,
+        placeName,
+      });
+    }
+
     return this.serviceModel
-      .find({ ...params })
+      .find({
+        ...params,
+        ...(keywords ? { $text: { $search: keywords } } : {}),
+        ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
+      })
+      .populate("place")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
