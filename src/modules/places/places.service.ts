@@ -40,14 +40,12 @@ export class PlacesService {
     latitude,
     longitude,
     maxDistance,
-    keywords,
+    placeName,
   }: PlaceQueryParams): Promise<Place[]> {
     return this.placeModel
       .find({
         $or: [
-          {
-            $text: { $search: keywords },
-          },
+          ...(placeName ? [{ $text: { $search: placeName } }] : []),
           {
             location: {
               $near: {

@@ -2,6 +2,7 @@ import {
   ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
+  IntersectionType,
   OmitType,
   PartialType,
   PickType,
@@ -54,10 +55,13 @@ export class CreateServiceDto {
   @IsOptional()
   provider: string;
 
+  @IsOptional()
   @ValidateNested()
   @Type(() => CreatePlaceDto)
+  @Transform(({ value }) => new CreatePlaceDto(JSON.parse(value)))
   @ApiPropertyOptional({
     description: "Address where the service will be provided",
+    type: CreatePlaceDto,
   })
   place: CreatePlaceDto;
 
@@ -79,7 +83,7 @@ export class CreateServiceDto {
   }
 }
 
-export class ServiceEntity extends CreateServiceDto {
+export class ServiceEntity extends OmitType(CreateServiceDto, ["place"]) {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
@@ -114,7 +118,8 @@ export class ServiceEntity extends CreateServiceDto {
   })
   imageRefs: string[];
 
-  @ApiProperty({ type: PlaceEntity, nullable: true })
+  @ApiProperty({ type: String, nullable: true })
+  @Transform(({ value }) => new PlaceEntity(value))
   place: PlaceEntity;
 
   @Exclude()
@@ -147,7 +152,10 @@ export class ServiceDetailsDto extends OmitType(ServiceEntity, ["provider"]) {
   }
 }
 
-export class ServiceParamsDto extends BulkQueryDto {
+export class ServiceParamsDto extends IntersectionType(
+  BulkQueryDto,
+  PlaceQueryParams,
+) {
   @IsMongoId()
   @IsOptional()
   @ApiPropertyOptional()
@@ -164,17 +172,9 @@ export class ServiceParamsDto extends BulkQueryDto {
   category?: Category;
 
   @IsString()
-  @ApiProperty({ description: "Search string" })
-  search: string;
-
   @IsOptional()
-  @ValidateNested()
-  @Type(() => PlaceQueryParams)
-  @ApiPropertyOptional({
-    type: PlaceQueryParams,
-    description: "Coordinates of the client running the search",
-  })
-  location?: PlaceQueryParams;
+  @ApiPropertyOptional({ description: "Search string" })
+  keywords: string;
 
   constructor(search: ServiceParamsDto) {
     super(search);

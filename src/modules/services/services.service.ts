@@ -28,12 +28,13 @@ export class ServicesService {
       newPlace = await this.placesService.create(place);
     }
 
-    return new this.serviceModel({
+    const newService = await new this.serviceModel({
       ...data,
       createdBy,
-      place: newPlace.id,
+      place: newPlace?.id,
       provider: data.provider ?? createdBy,
     }).save();
+    return newService.populate("place");
   }
 
   async findOne(serviceId: string): Promise<Service> {
@@ -56,21 +57,30 @@ export class ServicesService {
   async findAll({
     page,
     perpage,
-    search,
-    location,
+    keywords,
+    latitude,
+    longitude,
+    maxDistance,
+    placeName,
     ...params
   }: ServiceParamsDto): Promise<Service[]> {
     let places: Place[];
-    if (location) {
-      places = await this.placesService.findNearby(location);
+    if (placeName || (latitude && longitude && maxDistance)) {
+      places = await this.placesService.findNearby({
+        latitude,
+        longitude,
+        maxDistance,
+        placeName,
+      });
     }
 
     return this.serviceModel
       .find({
         ...params,
-        $text: { $search: search },
-        $or: places ? places.map((pl) => ({ place: pl.id })) : undefined,
+        ...(keywords ? { $text: { $search: keywords } } : {}),
+        ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
       })
+      .populate("place")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();

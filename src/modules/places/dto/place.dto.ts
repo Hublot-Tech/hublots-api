@@ -7,13 +7,15 @@ export class CreatePlaceDto {
   @ApiProperty()
   name: string;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  longitude: string;
+  @Transform(({ value }) => Number(value))
+  longitude: number;
 
-  @IsString()
+  @IsNumber()
   @ApiProperty()
-  latitude: string;
+  @Transform(({ value }) => Number(value))
+  latitude: number;
 
   constructor(place: CreatePlaceDto) {
     Object.assign(this, place);
@@ -35,7 +37,7 @@ export class PlaceQueryParams extends OmitType(CreatePlaceDto, ["name"]) {
   @IsString()
   @IsOptional()
   @ApiPropertyOptional()
-  keywords: string;
+  placeName: string;
 
   @IsNumber()
   @IsOptional()
@@ -45,7 +47,7 @@ export class PlaceQueryParams extends OmitType(CreatePlaceDto, ["name"]) {
   })
   maxDistance: number = 10000;
 
-  constructor(place: CreatePlaceDto) {
+  constructor(place: PlaceQueryParams) {
     super(place);
     Object.assign(this, place);
   }
