@@ -30,7 +30,7 @@ export class BlotsService {
 
   async create(
     { options, ...payload }: CreateBlotDto,
-    createdBy: string,
+    provider: string,
   ): Promise<Blot> {
     return this.txManager.withTransaction(async (session) => {
       const newBlotOptions = await this.prepareBlotOptions(options, session);
@@ -40,7 +40,7 @@ export class BlotsService {
       );
       return new this.blotModel({
         ...payload,
-        createdBy,
+        provider,
         options: createdOptions.map((_) => _._id),
       }).save({ session });
     });
