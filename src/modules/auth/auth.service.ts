@@ -93,6 +93,10 @@ export class AuthService {
       throw new ForbiddenException("Invalid token payload");
     }
 
+    if (!authorizedUser.isActive) {
+      throw new ForbiddenException("User access has been temporarily revoked");
+    }
+
     return authorizedUser;
   }
 

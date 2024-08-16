@@ -6,7 +6,7 @@ import {
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
-import { Role } from "../users/dto";
+import { Role, VerificationStatus } from "../users/dto";
 import { AuthService } from "./auth.service";
 import { PUBLIC_KEY, ROLES_KEY } from "./decorator/auth.decorator";
 
@@ -33,6 +33,16 @@ export class AuthorizationGuard implements CanActivate {
 
     if (!authenticatedUser.isOTPVerified && !request.url.includes("auth")) {
       throw new ForbiddenException("Phone number not verified");
+    }
+
+    if (
+      authenticatedUser.kycStatus !== VerificationStatus.VALIDATED &&
+      request.url.includes("blots") &&
+      ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)
+    ) {
+      throw new ForbiddenException(
+        "Provider must be KYC'd before managing any blot on the platform",
+      );
     }
 
     const allowedRoles = this.reflector.getAllAndOverride<Role[] | null>(
