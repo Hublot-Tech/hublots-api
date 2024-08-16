@@ -83,14 +83,14 @@ export class MessagesService {
       .exec();
 
     return receivers.map((id) => {
-      const { receiver, content } = messages.find(
+      const { receiver, content, resource } = messages.find(
         (_) => _.receiver.id.toString() === id.toString(),
       );
       const receiverData = receiver as unknown as User;
       return new ChatEntity({
-        interlocutor: receiverData.id,
-        lastMessage: content,
         name: receiverData.fullname,
+        interlocutor: receiverData.id,
+        lastMessage: content ?? resource,
         updatedAt: receiverData.updatedAt,
       });
     });
