@@ -39,6 +39,10 @@ export class PriceSettingsService {
       });
   }
 
+  async findAll(): Promise<PriceSettings[]> {
+    return this.priceSettingsModel.find().exec();
+  }
+
   async findOne(settingsName: PriceSettingsNames): Promise<PriceSettings> {
     return this.priceSettingsModel.findOne({ name: settingsName }).exec();
   }
