@@ -1,7 +1,11 @@
-import { Injectable, NotFoundException } from "@nestjs/common";
+import {
+  Injectable,
+  NotFoundException,
+  UnprocessableEntityException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { VerificationStatus } from "../users/dto";
+import { Role, VerificationStatus } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { VerifyKYCDto } from "./dto/kyc.dto";
 import { KYC } from "./schemas/kyc.schema";
@@ -15,7 +19,14 @@ export class KYCService {
 
   async submit(userId: string, imageRefs: string[]): Promise<KYC> {
     const user = await this.userModel.findById(userId);
-    if (!user) throw new NotFoundException(`User with id ${userId} not found`);
+    if (!user) {
+      throw new NotFoundException(`User with id ${userId} not found`);
+    }
+
+    if (user.kycStatus === VerificationStatus.VALIDATED) {
+      throw new UnprocessableEntityException("User has KYC'd already");
+    }
+
     await this.kycModel
       .updateOne(
         { user: userId },
@@ -24,6 +35,9 @@ export class KYCService {
       )
       .exec();
     user.kycStatus = VerificationStatus.SUBMITTED;
+    if (!user.roles.includes(Role.PROVIDER)) {
+      user.roles.push(Role.PROVIDER);
+    }
     await user.save();
     return this.kycModel.findOne({ user: userId }).exec();
   }
