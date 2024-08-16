@@ -5,9 +5,15 @@ import {
 } from "./schemas/price-settings.schema";
 import { Model } from "mongoose";
 import { CreatePriceSettingsDto } from "./dto/price-settings.dto";
-import { ConflictException, Logger, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  Logger,
+  NotFoundException,
+} from "@nestjs/common";
 import { User } from "../users/schemas/user.schema";
 
+@Injectable()
 export class PriceSettingsService {
   private readonly logger = new Logger(PriceSettingsService.name);
 

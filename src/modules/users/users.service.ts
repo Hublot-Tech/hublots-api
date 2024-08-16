@@ -1,4 +1,8 @@
-import { ConflictException, NotFoundException } from "@nestjs/common";
+import {
+  ConflictException,
+  Injectable,
+  NotFoundException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
 import { Model } from "mongoose";
@@ -12,6 +16,7 @@ import {
 } from "./dto/users.dto";
 import { User } from "./schemas/user.schema";
 
+@Injectable()
 export class UsersService {
   constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
     //seed admin user
@@ -26,13 +31,15 @@ export class UsersService {
             locale: Locale.FR,
             fullname: "HUBLOTS CM",
             email: process.env.ADMIN_EMAIL,
-            password: process.env.ADMIN_PASSWORD,
             phoneNumber: process.env.ADMIN_PHONE_NUMBER,
             address: "Cameroun, Daoula Pk 8 face Eva hotel",
             roles: [Role.ADMIN],
           });
 
-          new this.userModel(adminAccount).save();
+          new this.userModel({
+            ...adminAccount,
+            password: process.env.ADMIN_PASSWORD,
+          }).save();
         }
       });
   }

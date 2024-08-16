@@ -156,6 +156,11 @@ export class CreateAccountDto extends OmitType(CreateUserDto, ["password"]) {
   })
   @IsEnum(Role, { each: true })
   roles: Role[];
+
+  constructor(props: CreateAccountDto) {
+    super(props);
+    Object.assign(this, props);
+  }
 }
 
 export class GoogleSignInDto {
@@ -170,6 +175,10 @@ export class GoogleSignInDto {
   })
   @IsString()
   socialMode: string;
+
+  constructor(props: GoogleSignInDto) {
+    Object.assign(this, props);
+  }
 }
 
 export class UpdateProfileDto extends PartialType(
