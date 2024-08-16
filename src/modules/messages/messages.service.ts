@@ -21,8 +21,26 @@ export class MessagesService {
     @InjectModel(Message.name) private readonly messageModel: Model<Message>,
   ) {}
 
-  async create(data: CreateMessageDto, createdBy: string): Promise<Message> {
-    return new this.messageModel({ ...data, sender: createdBy }).save();
+  async create(payload: CreateMessageDto, createdBy: string): Promise<Message> {
+    if (MsgContentType.TEXT === payload.contentType) {
+      if (payload.resource) {
+        throw new UnprocessableEntityException(
+          "Resource is not supported for text content",
+        );
+      }
+
+      if (!payload.content) {
+        throw new UnprocessableEntityException("Message cannot be empty");
+      }
+    } else {
+      if (!payload.resource) {
+        throw new UnprocessableEntityException(
+          "Resource is required for blot or file content types",
+        );
+      }
+    }
+
+    return new this.messageModel({ ...payload, sender: createdBy }).save();
   }
 
   async findOne(messageId: string): Promise<Message> {
@@ -98,9 +116,9 @@ export class MessagesService {
       );
     }
 
-    if (MsgContentType.TEXT === message.contentType && payload.fileRef) {
+    if (MsgContentType.TEXT === message.contentType && payload.resource) {
       throw new UnprocessableEntityException(
-        "File is not supported for text content",
+        "Resource is not supported for text content",
       );
     }
 

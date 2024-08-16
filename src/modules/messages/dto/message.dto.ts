@@ -1,5 +1,4 @@
 import {
-  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
@@ -28,9 +27,13 @@ export class CreateMessageDto {
   @ApiProperty({ type: String })
   receiver: string;
 
-  @Exclude({ toClassOnly: true })
-  @ApiHideProperty()
-  fileRef: string;
+  @IsString()
+  @IsOptional()
+  @ApiPropertyOptional({
+    description:
+      "fileRef or blot ID depending on the case. Should be omitted for text messages",
+  })
+  resource: string;
 
   @Exclude()
   @ApiPropertyOptional({
@@ -48,7 +51,7 @@ export class CreateMessageDto {
 
 export class UpdateMessageDto extends PickType(PartialType(CreateMessageDto), [
   "content",
-  "fileRef",
+  "resource",
   "file",
 ]) {}
 
@@ -70,7 +73,7 @@ export class MessageEntity extends CreateMessageDto {
   readAt: Date;
 
   @ApiProperty({ description: "Only present if content type is file" })
-  fileRef: string;
+  resource: string;
 
   constructor(message: MessageEntity) {
     super(message);

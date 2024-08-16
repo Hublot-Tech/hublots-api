@@ -5,6 +5,7 @@ import { User } from "src/modules/users/schemas/user.schema";
 export enum MsgContentType {
   FILE = "file",
   TEXT = "text",
+  BLOT = "blot",
 }
 
 @Schema({
@@ -25,7 +26,7 @@ export class Message extends Document {
   content: string;
 
   @Prop({ type: String })
-  fileRef: string;
+  resource: string;
 
   // reference to sender
   @Prop({ type: Types.ObjectId, ref: User.name, required: true })
