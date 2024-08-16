@@ -6,19 +6,43 @@ import { BulkQueryDto } from "../../helpers/api-dto";
 import {
   CreateAccountDto,
   CreateUserDto,
+  Locale,
+  Role,
   UpdateProfileDto,
 } from "./dto/users.dto";
 import { User } from "./schemas/user.schema";
 
 export class UsersService {
-  constructor(
-    @InjectModel(User.name) private readonly userModel: Model<User>,
-  ) {}
+  constructor(@InjectModel(User.name) private readonly userModel: Model<User>) {
+    //seed admin user
+    this.userModel
+      .findOne({
+        email: process.env.ADMIN_EMAIL,
+      })
+      .exec()
+      .then((user) => {
+        if (!user) {
+          const adminAccount = new CreateAccountDto({
+            locale: Locale.FR,
+            fullname: "HUBLOTS CM",
+            email: process.env.ADMIN_EMAIL,
+            password: process.env.ADMIN_PASSWORD,
+            phoneNumber: process.env.ADMIN_PHONE_NUMBER,
+            address: "Cameroun, Daoula Pk 8 face Eva hotel",
+            roles: [Role.ADMIN],
+          });
+
+          new this.userModel(adminAccount).save();
+        }
+      });
+  }
 
   async register(userData: CreateUserDto): Promise<User> {
-    const user = await this.userModel.findOne({
-      $or: [{ email: userData.email }, { phoneNumber: userData.phoneNumber }],
-    });
+    const user = await this.userModel
+      .findOne({
+        $or: [{ email: userData.email }, { phoneNumber: userData.phoneNumber }],
+      })
+      .exec();
     if (user) {
       throw new ConflictException("Email or phone number already taken!");
     }
