@@ -83,7 +83,9 @@ export class MessagesController {
     const message = await this.messagesService.create(
       {
         ...payload,
-        resource: file ? `${process.env.PUBLIC_URL}/${file.filename}` : null,
+        resource: file
+          ? `${process.env.PUBLIC_URL}/${file.filename}`
+          : payload.resource,
       },
       request.user.id,
     );
