@@ -50,7 +50,7 @@ export class AuthorizationGuard implements CanActivate {
       [context.getHandler(), context.getClass()],
     );
     if (
-      allowedRoles &&
+      allowedRoles?.length > 0 &&
       !allowedRoles.some((r) => authenticatedUser.roles.includes(r))
     ) {
       throw new ForbiddenException("Insufficient privileges");

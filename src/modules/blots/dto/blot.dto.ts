@@ -135,15 +135,22 @@ export class BlotEntity extends CreateBlotDto {
 
 export class BlotQueryParams extends BulkQueryDto {
   @IsString()
-  @ApiProperty({ description: "Service provider who created the blot" })
-  provider: string;
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: "The service provider who created the blot",
+  })
+  provider?: string;
 
   @IsString()
-  @ApiProperty({ description: "Client for whom the blot was created" })
+  @IsOptional()
+  @ApiPropertyOptional({
+    description: "The customer for whom the blot was created",
+  })
   consumer: string;
 
+  @IsOptional()
   @IsEnum(BlotStatus)
-  @ApiProperty({ enum: BlotStatus, default: BlotStatus.CREATED })
+  @ApiPropertyOptional({ enum: BlotStatus, default: BlotStatus.CREATED })
   status: BlotStatus;
 
   constructor(params: BlotQueryParams) {
