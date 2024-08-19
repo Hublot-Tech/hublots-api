@@ -35,7 +35,7 @@ export class MessagesService {
     } else {
       if (!payload.resource) {
         throw new UnprocessableEntityException(
-          "Resource is required for blot or file content types",
+          `Resource is required for content type ${payload.contentType}`,
         );
       }
     }

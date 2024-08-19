@@ -6,6 +6,7 @@ export enum MsgContentType {
   FILE = "file",
   TEXT = "text",
   BLOT = "blot",
+  ORDER = "order",
 }
 
 @Schema({
