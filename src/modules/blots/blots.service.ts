@@ -13,6 +13,7 @@ import {
   CreateBlotDto,
   CreateBlotOptionDto,
   UpdateBlotDto,
+  UpdateBlotStatusDto,
 } from "./dto/blot.dto";
 import { BlotOption } from "./schemas/blot-option.schema";
 import { Blot, BlotStatus } from "./schemas/blot.schema";
@@ -119,7 +120,7 @@ export class BlotsService {
 
   async update(
     blotId: string,
-    data: UpdateBlotDto,
+    data: UpdateBlotDto & Partial<UpdateBlotStatusDto>,
     updatedBy: string,
   ): Promise<Blot> {
     const blot = await this.blotModel.findById(blotId).exec();
@@ -143,7 +144,7 @@ export class BlotsService {
           BlotStatus.STARTED_WORK,
         ];
     }
-    if (!allowedStatuses.includes(blot.status)) {
+    if (allowedStatuses.length && !allowedStatuses.includes(blot.status)) {
       throw new UnprocessableEntityException(
         `Blot status can only be update to ${blot.status} if found in one of the following states: ${allowedStatuses}`,
       );

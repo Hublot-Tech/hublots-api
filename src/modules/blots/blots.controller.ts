@@ -43,6 +43,7 @@ import {
   CreateBlotDto,
   CreateBlotOptionDto,
   UpdateBlotDto,
+  UpdateBlotStatusDto,
 } from "./dto/blot.dto";
 import { BlotStatus } from "./schemas/blot.schema";
 import { MongoIdPipe } from "src/helpers/custom-pipes";
@@ -139,6 +140,31 @@ export class BlotsController {
     @Req() request: Request,
     @Param("id", MongoIdPipe) blotId: string,
     @Body() payload: UpdateBlotDto,
+  ): Promise<ResponseDataDto<BlotEntity>> {
+    const updatedBlot = await this.blotsService.update(
+      blotId,
+      payload,
+      request.user.id,
+    );
+
+    return new ResponseDataDto({
+      data: new BlotEntity(updatedBlot.toJSON()),
+      message: "Successfully updated blot",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @UseRoles(Role.CLIENT)
+  @Put(":id/status")
+  @ApiOperation({
+    summary: "Update blot status.",
+    description: "Authorized user must be the consumer of the blot",
+  })
+  @ApiCustomOkResponse(BlotEntity)
+  async updateStatus(
+    @Req() request: Request,
+    @Param("id", MongoIdPipe) blotId: string,
+    @Body() payload: UpdateBlotStatusDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
     if (
       ![

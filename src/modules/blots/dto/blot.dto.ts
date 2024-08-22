@@ -2,6 +2,7 @@ import {
   ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
+  IntersectionType,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
@@ -73,10 +74,6 @@ export class CreateBlotDto {
   @ApiProperty()
   startDate: Date;
 
-  @IsEnum(BlotStatus)
-  @ApiProperty({ enum: BlotStatus, default: BlotStatus.CREATED })
-  status: BlotStatus;
-
   @IsArray()
   @Type(() => CreateBlotOptionDto)
   @ValidateNested({ each: true })
@@ -89,6 +86,16 @@ export class CreateBlotDto {
 
   constructor(blot: CreateBlotDto) {
     Object.assign(this, blot);
+  }
+}
+
+export class UpdateBlotStatusDto {
+  @IsEnum(BlotStatus)
+  @ApiProperty({ enum: BlotStatus, default: BlotStatus.CREATED })
+  status: BlotStatus;
+
+  constructor(props: UpdateBlotStatusDto) {
+    Object.assign(this, props);
   }
 }
 
@@ -109,7 +116,10 @@ export class UpdateBlotDto extends PartialType(
   }
 }
 
-export class BlotEntity extends CreateBlotDto {
+export class BlotEntity extends IntersectionType(
+  CreateBlotDto,
+  UpdateBlotStatusDto,
+) {
   @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
   id: string;
