@@ -8,7 +8,7 @@ import { Payment } from "src/modules/payments/schemas/payment.schema";
 export enum BlotStatus {
   CREATED = "created", //1
   ACCEPTED = "accepted", //2
-  GOT_IN_TOUCH = "getting_in_touch", //3
+  GOT_IN_TOUCH = "got_in_touch", //3
   STARTED_WORK = "started_work", //4
   FINALIZED = "finalized", //5
   CANCELLED = "cancelled", //if previous status is not yet at stage //4
