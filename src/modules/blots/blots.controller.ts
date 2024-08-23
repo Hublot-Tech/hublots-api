@@ -1,5 +1,6 @@
 import {
   Body,
+  ConflictException,
   Controller,
   Delete,
   ForbiddenException,
@@ -31,10 +32,13 @@ import {
   ResponseDataDto,
   ResponseMetadataDto,
 } from "src/helpers/api-dto";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
+import { isMixed, isTransitional } from "src/helpers/payment-status";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import { DirectChargePaymentDto } from "../payments/dto/payment.dto";
 import { PaymentsService } from "../payments/payments.service";
 import { Role } from "../users/dto";
+import { User } from "../users/schemas/user.schema";
 import { BlotsService } from "./blots.service";
 import {
   BlotDetailsDto,
@@ -46,7 +50,6 @@ import {
   UpdateBlotStatusDto,
 } from "./dto/blot.dto";
 import { BlotStatus } from "./schemas/blot.schema";
-import { MongoIdPipe } from "src/helpers/custom-pipes";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
@@ -205,6 +208,20 @@ export class BlotsController {
     @Body() paymentDetails: DirectChargePaymentDto,
   ): Promise<ResponseDataDto<BlotEntity>> {
     let blot = await this.blotsService.findOne(blotId, request.user.id);
+    if (blot.payment) {
+      const existingPayment = await this.paymentsService.findOne(
+        blot.payment.toString(),
+      );
+
+      if (
+        isMixed(existingPayment.status) ||
+        isTransitional(existingPayment.status)
+      )
+        throw new ConflictException(
+          "Blot already has a completed/ongoing payment",
+        );
+    }
+
     const [initializedPayment, chargePayment] =
       await this.paymentsService.initializeAndCharge(
         request,
@@ -238,7 +255,36 @@ export class BlotsController {
     @Param("id", MongoIdPipe) blotId: string,
   ): Promise<ResponseDataDto<BlotEntity>> {
     let blot = await this.blotsService.findOne(blotId, request.user.id);
-    const { provider, price } = new BlotDetailsDto(blot.toJSON());
+
+    // This is valid because the `findOne` populates the provider field with actual user
+    const provider = blot.provider as unknown as User;
+
+    if (
+      ![
+        BlotStatus.ACCEPTED,
+        BlotStatus.GOT_IN_TOUCH,
+        BlotStatus.STARTED_WORK,
+      ].includes(blot.status)
+    ) {
+      throw new UnprocessableEntityException(
+        "Cannot finalize blot that is not accepted",
+      );
+    }
+
+    if (blot.payoutRef) {
+      const existingPayment = await this.paymentsService.findOne(
+        blot.payoutRef.toString(),
+      );
+
+      if (
+        isMixed(existingPayment.status) ||
+        isTransitional(existingPayment.status)
+      )
+        throw new ConflictException(
+          "Blot already has a completed/ongoing payout payment",
+        );
+    }
+
     const payment = await this.paymentsService.transfer(
       {
         email: provider.email,
@@ -246,7 +292,7 @@ export class BlotsController {
         phone: provider.phoneNumber,
         number: provider.phoneNumber,
       },
-      price,
+      blot.price,
       request.user.id,
     );
 
@@ -258,7 +304,7 @@ export class BlotsController {
 
     return new ResponseDataDto({
       data: new BlotEntity(blot.toJSON()),
-      message: "Successfully initiated provider funds transfer",
+      message: "Successfully finalized blot",
       status: HttpStatus.OK,
     });
   }

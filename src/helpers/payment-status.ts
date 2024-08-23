@@ -1,15 +1,16 @@
 export enum PaymentStatus {
   PENDING = "pending",
-  PROCESSING = "processing",
-  INCOMPLETE = "incomplete",
-  CANCELED = "canceled",
+  PROCESSING = "processing", // payments only
+  INCOMPLETE = "incomplete", // payments only
+  CANCELED = "canceled", // payments only
   FAILED = "failed",
   REJECTED = "rejected",
-  ABANDONED = "abandoned",
+  ABANDONED = "abandoned", // payments only
   EXPIRED = "expired",
   COMPLETE = "complete",
-  REFUNDED = "refunded",
-  PARTIALLY_REFUNDED = "partialy-refunded",
+  REFUNDED = "refunded", // payments only
+  PARTIALLY_REFUNDED = "partialy-refunded", // payments only
+  SENT = "sent", // transfers only
 }
 
 export enum TransactionType {
@@ -31,6 +32,7 @@ export const isFinal = (status: PaymentStatus): boolean => {
 
 export const isTransitional = (status: PaymentStatus): boolean => {
   return [
+    PaymentStatus.SENT,
     PaymentStatus.PENDING,
     PaymentStatus.PROCESSING,
     PaymentStatus.INCOMPLETE,

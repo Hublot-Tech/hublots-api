@@ -137,6 +137,10 @@ export class BlotEntity extends IntersectionType(
   @ApiProperty({ description: "Reference payment for this blot" })
   payment: string;
 
+  @Transform(({ value }) => value.toString("hex"))
+  @ApiProperty({ description: "Reference payout payment for this blot" })
+  payoutRef: string;
+
   constructor(blot: BlotEntity) {
     super(blot);
     Object.assign(this, blot);
