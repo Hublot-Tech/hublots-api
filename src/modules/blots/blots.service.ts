@@ -74,7 +74,7 @@ export class BlotsService {
   }
 
   async findOne(blotId: string, userId: string): Promise<Blot> {
-    const blot = this.blotModel
+    const blot = await this.blotModel
       .findOne({
         id: blotId,
         $or: [{ provider: userId }, { consumer: userId }],
