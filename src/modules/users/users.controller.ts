@@ -10,9 +10,13 @@ import {
   Put,
   Query,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
+  ApiConsumes,
   ApiNoContentResponse,
   ApiOperation,
   ApiTags,
@@ -79,16 +83,23 @@ export class UsersController {
   }
 
   @Put("profile")
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profile"))
   @ApiCustomOkResponse(UserEntity)
   @ApiOperation({ summary: "Update authorized user profile." })
   async updateProfile(
     @Req() req: Request,
+    @UploadedFile() file: Express.Multer.File,
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ResponseDataDto<UserEntity>> {
+    if (file?.filename) {
+      updateProfileDto.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+    }
+
     const user = await this.usersService.update(req.user.id, updateProfileDto);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),
-      message: "Successfully retrieved user",
+      message: "Successfully updated user profile",
       status: HttpStatus.OK,
     });
   }
@@ -116,6 +127,8 @@ export class UsersController {
   @Put(":id")
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiCustomOkResponse(UserEntity)
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profile"))
   @ApiOperation({
     summary: "Update user information.",
     description:
@@ -124,11 +137,16 @@ export class UsersController {
   async update(
     @Param("id", MongoIdPipe) userId: string,
     @Body() updateUserDto: UpdateUserDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<UserEntity>> {
+    if (file?.filename) {
+      updateUserDto.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+    }
+
     const user = await this.usersService.update(userId, updateUserDto);
     return new ResponseDataDto({
       data: new UserEntity(user.toJSON()),
-      message: "Successfully retrieved user",
+      message: "Successfully update user account",
       status: HttpStatus.OK,
     });
   }
@@ -156,6 +174,8 @@ export class UsersController {
   @Post("/new")
   @UseRoles(Role.ADMIN, Role.SUPPORT)
   @ApiCustomCreatedResponse(UserEntity)
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profile"))
   @ApiOperation({
     summary: "Create a new user.",
     description:
@@ -164,9 +184,13 @@ export class UsersController {
   async createUser(
     @Req() req: Request,
     @Body() newUser: CreateAccountDto,
+    @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<UserEntity>> {
-    const roles = req.user.roles;
+    if (file?.filename) {
+      newUser.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+    }
 
+    const roles = req.user.roles;
     if (
       (!roles.includes(Role.ADMIN) && newUser.roles.includes(Role.ADMIN)) ||
       newUser.roles.includes(Role.SUPPORT)

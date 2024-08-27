@@ -7,9 +7,13 @@ import {
   Patch,
   Post,
   Req,
+  UploadedFile,
+  UseInterceptors,
 } from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiCreatedResponse,
   ApiNoContentResponse,
   ApiOperation,
@@ -30,6 +34,7 @@ import {
   SignUpResponseDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
+import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -89,7 +94,11 @@ export class AuthController {
       "Sign up a new user. A successfully sign up will send a OTP to the phone number provided in the registration payload",
   })
   @ApiCustomCreatedResponse(SignUpResponseDto)
+  @ApiBody({ type: CreateUserDto })
+  @ApiConsumes("multipart/form-data")
+  @UseInterceptors(FileInterceptor("profile"))
   async register(
+    @UploadedFile() file: Express.Multer.File,
     @Body() createUserDto: CreateUserDto,
   ): Promise<ResponseDataDto<SignUpResponseDto>> {
     const { user, ...tokens } = await this.authService.singUp(createUserDto);

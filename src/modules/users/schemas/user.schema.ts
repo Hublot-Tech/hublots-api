@@ -87,6 +87,9 @@ export class User extends Document {
   })
   isOTPVerified: boolean;
 
+  @Prop({ type: String })
+  profileRef: string;
+
   @Prop({
     type: Date,
     required: true,

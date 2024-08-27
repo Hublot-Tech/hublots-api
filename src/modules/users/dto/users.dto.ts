@@ -1,6 +1,7 @@
 import {
   ApiHideProperty,
   ApiProperty,
+  ApiPropertyOptional,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
@@ -84,6 +85,21 @@ export class CreateUserDto {
   @MinLength(3, { message: "Password must be at least 3 characters long" })
   password: string;
 
+  @IsString()
+  @IsOptional()
+  @ApiHideProperty()
+  @Exclude({ toClassOnly: true })
+  profileRef?: string;
+
+  @Exclude()
+  @ApiPropertyOptional({
+    type: String,
+    format: "binary",
+    description:
+      "Binary file to be upload as user profile image. This will be use to populate the `profileRef` field",
+  })
+  readonly profile?: string;
+
   constructor(createUser: CreateUserDto) {
     Object.assign(this, createUser);
   }
@@ -136,6 +152,9 @@ export class UserEntity extends CreateUserDto {
   @ApiProperty({ default: false })
   isOTPVerified: boolean = false;
 
+  @ApiProperty()
+  profileRef: string = null;
+
   @Exclude()
   @ApiHideProperty()
   logs: string[];
@@ -182,8 +201,6 @@ export class GoogleSignInDto {
 }
 
 export class UpdateProfileDto extends PartialType(
-  OmitType(UserEntity, ["password", "email", "roles"] as const),
+  OmitType(CreateUserDto, ["password", "email"] as const),
 ) {}
-export class UpdateUserDto extends PartialType(
-  OmitType(UserEntity, ["password", "email"] as const),
-) {}
+export class UpdateUserDto extends PartialType(CreateAccountDto) {}

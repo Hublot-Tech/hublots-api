@@ -7,13 +7,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import * as bcrypt from "bcrypt";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
-import {
-  CreateAccountDto,
-  CreateUserDto,
-  Locale,
-  Role,
-  UpdateProfileDto,
-} from "./dto/users.dto";
+import { CreateAccountDto, CreateUserDto, Locale, Role } from "./dto/users.dto";
 import { User } from "./schemas/user.schema";
 
 @Injectable()
@@ -99,7 +93,7 @@ export class UsersService {
     if (!user) throw new NotFoundException(`User with id ${userId} not found`);
   }
 
-  async update(userId: string, data: UpdateProfileDto): Promise<User> {
+  async update(userId: string, data: Partial<User>): Promise<User> {
     return this.userModel
       .findByIdAndUpdate(
         userId,
