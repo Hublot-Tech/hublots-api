@@ -11,6 +11,7 @@ import { Exclude, Transform, Type } from "class-transformer";
 import {
   IsEnum,
   IsMongoId,
+  IsNumber,
   IsOptional,
   IsString,
   MinLength,
@@ -179,5 +180,19 @@ export class ServiceParamsDto extends IntersectionType(
   constructor(search: ServiceParamsDto) {
     super(search);
     Object.assign(this, search);
+  }
+}
+
+export class ProviderEntity extends UserEntity {
+  @IsNumber()
+  @ApiProperty({
+    nullable: true,
+    description: "Provider rating average rating",
+  })
+  avgRating: number = null;
+
+  constructor(props: ProviderEntity) {
+    super(props);
+    Object.assign(this, props);
   }
 }

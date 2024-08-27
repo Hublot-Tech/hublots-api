@@ -7,6 +7,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { PlacesService } from "../places/places.service";
 import { Place } from "../places/schemas/place.schema";
+import { User } from "../users/schemas/user.schema";
 import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
 import { Offer } from "./offers/schemas/offer.schema";
 import { Service } from "./schemas/service.schema";
@@ -81,9 +82,49 @@ export class ServicesService {
         ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
       })
       .populate("place")
+      .populate("provider")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
+  }
+
+  async findProviders({
+    page,
+    perpage,
+    keywords,
+    latitude,
+    longitude,
+    maxDistance,
+    placeName,
+    ...params
+  }: ServiceParamsDto): Promise<User[]> {
+    let places: Place[];
+    if (placeName || (latitude && longitude && maxDistance)) {
+      places = await this.placesService.findNearby({
+        latitude,
+        longitude,
+        maxDistance,
+        placeName,
+      });
+    }
+
+    const distinctProviders = await this.serviceModel
+      .distinct("provider", {
+        ...params,
+        ...(keywords ? { $text: { $search: keywords } } : {}),
+        ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
+      })
+      .populate("place")
+      .populate("provider")
+      .limit(perpage)
+      .skip(perpage * (page - 1))
+      .exec();
+
+    const distinctServices = await this.serviceModel.find({
+      $or: distinctProviders.map((provider) => ({ provider })),
+    });
+
+    return distinctServices.map((_) => _.provider as unknown as User);
   }
 
   async delete(serviceId: string, deletedBy: string): Promise<void> {

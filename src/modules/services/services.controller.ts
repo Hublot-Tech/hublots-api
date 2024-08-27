@@ -39,6 +39,7 @@ import { Public, UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 import {
   CreateServiceDto,
+  ProviderEntity,
   ServiceDetailsDto,
   ServiceEntity,
   ServiceParamsDto,
@@ -67,6 +68,23 @@ export class ServicesController {
       perpage: params.perpage,
       status: HttpStatus.OK,
       message: "Successfully retrieved services",
+    });
+  }
+
+  @Public()
+  @Get("providers")
+  @ApiOkPaginatedResponse(ProviderEntity)
+  @ApiOperation({ summary: "Fetch all service providers." })
+  async findProviders(
+    @Query() params: ServiceParamsDto,
+  ): Promise<PaginatedResponseDataDto<ProviderEntity>> {
+    const providers = await this.serviceService.findProviders(params);
+    return new PaginatedResponseDataDto({
+      data: providers.map((provider) => new ProviderEntity(provider.toJSON())),
+      page: params.page,
+      perpage: params.perpage,
+      status: HttpStatus.OK,
+      message: "Successfully retrieved service providers",
     });
   }
 
