@@ -71,7 +71,6 @@ export class ServicesController {
     });
   }
 
-  @Public()
   @Get("providers")
   @ApiOkPaginatedResponse(ProviderEntity)
   @ApiOperation({ summary: "Fetch all service providers." })

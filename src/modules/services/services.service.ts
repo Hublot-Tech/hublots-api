@@ -82,7 +82,6 @@ export class ServicesService {
         ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
       })
       .populate("place")
-      .populate("provider")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
@@ -114,15 +113,17 @@ export class ServicesService {
         ...(keywords ? { $text: { $search: keywords } } : {}),
         ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
       })
+      .exec();
+
+    const distinctServices = await this.serviceModel
+      .find({
+        $or: distinctProviders.map((provider) => ({ provider })),
+      })
       .populate("place")
       .populate("provider")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
-
-    const distinctServices = await this.serviceModel.find({
-      $or: distinctProviders.map((provider) => ({ provider })),
-    });
 
     return distinctServices.map((_) => _.provider as unknown as User);
   }

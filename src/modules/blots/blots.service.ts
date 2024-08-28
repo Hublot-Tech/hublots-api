@@ -76,7 +76,7 @@ export class BlotsService {
   async findOne(blotId: string, userId: string): Promise<Blot> {
     const blot = await this.blotModel
       .findOne({
-        id: blotId,
+        _id: new ObjectId(blotId),
         $or: [{ provider: userId }, { consumer: userId }],
       })
       .populate("options")
