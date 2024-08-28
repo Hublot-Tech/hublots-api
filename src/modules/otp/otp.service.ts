@@ -52,7 +52,7 @@ export class OTPService {
       template: {
         name: "verification_code",
         language: {
-          code: "en_US",
+          code: "en",
         },
         components: [
           {
