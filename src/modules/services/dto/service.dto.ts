@@ -9,6 +9,7 @@ import {
 } from "@nestjs/swagger";
 import { Exclude, Transform, Type } from "class-transformer";
 import {
+  IsBoolean,
   IsEnum,
   IsMongoId,
   IsNumber,
@@ -88,6 +89,9 @@ export class ServiceEntity extends OmitType(CreateServiceDto, ["place"]) {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
+
+  @ApiProperty()
+  isSponsored: boolean = false;
 
   @ApiProperty({
     description: "Timestamp of last update",
@@ -190,6 +194,14 @@ export class ProviderEntity extends UserEntity {
     description: "Provider rating average rating",
   })
   avgRating: number = null;
+
+  @IsString()
+  @ApiProperty({ type: String, description: "A random provider service" })
+  serviceName: string;
+
+  @IsBoolean()
+  @ApiProperty()
+  isSponsored: boolean = false;
 
   constructor(props: ProviderEntity) {
     super(props);

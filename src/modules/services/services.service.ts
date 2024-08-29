@@ -7,8 +7,12 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { PlacesService } from "../places/places.service";
 import { Place } from "../places/schemas/place.schema";
-import { User } from "../users/schemas/user.schema";
-import { CreateServiceDto, ServiceParamsDto, UpdateServiceDto } from "./dto";
+import {
+  CreateServiceDto,
+  ProviderEntity,
+  ServiceParamsDto,
+  UpdateServiceDto,
+} from "./dto";
 import { Offer } from "./offers/schemas/offer.schema";
 import { Service } from "./schemas/service.schema";
 
@@ -96,7 +100,7 @@ export class ServicesService {
     maxDistance,
     placeName,
     ...params
-  }: ServiceParamsDto): Promise<User[]> {
+  }: ServiceParamsDto): Promise<ProviderEntity[]> {
     let places: Place[];
     if (placeName || (latitude && longitude && maxDistance)) {
       places = await this.placesService.findNearby({
@@ -125,7 +129,14 @@ export class ServicesService {
       .skip(perpage * (page - 1))
       .exec();
 
-    return distinctServices.map((_) => _.provider as unknown as User);
+    return distinctServices.map((_) => {
+      const { provider, ...service } = _.toJSON();
+      return new ProviderEntity({
+        serviceName: service.name,
+        isSponsored: service.isSponsored,
+        ...(provider as unknown as ProviderEntity),
+      });
+    });
   }
 
   async delete(serviceId: string, deletedBy: string): Promise<void> {

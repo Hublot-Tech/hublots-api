@@ -46,6 +46,12 @@ export class Service extends Document {
   })
   category: Category;
 
+  @Prop({
+    type: Boolean,
+    default: false,
+  })
+  isSponsored: boolean;
+
   //reference to images
   @Prop({
     default: [],

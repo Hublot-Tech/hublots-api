@@ -71,6 +71,7 @@ export class ServicesController {
     });
   }
 
+  @Public()
   @Get("providers")
   @ApiOkPaginatedResponse(ProviderEntity)
   @ApiOperation({ summary: "Fetch all service providers." })
@@ -79,7 +80,7 @@ export class ServicesController {
   ): Promise<PaginatedResponseDataDto<ProviderEntity>> {
     const providers = await this.serviceService.findProviders(params);
     return new PaginatedResponseDataDto({
-      data: providers.map((provider) => new ProviderEntity(provider.toJSON())),
+      data: providers,
       page: params.page,
       perpage: params.perpage,
       status: HttpStatus.OK,
