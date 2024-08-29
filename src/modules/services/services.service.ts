@@ -132,8 +132,7 @@ export class ServicesService {
     return distinctServices.map((_) => {
       const { provider, ...service } = _.toJSON();
       return new ProviderEntity({
-        serviceName: service.name,
-        isSponsored: service.isSponsored,
+        service,
         ...(provider as unknown as ProviderEntity),
       });
     });

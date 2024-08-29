@@ -195,9 +195,12 @@ export class ProviderEntity extends UserEntity {
   })
   avgRating: number = null;
 
-  @IsString()
-  @ApiProperty({ type: String, description: "A random provider service" })
-  serviceName: string;
+  @ApiProperty({
+    type: ServiceEntity,
+    description: "A random provider service",
+  })
+  @Transform(({ value }) => new ServiceEntity(value))
+  service: ServiceEntity;
 
   @IsBoolean()
   @ApiProperty()
