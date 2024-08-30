@@ -54,7 +54,7 @@ import { BlotStatus } from "./schemas/blot.schema";
 @ApiBearerAuth()
 @ApiTags("Blots")
 @Controller("blots")
-@UseRoles(Role.PROVIDER)
+@UseRoles(Role.CLIENT, Role.PROVIDER)
 export class BlotsController {
   constructor(
     private blotsService: BlotsService,
@@ -90,7 +90,6 @@ export class BlotsController {
   }
 
   @Get(":id")
-  @UseRoles(Role.PROVIDER, Role.CLIENT)
   @ApiCustomOkResponse(BlotDetailsDto)
   @ApiOperation({
     summary: "Fetch blot details.",
@@ -110,6 +109,7 @@ export class BlotsController {
   }
 
   @Post("/new")
+  @UseRoles(Role.PROVIDER)
   @ApiOperation({
     summary: "Create new blot.",
     description: "Requires access token owner to have a `provider` role",
@@ -134,6 +134,7 @@ export class BlotsController {
   }
 
   @Put(":id")
+  @UseRoles(Role.PROVIDER)
   @ApiOperation({
     summary: "Update blot.",
     description: "Requires access token owner to have a `provider` role",
@@ -310,7 +311,6 @@ export class BlotsController {
   }
 
   @Delete(":id")
-  @UseRoles(Role.CLIENT, Role.PROVIDER)
   @ApiOperation({
     summary: "Cancel a blot offer.",
     description: `Blot with \`${BlotStatus.STARTED_WORK}\` or \`${BlotStatus.FINALIZED}\` status cannot be cancelled. 
@@ -329,6 +329,7 @@ export class BlotsController {
     });
   }
 
+  @UseRoles(Role.PROVIDER)
   @Post(":id/options")
   @ApiOperation({
     summary: "Add personnalized options to blot.",
@@ -355,6 +356,7 @@ export class BlotsController {
     });
   }
 
+  @UseRoles(Role.PROVIDER)
   @Delete(":id/options")
   @ApiOperation({
     summary: "Delete a list of options from blot.",

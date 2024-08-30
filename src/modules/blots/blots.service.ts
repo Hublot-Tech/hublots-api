@@ -18,6 +18,7 @@ import {
 import { BlotOption } from "./schemas/blot-option.schema";
 import { Blot, BlotStatus } from "./schemas/blot.schema";
 import { TransactionManager } from "src/helpers/tx-manager";
+import { Offer } from "../services/offers/schemas/offer.schema";
 
 @Injectable()
 export class BlotsService {
@@ -25,6 +26,7 @@ export class BlotsService {
     @InjectModel(Blot.name) private readonly blotModel: Model<Blot>,
     @InjectModel(BlotOption.name)
     private readonly blotOptionModel: Model<BlotOption>,
+    @InjectModel(Offer.name) private readonly offerModel: Model<Offer>,
     @InjectModel(OfferItem.name) private readonly itemModel: Model<OfferItem>,
     private readonly txManager: TransactionManager,
   ) {}
@@ -76,11 +78,9 @@ export class BlotsService {
   async findOne(blotId: string, userId: string): Promise<Blot> {
     const blot = await this.blotModel
       .findOne({
-        _id: new ObjectId(blotId),
+        _id: blotId,
         $or: [{ provider: userId }, { consumer: userId }],
       })
-      .populate("options")
-      .populate("offer")
       .populate("consumer")
       .populate("provider")
       .exec();
@@ -88,20 +88,34 @@ export class BlotsService {
     if (!blot) {
       throw new NotFoundException(`Blot with id ${blotId} not found`);
     }
+
+    if (blot.offer) {
+      // simulating mongoose populate
+      blot.offer = (await this.offerModel.findById(blot.offer).exec()) as any;
+    }
+
+    if (blot.options.length) {
+      // simulating mongoose populate
+      blot.options = (await this.blotOptionModel
+        .find({
+          $or: blot.options.map((_id) => ({ _id })),
+        })
+        .exec()) as any;
+    }
+
     return blot;
   }
 
   async findAll(query: BlotQueryParams, activeUser?: string): Promise<Blot[]> {
     return this.blotModel
       .find({
-        status: query.status,
-        provider: query.provider,
-        consumer: query.consumer,
+        ...(query.status ? { status: query.status } : {}),
+        ...(query.provider ? { provider: query.provider } : {}),
+        ...(query.consumer ? { consumer: query.consumer } : {}),
         $or: [{ provider: activeUser }, { consumer: activeUser }],
       })
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
-      .populate("options")
       .exec();
   }
 

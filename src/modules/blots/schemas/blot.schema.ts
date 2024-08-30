@@ -52,7 +52,7 @@ export class Blot extends Document {
   createdAt: Date;
 
   // reference to offer
-  @Prop({ type: Types.ObjectId, ref: Offer.name })
+  @Prop({ type: Types.ObjectId, ref: Offer.name, default: null })
   offer: Types.ObjectId;
 
   // reference to custom options

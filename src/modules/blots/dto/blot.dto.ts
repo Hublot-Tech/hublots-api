@@ -116,18 +116,16 @@ export class UpdateBlotDto extends PartialType(
   }
 }
 
-export class BlotEntity extends IntersectionType(
-  CreateBlotDto,
-  UpdateBlotStatusDto,
+export class BlotEntity extends OmitType(
+  IntersectionType(CreateBlotDto, UpdateBlotStatusDto),
+  ["options"],
 ) {
   @Transform(({ value }) => value.toString("hex"))
   @ApiProperty()
   id: string;
 
-  @Type(() => BlotOptionEntity)
-  @ValidateNested({ each: true })
-  @ApiProperty({ type: BlotOptionEntity })
-  options: BlotOptionEntity[];
+  @ApiProperty({ type: [String] })
+  options: string[];
 
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
@@ -177,9 +175,15 @@ export class BlotDetailsDto extends OmitType(BlotEntity, [
   "consumer",
   "offer",
   "provider",
+  "options",
 ]) {
-  @ApiPropertyOptional({ type: OfferEntity })
-  @Transform(({ value }) => new OfferEntity(value))
+  @Type(() => BlotOptionEntity)
+  @ValidateNested({ each: true })
+  @ApiProperty({ type: BlotOptionEntity })
+  options: BlotOptionEntity[];
+
+  @ApiPropertyOptional({ type: OfferEntity, nullable: true })
+  @Transform(({ value }) => (value ? new OfferEntity(value) : null))
   offer: OfferEntity;
 
   @ApiProperty({ type: UserEntity })
