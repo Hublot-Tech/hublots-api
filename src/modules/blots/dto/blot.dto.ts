@@ -64,7 +64,7 @@ export class CreateBlotDto {
 
   @IsString()
   @ApiProperty()
-  decription: string;
+  description: string;
 
   @IsNumber()
   @ApiProperty()
