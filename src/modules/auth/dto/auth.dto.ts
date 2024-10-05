@@ -75,3 +75,15 @@ export class AuthTokensDto {
 export class RefreshTokenDto extends PickType(AuthTokensDto, [
   "refreshToken",
 ]) {}
+
+export class PasswordPayloadDto {
+  @IsString()
+  newPassword: string;
+
+  @IsString()
+  otpCode: string;
+
+  constructor(props: PasswordPayloadDto) {
+    Object.assign(this, props);
+  }
+}

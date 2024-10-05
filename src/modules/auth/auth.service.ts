@@ -12,10 +12,11 @@ import { jwtConstants } from "../../constants/constants";
 import { CreateUserDto, Locale } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
-import { AuthTokensDto } from "./dto/auth.dto";
+import { AuthTokensDto, PasswordPayloadDto } from "./dto/auth.dto";
 import { OTPService } from "../otp/otp.service";
 import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 import { LogsService } from "./logs.service";
+import { OtpReason } from "../otp/schemas/otp.schema";
 
 type TokenType = "access_token" | "refresh_token";
 interface IJWTPayload {
@@ -140,7 +141,7 @@ export class AuthService {
         `No user was found with phone number: ${otpPayload.phoneNumber}`,
       );
     }
-    await this.otpService.sendOTP(otpPayload.phoneNumber);
+    await this.otpService.sendOTP(otpPayload.phoneNumber, otpPayload.reason);
   }
 
   async verifyUserOTP(otpPayload: VerifyOTPDto) {
@@ -148,16 +149,34 @@ export class AuthService {
       otpPayload.phoneNumber,
     );
     await this.otpService.verifyOTP(otpPayload.phoneNumber, otpPayload.otp);
-    await this.usersService.update(user.id, { isOTPVerified: true });
+    return this.usersService.update(user.id, { isOTPVerified: true });
   }
 
   async signOut(userId: string) {
     await this.logsService.invalidate(userId);
   }
 
-  private async login(user: User): Promise<AuthTokensDto> {
+  async setNewPassword(userId: string, payload: PasswordPayloadDto) {
+    const user = await this.usersService.findOne(userId);
+
+    //verify otp sent to request password modification
+    await this.otpService.verifyOTP(
+      user.phoneNumber,
+      payload.otpCode,
+      OtpReason.PASSWORD_RESET,
+    );
+
+    return this.usersService.update(user.id, {
+      password: bcrypt.hashSync(
+        payload.newPassword,
+        parseInt(process.env.BCRYPT_SALT),
+      ),
+    });
+  }
+
+  async login(user: User): Promise<AuthTokensDto> {
     if (!user.isOTPVerified) {
-      await this.otpService.sendOTP(user.phoneNumber);
+      await this.otpService.sendOTP(user.phoneNumber, OtpReason.EMAIL);
     }
     return this.generateTokens(user);
   }

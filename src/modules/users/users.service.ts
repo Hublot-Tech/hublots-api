@@ -94,13 +94,14 @@ export class UsersService {
   }
 
   async update(userId: string, data: Partial<User>): Promise<User> {
-    return this.userModel
+    await this.userModel
       .findByIdAndUpdate(
         userId,
         { ...data, updatedAt: new Date() },
         { new: true },
       )
       .exec();
+    return this.userModel.findById(userId).exec();
   }
 
   async createAcount(account: CreateAccountDto) {

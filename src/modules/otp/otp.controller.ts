@@ -22,7 +22,7 @@ export class OTPController {
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async sendOTP(@Body() otpPayload: SendOTPDto): Promise<ResponseMetadataDto> {
-    await this.otpService.sendOTP(otpPayload.phoneNumber);
+    await this.otpService.sendOTP(otpPayload.phoneNumber, otpPayload.reason);
     return new ResponseMetadataDto({
       status: HttpStatus.CREATED,
       message: "Successfully send one time password",
