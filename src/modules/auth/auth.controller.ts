@@ -152,15 +152,10 @@ export class AuthController {
     @Req() req: Request,
     @Param("code") otpCode: string,
   ): Promise<ResponseMetadataDto> {
-    const user = await this.authService.verifyUserOTP({
+    await this.authService.verifyUserOTP({
       otp: otpCode,
       phoneNumber: req.user.phoneNumber,
     });
-
-    // login user in if he's not already
-    if (!req.user?.id) {
-      await this.authService.login(user);
-    }
 
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
@@ -168,8 +163,8 @@ export class AuthController {
     });
   }
 
-  @ApiBearerAuth()
-  @Delete("/new-password")
+  @Public()
+  @Post("/new-password")
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   @ApiOperation({ summary: "Change authenticated user password." })
   async setNewPassword(
