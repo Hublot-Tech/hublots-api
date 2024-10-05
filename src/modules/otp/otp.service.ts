@@ -1,9 +1,5 @@
 import { HttpService } from "@nestjs/axios";
-import {
-  Injectable,
-  NotFoundException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable, UnauthorizedException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { generateOtp } from "src/helpers/otp-generator";

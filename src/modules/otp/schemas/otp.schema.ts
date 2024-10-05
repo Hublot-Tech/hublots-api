@@ -2,9 +2,9 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
 export enum OtpReason {
-  EMAIL = 'phone_verification',
-  FUNDS_TRANSFER = 'funds_transfer',
-  PASSWORD_RESET = 'password_reset'
+  EMAIL = "phone_verification",
+  FUNDS_TRANSFER = "funds_transfer",
+  PASSWORD_RESET = "password_reset",
 }
 
 @Schema({
