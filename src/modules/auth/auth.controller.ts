@@ -3,13 +3,13 @@ import {
   Controller,
   Delete,
   HttpStatus,
-  Param,
   Patch,
   Post,
   Req,
   UploadedFile,
   UseInterceptors,
 } from "@nestjs/common";
+import { FileInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -22,7 +22,7 @@ import {
 import { Request } from "express";
 import { ApiCustomCreatedResponse } from "src/helpers/api-decorator";
 import { ResponseDataDto, ResponseMetadataDto } from "src/helpers/api-dto";
-import { SendOTPDto } from "../otp/dto/otp.dto";
+import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 import { CreateUserDto, GoogleSignInDto } from "../users/dto/users.dto";
 import { AuthService } from "./auth.service";
 import { Public } from "./decorator/auth.decorator";
@@ -35,7 +35,6 @@ import {
   SignUpResponseDto,
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
-import { FileInterceptor } from "@nestjs/platform-express";
 
 @ApiTags("Auth")
 @Controller("auth")
@@ -143,27 +142,25 @@ export class AuthController {
     });
   }
 
+  @Public()
   @Patch("verify-code/:code")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiNoContentResponse({ type: SignInResponseDto })
   async verifyOTP(
-    @Req() req: Request,
-    @Param("code") otpCode: string,
-  ): Promise<ResponseMetadataDto> {
-    await this.authService.verifyUserOTP({
-      otp: otpCode,
-      phoneNumber: req.user.phoneNumber,
-    });
+    @Body() otpPayload: VerifyOTPDto,
+  ): Promise<SignInResponseDto> {
+    const user = await this.authService.verifyUserOTP(otpPayload);
+    const tokens = await this.authService.login(user);
 
-    return new ResponseMetadataDto({
+    return new SignInResponseDto({
+      ...tokens,
       status: HttpStatus.OK,
-      message: "Successfully verified user phone number",
+      message: "Successfully sign in with otp",
     });
   }
 
-  @Public()
   @Post("/new-password")
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   @ApiOperation({ summary: "Change authenticated user password." })

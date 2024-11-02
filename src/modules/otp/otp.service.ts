@@ -1,5 +1,9 @@
 import { HttpService } from "@nestjs/axios";
-import { Injectable, UnauthorizedException } from "@nestjs/common";
+import {
+  Injectable,
+  InternalServerErrorException,
+  UnauthorizedException,
+} from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { generateOtp } from "src/helpers/otp-generator";
@@ -24,24 +28,28 @@ export class OTPService {
     return otp;
   }
 
-  async sendOTP(phoneNumber: string, reason: OtpReason = OtpReason.EMAIL) {
+  async send(phoneNumber: string, reason: OtpReason = OtpReason.EMAIL) {
     const otp = new this.otpModel({
       reason,
       phoneNumber,
       otp: generateOtp(6),
       expiresAt: Date.now() + 15 * 60 * 1000,
     });
-    if (process.env.META_PHONE_NUMBER_ID) {
-      await this.httpService.axiosRef.post(
-        "/messages",
-        this.getTemplateMessageBody(phoneNumber, otp.otp),
+    if (!process.env.META_PHONE_NUMBER_ID) {
+      throw new InternalServerErrorException(
+        `Meta phone number ID not provided!`,
       );
     }
+
+    await this.httpService.axiosRef.post(
+      "/messages",
+      this.getTemplateMessageBody(phoneNumber, otp.otp),
+    );
 
     await otp.save();
   }
 
-  async verifyOTP(
+  async verify(
     phoneNumber: string,
     otp: string,
     reason: OtpReason = OtpReason.EMAIL,

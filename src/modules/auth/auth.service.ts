@@ -141,14 +141,14 @@ export class AuthService {
         `No user was found with phone number: ${otpPayload.phoneNumber}`,
       );
     }
-    await this.otpService.sendOTP(otpPayload.phoneNumber, otpPayload.reason);
+    await this.otpService.send(otpPayload.phoneNumber, otpPayload.reason);
   }
 
   async verifyUserOTP(otpPayload: VerifyOTPDto) {
     const user = await this.usersService.findByPhoneNumber(
       otpPayload.phoneNumber,
     );
-    await this.otpService.verifyOTP(otpPayload.phoneNumber, otpPayload.otp);
+    await this.otpService.verify(otpPayload.phoneNumber, otpPayload.otp);
     return this.usersService.update(user.id, { isOTPVerified: true });
   }
 
@@ -160,7 +160,7 @@ export class AuthService {
     const user = await this.usersService.findOne(userId);
 
     //verify otp sent to request password modification
-    await this.otpService.verifyOTP(
+    await this.otpService.verify(
       user.phoneNumber,
       payload.otpCode,
       OtpReason.PASSWORD_RESET,
@@ -176,7 +176,7 @@ export class AuthService {
 
   async login(user: User): Promise<AuthTokensDto> {
     if (!user.isOTPVerified) {
-      await this.otpService.sendOTP(user.phoneNumber, OtpReason.EMAIL);
+      await this.otpService.send(user.phoneNumber, OtpReason.EMAIL);
     }
     return this.generateTokens(user);
   }
