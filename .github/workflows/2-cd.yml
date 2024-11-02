@@ -1,0 +1,42 @@
+# .github/workflows/deploy.yml
+name: Deploy to Contabo
+
+on:
+  push:
+    branches:
+      - master  # Change to your deployment branch
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up SSH for Contabo
+        uses: webfactory/ssh-agent@v0.5.4
+        with:
+          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+
+      - name: Copy files to server
+        run: |
+          scp -o StrictHostKeyChecking=no -r . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/nestjs-app
+
+      - name: Deploy app on server
+        env:
+          MONGO_URI: ${{ secrets.MONGO_URI }}
+          MONGO_INITDB_DATABASE: ${{ secrets.MONGO_INITDB_DATABASE }}
+        run: |
+          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
+            # Navigate to the app directory
+            cd /home/${SERVER_USER}/nestjs-app
+
+            # Create an .env file with MongoDB environment variables
+            echo "MONGO_URI=$MONGO_URI" > .env
+            echo "MONGO_INITDB_DATABASE=$MONGO_INITDB_DATABASE" >> .env
+
+            # Build and deploy the Docker containers using Docker Compose
+            docker compose down
+            docker compose up -d --build
+          EOF
