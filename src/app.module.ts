@@ -19,7 +19,7 @@ import { KYCModule } from "./modules/kyc/kyc.module";
 
 @Module({
   imports: [
-    MongooseModule.forRoot(process.env.DATABASE_HOST),
+    MongooseModule.forRoot(process.env.MONGO_URI),
     ConfigModule.forRoot({
       isGlobal: true,
     }),
