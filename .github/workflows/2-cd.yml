@@ -21,7 +21,7 @@ jobs:
 
       - name: Copy files to server
         run: |
-          scp -o StrictHostKeyChecking=no -r . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/nestjs-app
+          scp -o StrictHostKeyChecking=no -r . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/hublots_api
 
       - name: Deploy app on server
         env:
@@ -30,7 +30,7 @@ jobs:
         run: |
           ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
             # Navigate to the app directory
-            cd /home/${SERVER_USER}/nestjs-app
+            cd /home/${SERVER_USER}/hublots_api
 
             # Create an .env file with MongoDB environment variables
             echo "MONGO_URI=$MONGO_URI" > .env
