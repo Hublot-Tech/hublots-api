@@ -29,6 +29,20 @@ export interface Recipient {
   country: string;
 }
 
+export interface Account {
+  sandbox: boolean;
+  capabilities: string[];
+  meta: any; // specify if known, otherwise use 'any' or 'Record<string, any>'
+  percentage: string;
+  callback: string;
+  reference: string | null;
+  business: string | null;
+  status: string;
+  created_at: string; // Consider using 'Date' if you plan to parse dates
+  updated_at: string; // Consider using 'Date' if you plan to parse dates
+  id: string;
+}
+
 export interface InitializePayment {
   amount: number;
   currency?: string;
@@ -103,4 +117,10 @@ export interface InitiateTransferResponse extends ResponseMetadata {
 
 export interface FetchTransferResponse extends ResponseMetadata {
   transfer: Transfer;
+}
+
+export interface InitializeMerchantSyncResponse extends ResponseMetadata {
+  account: Account;
+  access_token: string;
+  authorization_url: string;
 }

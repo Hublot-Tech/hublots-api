@@ -21,6 +21,7 @@ import {
   FetchTransferResponse,
   InitializePayment,
   InitializePaymentResponse,
+  InitializeMerchantSyncResponse,
   InitiateTransfer,
   InitiateTransferResponse,
 } from "./types/payment.type";
@@ -201,5 +202,18 @@ export class PaymentsService {
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
       .exec();
+  }
+
+  async initializeMerchantSync(merchantEmail: string) {
+    const resp =
+      await this.httpService.axiosRef.post<InitializeMerchantSyncResponse>(
+        `/accounts`,
+        {
+          email: merchantEmail,
+          percentage: 5,
+          capabilities: ["payments", "customers", "transfers"],
+        },
+      );
+    return resp.data;
   }
 }
