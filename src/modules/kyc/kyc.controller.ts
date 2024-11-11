@@ -1,10 +1,12 @@
 import {
   Body,
   Controller,
+  Get,
   HttpStatus,
   Param,
   Patch,
   Post,
+  Query,
   Req,
   UploadedFiles,
   UseInterceptors,
@@ -16,7 +18,7 @@ import { ApiCustomOkResponse } from "src/helpers/api-decorator";
 import { ResponseDataDto } from "src/helpers/api-dto";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
-import { KYCEntity, VerifyKYCDto } from "./dto/kyc.dto";
+import { KYCEntity, QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
 import { KYCService } from "./kyc.service";
 
 @ApiTags("KYC")
@@ -77,6 +79,22 @@ export class KYCController {
     const kyc = await this.kycService.updateStatus(kycId, payload, req.user.id);
     return new ResponseDataDto({
       data: new KYCEntity(kyc.toJSON()),
+      message: "Successfully updated user KYC images",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Get()
+  @UseRoles(Role.ADMIN, Role.SUPPORT)
+  @ApiOperation({
+    summary: "Fetch submitted KYCs",
+    description:
+      "Requires authorized user to have a `admin` or `customer service` access",
+  })
+  async findKYCs(@Query() query: QueryKYCDto) {
+    const kycs = await this.kycService.findAll(query);
+    return new ResponseDataDto({
+      data: kycs.map((kyc) => kyc.toJSON()),
       message: "Successfully updated user KYC images",
       status: HttpStatus.OK,
     });

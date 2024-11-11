@@ -7,7 +7,7 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { Role, VerificationStatus } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
-import { VerifyKYCDto } from "./dto/kyc.dto";
+import { QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
 import { KYC } from "./schemas/kyc.schema";
 
 @Injectable()
@@ -58,5 +58,13 @@ export class KYCService {
     user.kycStatus = kycStatus;
     await user.save();
     return this.kycModel.findOne({ user: kycId }).exec();
+  }
+
+  async findAll(query: QueryKYCDto) {
+    return this.kycModel
+      .find({ user: query.userId, status: query.status })
+      .limit(query.perpage)
+      .skip(query.perpage * (query.page - 1))
+      .exec();
   }
 }

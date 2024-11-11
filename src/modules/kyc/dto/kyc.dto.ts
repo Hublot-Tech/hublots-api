@@ -1,8 +1,9 @@
 import { ApiProperty, ApiPropertyOptional } from "@nestjs/swagger";
-import { KYCStatus } from "../schemas/kyc.schema";
-import { VerificationStatus } from "src/modules/users/dto";
 import { Transform } from "class-transformer";
-import { IsIn } from "class-validator";
+import { IsEnum, IsIn, IsString } from "class-validator";
+import { BulkQueryDto } from "src/helpers/api-dto";
+import { VerificationStatus } from "src/modules/users/dto";
+import { KYCStatus } from "../schemas/kyc.schema";
 
 export class KYCEntity {
   @ApiProperty()
@@ -48,5 +49,20 @@ export class VerifyKYCDto {
 
   constructor(kyc: VerifyKYCDto) {
     Object.assign(this, kyc);
+  }
+}
+
+export class QueryKYCDto extends BulkQueryDto {
+  @IsEnum(VerificationStatus)
+  @ApiPropertyOptional({ enum: VerificationStatus })
+  status?: VerificationStatus;
+
+  @IsString()
+  @ApiPropertyOptional()
+  userId?: string;
+
+  constructor(props: QueryKYCDto) {
+    super(props);
+    Object.assign(this, props);
   }
 }
