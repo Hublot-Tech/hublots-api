@@ -39,7 +39,10 @@ export class KYCService {
       user.roles.push(Role.PROVIDER);
     }
     await user.save();
-    return this.kycModel.findOne({ user: userId }).exec();
+    return await this.kycModel
+      .findOne({ user: userId })
+      .populate("user")
+      .exec();
   }
 
   async updateStatus(
@@ -63,6 +66,7 @@ export class KYCService {
   async findAll(query: QueryKYCDto) {
     return this.kycModel
       .find({ user: query.userId, status: query.status })
+      .populate("user")
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
       .exec();
