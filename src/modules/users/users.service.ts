@@ -33,7 +33,7 @@ export class UsersService {
           new this.userModel({
             ...adminAccount,
             password: bcrypt.hashSync(
-              userData.password,
+              process.env.ADMIN_PASSWORD,
               parseInt(process.env.BCRYPT_SALT),
             ),
           }).save();
