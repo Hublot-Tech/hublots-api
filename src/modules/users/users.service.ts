@@ -32,7 +32,10 @@ export class UsersService {
 
           new this.userModel({
             ...adminAccount,
-            password: process.env.ADMIN_PASSWORD,
+            password: bcrypt.hashSync(
+              process.env.ADMIN_PASSWORD,
+              parseInt(process.env.BCRYPT_SALT),
+            ),
           }).save();
         }
       });
