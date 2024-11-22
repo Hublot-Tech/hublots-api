@@ -26,7 +26,7 @@ export class FilesController {
     schema: {
       type: "object",
       properties: {
-        images: {
+        file: {
           type: "string",
           format: "binary",
           description: "Binary files to upload",
@@ -34,7 +34,7 @@ export class FilesController {
       },
     },
   })
-  @ApiCustomCreatedResponse(String)
+  @ApiCustomCreatedResponse("string")
   @ApiConsumes("multipart/form-data")
   uploadFile(
     @UploadedFile() file: Express.Multer.File,
@@ -55,15 +55,18 @@ export class FilesController {
     schema: {
       type: "object",
       properties: {
-        images: {
+        files: {
           type: "array",
-          format: "binary",
+          items: {
+            type: "string",
+            format: "binary",
+          },
           description: "Array of binary files to upload",
         },
       },
     },
   })
-  @ApiCustomCreatedResponse(String, true)
+  @ApiCustomCreatedResponse("string", true)
   @ApiConsumes("multipart/form-data")
   uploadFiles(
     @UploadedFiles() files: Array<Express.Multer.File>,

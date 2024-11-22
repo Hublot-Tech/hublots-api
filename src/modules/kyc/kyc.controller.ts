@@ -2,6 +2,7 @@ import {
   Body,
   Controller,
   Get,
+  HttpCode,
   HttpStatus,
   Param,
   Patch,
@@ -12,10 +13,19 @@ import {
   UseInterceptors,
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
-import { ApiBody, ApiConsumes, ApiOperation, ApiTags } from "@nestjs/swagger";
+import {
+  ApiBody,
+  ApiConsumes,
+  ApiNoContentResponse,
+  ApiOperation,
+  ApiTags,
+} from "@nestjs/swagger";
 import { Request } from "express";
-import { ApiCustomOkResponse } from "src/helpers/api-decorator";
-import { ResponseDataDto } from "src/helpers/api-dto";
+import {
+  ApiCustomCreatedResponse,
+  ApiOkPaginatedResponse,
+} from "src/helpers/api-decorator";
+import { ResponseDataDto, ResponseMetadataDto } from "src/helpers/api-dto";
 import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 import { KYCEntity, QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
@@ -28,7 +38,7 @@ export class KYCController {
 
   @Post("submit")
   @UseRoles(Role.CLIENT)
-  @ApiCustomOkResponse(KYCEntity)
+  @ApiCustomCreatedResponse(KYCEntity)
   @ApiConsumes("multipart/form-data")
   @ApiBody({
     schema: {
@@ -36,8 +46,11 @@ export class KYCController {
       properties: {
         kycFiles: {
           type: "array",
-          format: "binary",
-          description: "Array of Identity files to be verified",
+          items: {
+            type: "string",
+            format: "binary",
+          },
+          description: "Binary files to upload",
         },
       },
     },
@@ -60,12 +73,14 @@ export class KYCController {
     return new ResponseDataDto({
       data: new KYCEntity(kyc.toJSON()),
       message: "Successfully uploaded user KYC images",
-      status: HttpStatus.OK,
+      status: HttpStatus.CREATED,
     });
   }
 
   @Patch(":id/status")
+  @HttpCode(HttpStatus.NO_CONTENT)
   @UseRoles(Role.ADMIN, Role.SUPPORT)
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
   @ApiOperation({
     summary: "Update kyc submission status to validated or rejected",
     description:
@@ -75,17 +90,17 @@ export class KYCController {
     @Req() req: Request,
     @Param("id") kycId: string,
     @Body() payload: VerifyKYCDto,
-  ): Promise<ResponseDataDto<KYCEntity>> {
-    const kyc = await this.kycService.updateStatus(kycId, payload, req.user.id);
-    return new ResponseDataDto({
-      data: new KYCEntity(kyc.toJSON()),
+  ): Promise<ResponseMetadataDto> {
+    await this.kycService.updateStatus(kycId, payload, req.user.id);
+    return new ResponseMetadataDto({
       message: "Successfully updated user KYC images",
-      status: HttpStatus.OK,
+      status: HttpStatus.NO_CONTENT,
     });
   }
 
   @Get()
   @UseRoles(Role.ADMIN, Role.SUPPORT)
+  @ApiOkPaginatedResponse(KYCEntity)
   @ApiOperation({
     summary: "Fetch submitted KYCs",
     description:
@@ -94,7 +109,7 @@ export class KYCController {
   async findKYCs(@Query() query: QueryKYCDto) {
     const kycs = await this.kycService.findAll(query);
     return new ResponseDataDto({
-      data: kycs.map((kyc) => kyc.toJSON()),
+      data: kycs.map((kyc) => new KYCEntity(kyc.toJSON())),
       message: "Successfully updated user KYC images",
       status: HttpStatus.OK,
     });

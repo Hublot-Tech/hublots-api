@@ -30,7 +30,14 @@ export class KYCService {
     await this.kycModel
       .updateOne(
         { user: userId },
-        { $set: { imageRefs, user: userId, updatedAt: new Date() } },
+        {
+          $set: {
+            imageRefs,
+            user: userId,
+            label: `${user.fullname}`,
+            updatedAt: new Date(),
+          },
+        },
         { upsert: true },
       )
       .exec();
@@ -39,10 +46,7 @@ export class KYCService {
       user.roles.push(Role.PROVIDER);
     }
     await user.save();
-    return await this.kycModel
-      .findOne({ user: userId })
-      .populate("user")
-      .exec();
+    return await this.kycModel.findOne({ user: userId }).exec();
   }
 
   async updateStatus(
@@ -60,13 +64,11 @@ export class KYCService {
       .exec();
     user.kycStatus = kycStatus;
     await user.save();
-    return this.kycModel.findOne({ user: kycId }).exec();
   }
 
   async findAll(query: QueryKYCDto) {
     return this.kycModel
       .find({ user: query.userId, status: query.status })
-      .populate("user")
       .limit(query.perpage)
       .skip(query.perpage * (query.page - 1))
       .exec();

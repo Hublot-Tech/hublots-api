@@ -6,7 +6,7 @@ import {
 import { Exclude, Transform } from "class-transformer";
 import { IsEnum, IsIn, IsOptional, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
-import { UserEntity, VerificationStatus } from "src/modules/users/dto";
+import { VerificationStatus } from "src/modules/users/dto";
 import { KYCStatus } from "../schemas/kyc.schema";
 
 export class KYCEntity {
@@ -14,8 +14,11 @@ export class KYCEntity {
   @Transform(({ value }) => value.toString("hex"))
   id: string;
 
+  @ApiProperty({ description: `Kyc label can be the user names` })
+  label: string | null = null;
+
   @ApiProperty()
-  imageRefs: string;
+  imageRefs: string[];
 
   @ApiProperty({
     enum: VerificationStatus,
@@ -26,9 +29,9 @@ export class KYCEntity {
   @ApiProperty()
   message: string;
 
-  @ApiProperty({ type: UserEntity })
-  @Transform(({ value }) => new UserEntity(value))
-  user: UserEntity;
+  @ApiProperty({ description: "KYCd user ID" })
+  @Transform(({ value }) => value.toString("hex"))
+  user: string;
 
   @ApiProperty({ type: Date, default: () => Date.now() })
   createdAt: Date;

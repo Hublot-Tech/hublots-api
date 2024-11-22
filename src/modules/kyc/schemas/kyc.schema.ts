@@ -19,6 +19,9 @@ export type KYCStatus = Exclude<
   },
 })
 export class KYC extends Document {
+  @Prop({ type: String, required: true })
+  label: string;
+
   @Prop({
     type: String,
     required: true,

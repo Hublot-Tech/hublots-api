@@ -8,10 +8,13 @@ import {
 import { PaginatedResponseDataDto, ResponseDataDto } from "./api-dto";
 
 export const ApiOkPaginatedResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | string,
 ) => {
   return applyDecorators(
-    ApiExtraModels(PaginatedResponseDataDto, model),
+    ApiExtraModels(
+      PaginatedResponseDataDto,
+      ...(typeof model == "string" ? [] : [model]),
+    ),
     ApiOkResponse({
       schema: {
         allOf: [
@@ -20,7 +23,10 @@ export const ApiOkPaginatedResponse = <TModel extends Type<any>>(
             properties: {
               data: {
                 type: "array",
-                items: { $ref: getSchemaPath(model) },
+                items:
+                  typeof model == "string"
+                    ? { type: model }
+                    : { $ref: getSchemaPath(model) },
               },
             },
           },
@@ -31,11 +37,14 @@ export const ApiOkPaginatedResponse = <TModel extends Type<any>>(
 };
 
 export const ApiCustomCreatedResponse = <TModel extends Type<any>>(
-  model: TModel,
+  model: TModel | string,
   isArray = false,
 ) => {
   return applyDecorators(
-    ApiExtraModels(ResponseDataDto, model),
+    ApiExtraModels(
+      ResponseDataDto,
+      ...(typeof model == "string" ? [] : [model]),
+    ),
     ApiCreatedResponse({
       schema: {
         allOf: [
@@ -45,7 +54,10 @@ export const ApiCustomCreatedResponse = <TModel extends Type<any>>(
               data: isArray
                 ? {
                     type: "array",
-                    items: { $ref: getSchemaPath(model) },
+                    items:
+                      typeof model == "string"
+                        ? { type: model }
+                        : { $ref: getSchemaPath(model) },
                   }
                 : { $ref: getSchemaPath(model) },
             },
