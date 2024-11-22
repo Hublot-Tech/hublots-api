@@ -17,7 +17,7 @@ export class FilesService implements MulterOptionsFactory {
             .fill(null)
             .map(() => Math.round(Math.random() * 16).toString(16))
             .join("");
-          const filename = `${randomName}${extname(file.originalname.toLowerCase())}`;
+          const filename = `${file.fieldname}_${randomName}${extname(file.originalname.toLowerCase())}`;
           callback(null, filename);
         },
       }),
