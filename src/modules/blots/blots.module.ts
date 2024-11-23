@@ -11,9 +11,11 @@ import { BlotOption, BlotOptionSchema } from "./schemas/blot-option.schema";
 import { Blot, BlotSchema } from "./schemas/blot.schema";
 import { TransactionManager } from "src/helpers/tx-manager";
 import { Offer, OfferSchema } from "../services/offers/schemas/offer.schema";
+import { OTPModule } from "../otp/otp.module";
 
 @Module({
   imports: [
+    OTPModule,
     PaymentsModule,
     MongooseModule.forFeature([
       { name: Blot.name, schema: BlotSchema },
