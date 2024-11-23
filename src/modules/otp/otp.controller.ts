@@ -1,6 +1,13 @@
-import { Body, Controller, HttpStatus, Post } from "@nestjs/common";
+import {
+  Body,
+  Controller,
+  HttpStatus,
+  Post,
+  UnauthorizedException,
+} from "@nestjs/common";
 import {
   ApiBearerAuth,
+  ApiExcludeEndpoint,
   ApiNoContentResponse,
   ApiOperation,
   ApiTags,
@@ -30,19 +37,25 @@ export class OTPController {
   }
 
   @Post("verify")
+  @ApiExcludeEndpoint()
   @ApiOperation({
     summary:
-      "Verify the lastest one time password send to the provider phone number",
+      "Verify the lastest one time password send to the provided phone number.",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async verifyOTP(
     @Body() otpPayload: VerifyOTPDto,
   ): Promise<ResponseMetadataDto> {
-    await this.otpService.verify(
+    const isVerified = await this.otpService.verify(
       otpPayload.phoneNumber,
       otpPayload.otpCode,
       otpPayload.reason,
     );
+
+    if (!isVerified) {
+      throw new UnauthorizedException("Invalid OTP code!");
+    }
+
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
       message: "Successfully verified one time password",

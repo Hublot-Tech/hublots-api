@@ -12,6 +12,7 @@ import {
   Put,
   Query,
   Req,
+  UnauthorizedException,
   UnprocessableEntityException,
 } from "@nestjs/common";
 import {
@@ -50,6 +51,8 @@ import {
   UpdateBlotStatusDto,
 } from "./dto/blot.dto";
 import { BlotStatus } from "./schemas/blot.schema";
+import { OTPService } from "../otp/otp.service";
+import { OtpReason } from "../otp/schemas/otp.schema";
 
 @ApiBearerAuth()
 @ApiTags("Blots")
@@ -59,6 +62,7 @@ export class BlotsController {
   constructor(
     private blotsService: BlotsService,
     private paymentsService: PaymentsService,
+    private readonly otpService: OTPService,
   ) {}
 
   @Get()
@@ -254,8 +258,10 @@ export class BlotsController {
   async finalizeBlot(
     @Req() request: Request,
     @Param("id", MongoIdPipe) blotId: string,
+    @Query("otpCode") otpCode: string,
   ): Promise<ResponseDataDto<BlotEntity>> {
-    let blot = await this.blotsService.findOne(blotId, request.user.id);
+    const { id: userId, phoneNumber } = request.user as User;
+    let blot = await this.blotsService.findOne(blotId, userId);
 
     // This is valid because the `findOne` populates the provider field with actual user
     const provider = blot.provider as unknown as User;
@@ -284,6 +290,17 @@ export class BlotsController {
         throw new ConflictException(
           "Blot already has a completed/ongoing payout payment",
         );
+    }
+
+    // verify user otp before initiating transfer
+    const isVerified = await this.otpService.verify(
+      phoneNumber,
+      otpCode,
+      OtpReason.FUNDS_TRANSFER,
+    );
+
+    if (!isVerified) {
+      throw new UnauthorizedException("Invalid OTP code!");
     }
 
     const payment = await this.paymentsService.transfer(

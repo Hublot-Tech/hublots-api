@@ -1,9 +1,5 @@
 import { HttpService } from "@nestjs/axios";
-import {
-  Injectable,
-  InternalServerErrorException,
-  UnauthorizedException,
-} from "@nestjs/common";
+import { Injectable, InternalServerErrorException } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { generateOtp } from "src/helpers/otp-generator";
@@ -59,15 +55,12 @@ export class OTPService {
       .sort({ createdAt: -1 })
       .exec();
 
-    if (!userOTP) {
-      throw new UnauthorizedException(`Incorrect One time password`);
-    }
-
-    if (userOTP.expiresAt.getTime() < Date.now()) {
-      throw new UnauthorizedException(`One time password has expired`);
+    if (!userOTP || userOTP.expiresAt.getTime() < Date.now()) {
+      return false;
     }
 
     await this.otpModel.updateOne({ isVerified: true });
+    return true;
   }
 
   private getTemplateMessageBody(phoneNumber: string, otp: string) {

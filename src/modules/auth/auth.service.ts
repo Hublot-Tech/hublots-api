@@ -9,14 +9,14 @@ import * as bcrypt from "bcrypt";
 import { Request } from "express";
 import { TokenPayload } from "google-auth-library";
 import { jwtConstants } from "../../constants/constants";
+import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
+import { OTPService } from "../otp/otp.service";
+import { OtpReason } from "../otp/schemas/otp.schema";
 import { CreateUserDto, Locale } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { UsersService } from "../users/users.service";
 import { AuthTokensDto, PasswordPayloadDto } from "./dto/auth.dto";
-import { OTPService } from "../otp/otp.service";
-import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 import { LogsService } from "./logs.service";
-import { OtpReason } from "../otp/schemas/otp.schema";
 
 type TokenType = "access_token" | "refresh_token";
 interface IJWTPayload {
@@ -148,11 +148,15 @@ export class AuthService {
     const user = await this.usersService.findByPhoneNumber(
       otpPayload.phoneNumber,
     );
-    await this.otpService.verify(
+    const isVerified = await this.otpService.verify(
       otpPayload.phoneNumber,
       otpPayload.otpCode,
       OtpReason.PHONE_NUMBER,
     );
+
+    if (!isVerified) {
+      throw new UnauthorizedException("Invalid OTP code!");
+    }
     await this.usersService.update(user.id, { isOTPVerified: true });
   }
 
@@ -164,11 +168,14 @@ export class AuthService {
     const user = await this.usersService.findByPhoneNumber(payload.phoneNumber);
 
     //verify otp sent to request password modification
-    await this.otpService.verify(
+    const isVerified = await this.otpService.verify(
       user.phoneNumber,
       payload.otpCode,
       OtpReason.PASSWORD_RESET,
     );
+    if (!isVerified) {
+      throw new UnauthorizedException("Invalid OTP code!");
+    }
 
     return this.usersService.update(user.id, {
       isOTPVerified: true,
