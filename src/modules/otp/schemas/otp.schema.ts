@@ -2,7 +2,7 @@ import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
 
 export enum OtpReason {
-  EMAIL = "phone_verification",
+  PHONE_NUMBER = "phone_verification",
   FUNDS_TRANSFER = "funds_transfer",
   PASSWORD_RESET = "password_reset",
 }
@@ -21,7 +21,7 @@ export class OTP extends Document {
   @Prop({ type: String, required: true })
   otp: string;
 
-  @Prop({ enum: OtpReason, default: OtpReason.EMAIL })
+  @Prop({ enum: OtpReason, default: OtpReason.PHONE_NUMBER })
   reason: OtpReason;
 
   @Prop({ type: Boolean, default: false })

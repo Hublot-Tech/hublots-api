@@ -1,6 +1,7 @@
-import { ApiProperty, PickType } from "@nestjs/swagger";
+import { ApiProperty, OmitType, PickType } from "@nestjs/swagger";
 import { IsEmail, IsString } from "class-validator";
 import { ResponseMetadataDto } from "src/helpers/api-dto";
+import { VerifyOTPDto } from "src/modules/otp/dto/otp.dto";
 import { UserEntity } from "src/modules/users/dto";
 
 export class SignInDto {
@@ -76,14 +77,13 @@ export class RefreshTokenDto extends PickType(AuthTokensDto, [
   "refreshToken",
 ]) {}
 
-export class PasswordPayloadDto {
+export class PasswordPayloadDto extends OmitType(VerifyOTPDto, ["reason"]) {
   @IsString()
+  @ApiProperty()
   newPassword: string;
 
-  @IsString()
-  otpCode: string;
-
   constructor(props: PasswordPayloadDto) {
+    super(props);
     Object.assign(this, props);
   }
 }

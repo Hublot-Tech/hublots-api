@@ -11,17 +11,18 @@ export class SendOTPDto {
   @IsEnum(OtpReason)
   @IsOptional()
   @ApiProperty({
-    default: OtpReason.EMAIL,
+    default: OtpReason.PHONE_NUMBER,
+    enum: OtpReason,
     description: "Reason for requesting code.",
   })
-  reason: OtpReason = OtpReason.EMAIL;
+  reason: OtpReason = OtpReason.PHONE_NUMBER;
 
   constructor(otp: SendOTPDto) {
     Object.assign(this, otp);
   }
 }
 
-export class VerifyOTPDto {
+export class VerifyOTPDto extends SendOTPDto {
   @IsString()
   @ApiProperty()
   phoneNumber: string;
@@ -29,9 +30,10 @@ export class VerifyOTPDto {
   @Length(6)
   @IsString()
   @ApiProperty()
-  otp: string;
+  otpCode: string;
 
-  constructor(otp: VerifyOTPDto) {
-    Object.assign(this, otp);
+  constructor(props: VerifyOTPDto) {
+    super(props);
+    Object.assign(this, props);
   }
 }

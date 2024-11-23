@@ -38,7 +38,11 @@ export class OTPController {
   async verifyOTP(
     @Body() otpPayload: VerifyOTPDto,
   ): Promise<ResponseMetadataDto> {
-    await this.otpService.verify(otpPayload.phoneNumber, otpPayload.otp);
+    await this.otpService.verify(
+      otpPayload.phoneNumber,
+      otpPayload.otpCode,
+      otpPayload.reason,
+    );
     return new ResponseMetadataDto({
       status: HttpStatus.OK,
       message: "Successfully verified one time password",

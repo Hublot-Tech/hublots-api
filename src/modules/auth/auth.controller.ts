@@ -2,8 +2,8 @@ import {
   Body,
   Controller,
   Delete,
+  HttpCode,
   HttpStatus,
-  Patch,
   Post,
   Req,
   UploadedFile,
@@ -36,6 +36,7 @@ import {
 } from "./dto/auth.dto";
 import { GoogleAuthService } from "./google/google-auth.service";
 
+@Public()
 @ApiTags("Auth")
 @Controller("auth")
 export class AuthController {
@@ -44,7 +45,6 @@ export class AuthController {
     private authGuard: GoogleAuthService,
   ) {}
 
-  @Public()
   @Post("login")
   @ApiCreatedResponse({
     type: SignInResponseDto,
@@ -66,7 +66,6 @@ export class AuthController {
     });
   }
 
-  @Public()
   @Post("google-login")
   @ApiCreatedResponse({
     type: SignInResponseDto,
@@ -87,7 +86,6 @@ export class AuthController {
     });
   }
 
-  @Public()
   @Post("register")
   @ApiOperation({
     summary:
@@ -109,7 +107,6 @@ export class AuthController {
     });
   }
 
-  @Public()
   @Post("refresh-token")
   @ApiOperation({
     summary: "Request for new access token.",
@@ -128,10 +125,11 @@ export class AuthController {
     });
   }
 
-  @Public()
   @Post("resend-code")
   @ApiOperation({
     summary: "Send one time password. Use endpoint to resend OTP if required",
+    description:
+      "Use endpoint to resend OTP if required. This endpoint can also be used to send reset-password otp",
   })
   @ApiNoContentResponse({ type: ResponseMetadataDto })
   async sendOTP(@Body() otpPayload: SendOTPDto): Promise<ResponseMetadataDto> {
@@ -142,39 +140,37 @@ export class AuthController {
     });
   }
 
-  @Public()
-  @Patch("verify-code/:code")
+  @Public(false)
+  @Post("verify-phone-number")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })
-  @ApiNoContentResponse({ type: SignInResponseDto })
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
   async verifyOTP(
     @Body() otpPayload: VerifyOTPDto,
-  ): Promise<SignInResponseDto> {
-    const user = await this.authService.verifyUserOTP(otpPayload);
-    const tokens = await this.authService.login(user);
+  ): Promise<ResponseMetadataDto> {
+    await this.authService.verifyUserOTP(otpPayload);
 
-    return new SignInResponseDto({
-      ...tokens,
-      status: HttpStatus.OK,
-      message: "Successfully sign in with otp",
-    });
-  }
-
-  @Post("/new-password")
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
-  @ApiOperation({ summary: "Change authenticated user password." })
-  async setNewPassword(
-    @Req() req: Request,
-    @Body() passwordPayload: PasswordPayloadDto,
-  ) {
-    await this.authService.setNewPassword(req.user.id, passwordPayload);
     return new ResponseMetadataDto({
-      message: "Successfully changed user",
+      message: "Successfully verified user phone number",
       status: HttpStatus.NO_CONTENT,
     });
   }
 
+  @Post("/new-password")
+  @HttpCode(HttpStatus.NO_CONTENT)
+  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiOperation({ summary: "Update user password." })
+  async setNewPassword(@Body() passwordPayload: PasswordPayloadDto) {
+    await this.authService.updateUserPassword(passwordPayload);
+
+    return new ResponseMetadataDto({
+      message: "Successfully changed user password",
+      status: HttpStatus.NO_CONTENT,
+    });
+  }
+
+  @Public(false)
   @ApiBearerAuth()
   @Delete("/sign-out")
   @ApiNoContentResponse({

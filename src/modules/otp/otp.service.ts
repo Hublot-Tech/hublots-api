@@ -28,7 +28,7 @@ export class OTPService {
     return otp;
   }
 
-  async send(phoneNumber: string, reason: OtpReason = OtpReason.EMAIL) {
+  async send(phoneNumber: string, reason: OtpReason = OtpReason.PHONE_NUMBER) {
     const otp = new this.otpModel({
       reason,
       phoneNumber,
@@ -52,7 +52,7 @@ export class OTPService {
   async verify(
     phoneNumber: string,
     otp: string,
-    reason: OtpReason = OtpReason.EMAIL,
+    reason: OtpReason = OtpReason.PHONE_NUMBER,
   ) {
     const userOTP = await this.otpModel
       .findOne({ phoneNumber, otp, reason })

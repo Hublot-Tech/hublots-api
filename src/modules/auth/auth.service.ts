@@ -148,16 +148,20 @@ export class AuthService {
     const user = await this.usersService.findByPhoneNumber(
       otpPayload.phoneNumber,
     );
-    await this.otpService.verify(otpPayload.phoneNumber, otpPayload.otp);
-    return this.usersService.update(user.id, { isOTPVerified: true });
+    await this.otpService.verify(
+      otpPayload.phoneNumber,
+      otpPayload.otpCode,
+      OtpReason.PHONE_NUMBER,
+    );
+    await this.usersService.update(user.id, { isOTPVerified: true });
   }
 
   async signOut(userId: string) {
     await this.logsService.invalidate(userId);
   }
 
-  async setNewPassword(userId: string, payload: PasswordPayloadDto) {
-    const user = await this.usersService.findOne(userId);
+  async updateUserPassword(payload: PasswordPayloadDto) {
+    const user = await this.usersService.findByPhoneNumber(payload.phoneNumber);
 
     //verify otp sent to request password modification
     await this.otpService.verify(
@@ -167,6 +171,7 @@ export class AuthService {
     );
 
     return this.usersService.update(user.id, {
+      isOTPVerified: true,
       password: bcrypt.hashSync(
         payload.newPassword,
         parseInt(process.env.BCRYPT_SALT),
