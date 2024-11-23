@@ -187,9 +187,9 @@ export class AuthService {
   }
 
   async login(user: User): Promise<AuthTokensDto> {
-    // if (!user.isOTPVerified) {
-    //   await this.otpService.send(user.phoneNumber, OtpReason.EMAIL);
-    // }
+    if (!user.isOTPVerified) {
+      await this.otpService.send(user.phoneNumber, OtpReason.PHONE_NUMBER);
+    }
     return this.generateTokens(user);
   }
 

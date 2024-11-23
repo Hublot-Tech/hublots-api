@@ -14,6 +14,7 @@ import {
 } from "@nestjs/common";
 import { FilesInterceptor } from "@nestjs/platform-express";
 import {
+  ApiBearerAuth,
   ApiBody,
   ApiConsumes,
   ApiNoContentResponse,
@@ -31,6 +32,7 @@ import { Role } from "../users/dto";
 import { KYCEntity, QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
 import { KYCService } from "./kyc.service";
 
+@ApiBearerAuth()
 @ApiTags("KYC")
 @Controller("kyc")
 export class KYCController {

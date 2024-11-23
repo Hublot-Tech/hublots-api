@@ -15,7 +15,7 @@ import {
   ApiBody,
   ApiConsumes,
   ApiCreatedResponse,
-  ApiNoContentResponse,
+  ApiOkResponse,
   ApiOperation,
   ApiTags,
 } from "@nestjs/swagger";
@@ -111,7 +111,7 @@ export class AuthController {
   @ApiOperation({
     summary: "Request for new access token.",
   })
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiCreatedResponse({ type: AuthTokensDto })
   async requestAccessToken(
     @Body() payload: RefreshTokenDto,
   ): Promise<ResponseDataDto<AuthTokensDto>> {
@@ -131,7 +131,8 @@ export class AuthController {
     description:
       "Use endpoint to resend OTP if required. This endpoint can also be used to send reset-password otp",
   })
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: ResponseMetadataDto })
   async sendOTP(@Body() otpPayload: SendOTPDto): Promise<ResponseMetadataDto> {
     await this.authService.sendUserOTP(otpPayload);
     return new ResponseMetadataDto({
@@ -145,7 +146,7 @@ export class AuthController {
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
   })
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @ApiOkResponse({ type: ResponseMetadataDto })
   async verifyOTP(
     @Body() otpPayload: VerifyOTPDto,
   ): Promise<ResponseMetadataDto> {
@@ -153,27 +154,27 @@ export class AuthController {
 
     return new ResponseMetadataDto({
       message: "Successfully verified user phone number",
-      status: HttpStatus.NO_CONTENT,
+      status: HttpStatus.OK,
     });
   }
 
   @Post("/new-password")
-  @HttpCode(HttpStatus.NO_CONTENT)
-  @ApiNoContentResponse({ type: ResponseMetadataDto })
+  @HttpCode(HttpStatus.OK)
+  @ApiOkResponse({ type: ResponseMetadataDto })
   @ApiOperation({ summary: "Update user password." })
   async setNewPassword(@Body() passwordPayload: PasswordPayloadDto) {
     await this.authService.updateUserPassword(passwordPayload);
 
     return new ResponseMetadataDto({
       message: "Successfully changed user password",
-      status: HttpStatus.NO_CONTENT,
+      status: HttpStatus.OK,
     });
   }
 
   @Public(false)
   @ApiBearerAuth()
   @Delete("/sign-out")
-  @ApiNoContentResponse({
+  @ApiOkResponse({
     type: ResponseMetadataDto,
     description: "Logout successfully",
   })
@@ -182,7 +183,7 @@ export class AuthController {
     await this.authService.signOut(req.user.id);
     return new ResponseMetadataDto({
       message: "Successfully deleted user",
-      status: HttpStatus.NO_CONTENT,
+      status: HttpStatus.OK,
     });
   }
 }
