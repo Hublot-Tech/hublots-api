@@ -141,7 +141,6 @@ export class AuthController {
     });
   }
 
-  @Public(false)
   @Post("verify-phone-number")
   @ApiOperation({
     summary: "Verify one time password sent to user on sign up/in",
