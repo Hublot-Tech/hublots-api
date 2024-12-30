@@ -4,9 +4,9 @@ import {
   NotFoundException,
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
-import * as bcrypt from "bcrypt";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
+import * as bcrypt from "../../helpers/crypto";
 import { CreateAccountDto, CreateUserDto, Locale, Role } from "./dto/users.dto";
 import { User } from "./schemas/user.schema";
 

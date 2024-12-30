@@ -5,10 +5,10 @@ import {
   UnauthorizedException,
 } from "@nestjs/common";
 import { JwtService } from "@nestjs/jwt";
-import * as bcrypt from "bcrypt";
 import { Request } from "express";
 import { TokenPayload } from "google-auth-library";
 import { jwtConstants } from "../../constants/constants";
+import * as bcrypt from "../../helpers/crypto";
 import { SendOTPDto, VerifyOTPDto } from "../otp/dto/otp.dto";
 import { OTPService } from "../otp/otp.service";
 import { OtpReason } from "../otp/schemas/otp.schema";
@@ -47,6 +47,7 @@ export class AuthService {
     } else if (!user.isActive) {
       throw new ForbiddenException("User account was disactivated !!!");
     }
+
     return await this.login(user);
   }
 
