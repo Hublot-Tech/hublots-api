@@ -1,6 +1,6 @@
 # Dockerfile
 # Step 1: Use Node.js as the base image
-FROM node:18-alpine
+FROM node:20-alpine
 
 # Step 2: Set the working directory inside the container
 WORKDIR /app
@@ -9,7 +9,7 @@ WORKDIR /app
 COPY package*.json ./
 
 # Step 4: Install dependencies
-RUN npm install
+RUN npm install --production
 
 # Step 5: Copy the application source code to the container
 COPY . .
@@ -21,7 +21,7 @@ COPY .env .env
 RUN npm run build
 
 # Step 7: Expose the port the app runs on (default is 3000)
-EXPOSE 3000
+EXPOSE 8080
 
 # Step 8: Run the application
-CMD ["npm", "run", "start:prod"]
+CMD ["node", "dist/main.js"]

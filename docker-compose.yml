@@ -2,35 +2,31 @@
 version: '3.8'
 
 services:
-  nestjs-app:
+  api:
     build:
       context: .
       dockerfile: Dockerfile
     container_name: hublots_api
     restart: always
     ports:
-      - "3000:3000"
+      - "8080:8080"
     depends_on:
-      - mongo
-    environment:
-      BCRYPT_SALT: ${BCRYPT_SALT}
-      JWT_SECRET: ${JWT_SECRET}
-      PUBLIC_URL: ${PUBLIC_URL}
-      AUTH_GOOGLE_CLIENT_ID: ${AUTH_GOOGLE_CLIENT_ID}
-      AUTH_GOOGLE_CLIENT_SECRET: ${AUTH_GOOGLE_CLIENT_SECRET}
-      NOTCHPAY_PK: ${NOTCHPAY_PK}
-      NOTCHPAY_SK: ${NOTCHPAY_SK}
-      META_PHONE_NUMBER_ID: ${META_PHONE_NUMBER_ID}
-      META_ACCESS_TOKEN: ${META_ACCESS_TOKEN}
-      GEOAPIFY_KEY: ${GEOAPIFY_KEY}
-      MONGO_URI: ${MONGO_URI}
-    command: npm run start:prod
+      - mongodb
+    env_file:
+      - .env
+    volumes:
+      - ./uploads:/app/uploads
 
-  mongo:
-    image: mongo:6.0
-    container_name: hublots_mongo_db
+  mongodb:
+    image: mongo
     restart: always
+    container_name: hublots_mongodb
     ports:
       - "27017:27017"
-    environment:
-      MONGO_INITDB_DATABASE: hublotsdb
+    env_file:
+      - .env
+    volumes:
+      - mongo_data:/data/db  # Maps MongoDB data to a named volume for persistence
+
+volumes:
+  mongo_data:  # This is the named volume for MongoDB persistence
