@@ -31,7 +31,7 @@ export class OTPService {
       otp: generateOtp(6),
       expiresAt: Date.now() + 15 * 60 * 1000,
     });
-    if (!process.env.META_PHONE_NUMBER_ID) {
+    if (!process.env.META_MESSAGING_API_BASE_URL) {
       throw new InternalServerErrorException(
         `Meta phone number ID not provided!`,
       );
