@@ -4,14 +4,20 @@ import { OTPController } from "./otp.controller";
 import { OTPService } from "./otp.service";
 import { OTP, OTPSchema } from "./schemas/otp.schema";
 import { MongooseModule } from "@nestjs/mongoose";
+import { ConfigService } from "@nestjs/config";
 
 @Module({
   imports: [
     MongooseModule.forFeature([{ name: OTP.name, schema: OTPSchema }]),
-    HttpModule.register({
-      baseURL: `https://graph.facebook.com/v20.0/${process.env.META_PHONE_NUMBER_ID}`,
-      headers: {
-        Authorization: `Bearer ${process.env.META_ACCESS_TOKEN}`,
+    HttpModule.registerAsync({
+      inject: [ConfigService],
+      useFactory(configService: ConfigService) {
+        return {
+          baseURL: configService.get("META_MESSAGING_API_BASE_URL"),
+          headers: {
+            Authorization: `Bearer ${configService.get("META_MESSAGING_API_ACCESS_TOKEN")}`,
+          },
+        };
       },
     }),
   ],
