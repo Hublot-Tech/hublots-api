@@ -32,6 +32,7 @@ export class UsersService {
 
           new this.userModel({
             ...adminAccount,
+            isOTPVerified: true,
             password: bcrypt.hashSync(
               process.env.ADMIN_PASSWORD,
               parseInt(process.env.BCRYPT_SALT),

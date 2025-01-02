@@ -36,8 +36,8 @@ export class OTPService {
         `Meta phone number ID not provided!`,
       );
     }
-
-    await this.httpService.axiosRef.post(
+    
+    this.httpService.axiosRef.post(
       "/messages",
       this.getTemplateMessageBody(phoneNumber, otp.otp),
     );
