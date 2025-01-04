@@ -1,11 +1,12 @@
 import { Controller, Get, HttpStatus, Query } from "@nestjs/common";
-import { ApiOperation, ApiTags } from "@nestjs/swagger";
+import { ApiBearerAuth, ApiOperation, ApiTags } from "@nestjs/swagger";
 import { ApiOkPaginatedResponse } from "src/helpers/api-decorator";
 import { PaginatedResponseDataDto } from "src/helpers/api-dto";
 import { CreatePlaceDto } from "./dto/place.dto";
 import { PlacesService } from "./places.service";
 
 @ApiTags("Places")
+@ApiBearerAuth()
 @Controller("places")
 export class PlacesController {
   constructor(private placesService: PlacesService) {}

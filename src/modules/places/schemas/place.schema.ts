@@ -15,7 +15,7 @@ import { Document } from "mongoose";
 })
 export class Place extends Document {
   @Prop({ required: true })
-  name: string;
+  value: string;
 
   @Prop({
     type: {

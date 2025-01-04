@@ -10,7 +10,7 @@ import { IsNumber, IsOptional, IsString } from "class-validator";
 export class CreatePlaceDto {
   @IsString()
   @ApiProperty()
-  name: string;
+  value: string;
 
   @IsNumber()
   @ApiProperty()
@@ -39,7 +39,7 @@ export class PlaceEntity extends CreatePlaceDto {
 }
 
 export class PlaceQueryParams extends PartialType(
-  OmitType(CreatePlaceDto, ["name"]),
+  OmitType(CreatePlaceDto, ["value"]),
 ) {
   @IsString()
   @IsOptional()

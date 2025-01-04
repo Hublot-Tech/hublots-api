@@ -12,7 +12,7 @@ export function extractLocations(featureCollection: any): CreatePlaceDto[] {
   return featureCollection.features.map(
     (feature: any) =>
       new CreatePlaceDto({
-        name: feature.properties.formatted,
+        value: feature.properties.formatted,
         longitude: feature.geometry.coordinates[0],
         latitude: feature.geometry.coordinates[1],
       }),
@@ -27,9 +27,9 @@ export class PlacesService {
   ) {}
 
   // Create a new place
-  async create({ name, latitude, longitude }: CreatePlaceDto): Promise<Place> {
+  async create({ value, latitude, longitude }: CreatePlaceDto): Promise<Place> {
     const createdPlace = new this.placeModel({
-      name,
+      value,
       location: { type: "Point", coordinates: [longitude, latitude] },
     });
     return createdPlace.save();
