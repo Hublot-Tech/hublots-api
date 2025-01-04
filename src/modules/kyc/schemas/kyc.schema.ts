@@ -3,10 +3,7 @@ import { Document, Types } from "mongoose";
 import { KycStatus } from "../../users/dto";
 import { User } from "../../users/schemas/user.schema";
 
-export type KYCStatus = Exclude<
-  KycStatus,
-  KycStatus.NOT_SUBMITTED
->;
+export type KYCStatus = Exclude<KycStatus, KycStatus.NOT_SUBMITTED>;
 
 @Schema({
   toJSON: {
