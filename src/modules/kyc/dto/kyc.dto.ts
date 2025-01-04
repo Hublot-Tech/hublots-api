@@ -6,7 +6,7 @@ import {
 import { Exclude, Transform } from "class-transformer";
 import { IsEnum, IsIn, IsOptional, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
-import { VerificationStatus } from "src/modules/users/dto";
+import { KycStatus } from "src/modules/users/dto";
 import { KYCStatus } from "../schemas/kyc.schema";
 
 export class KYCEntity {
@@ -21,8 +21,8 @@ export class KYCEntity {
   imageRefs: string[];
 
   @ApiProperty({
-    enum: VerificationStatus,
-    default: VerificationStatus.SUBMITTED,
+    enum: KycStatus,
+    default: KycStatus.SUBMITTED,
   })
   status: KYCStatus;
 
@@ -48,10 +48,10 @@ export class KYCEntity {
 export class VerifyKYCDto {
   @ApiProperty({
     description: "KYC validation status, can either reject or validate",
-    enum: [VerificationStatus.VALIDATED, VerificationStatus.REJECTED],
+    enum: [KycStatus.VALIDATED, KycStatus.REJECTED],
   })
-  @IsIn([VerificationStatus.VALIDATED, VerificationStatus.REJECTED])
-  status: VerificationStatus;
+  @IsIn([KycStatus.VALIDATED, KycStatus.REJECTED])
+  status: KycStatus;
 
   @IsString()
   @IsOptional()
@@ -64,9 +64,9 @@ export class VerifyKYCDto {
 }
 
 export class QueryKYCDto extends BulkQueryDto {
-  @IsEnum(VerificationStatus)
-  @ApiPropertyOptional({ enum: VerificationStatus })
-  status?: VerificationStatus;
+  @IsEnum(KycStatus)
+  @ApiPropertyOptional({ enum: KycStatus })
+  status?: KycStatus;
 
   @IsString()
   @ApiPropertyOptional()

@@ -89,9 +89,9 @@ export class ServicesController {
   }
 
   @Post("new")
+  @UseRoles(Role.ADMIN, Role.PROVIDER, Role.SUPPORT)
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FileInterceptor("file"))
-  @UseRoles(Role.PROVIDER, Role.SUPPORT)
   @ApiCustomCreatedResponse(ServiceEntity)
   @ApiBody({ type: CreateServiceDto })
   @ApiOperation({
@@ -165,6 +165,7 @@ export class ServicesController {
   }
 
   @Put(":id")
+  @UseRoles(Role.ADMIN, Role.PROVIDER, Role.SUPPORT)
   @ApiCustomOkResponse(ServiceDetailsDto)
   @ApiOperation({
     summary: "Update service.",
@@ -189,7 +190,7 @@ export class ServicesController {
   }
 
   @Delete(":id")
-  @UseRoles(Role.PROVIDER, Role.SUPPORT)
+  @UseRoles(Role.ADMIN, Role.PROVIDER, Role.SUPPORT)
   @ApiNoContentResponse({
     type: ResponseMetadataDto,
     description: "Service successfully deleted",
@@ -213,7 +214,7 @@ export class ServicesController {
   @Post(":id/images")
   @ApiConsumes("multipart/form-data")
   @UseInterceptors(FilesInterceptor("images"))
-  @UseRoles(Role.PROVIDER, Role.SUPPORT)
+  @UseRoles(Role.ADMIN, Role.PROVIDER, Role.SUPPORT)
   @ApiCustomOkResponse(ServiceEntity)
   @ApiBody({
     schema: {

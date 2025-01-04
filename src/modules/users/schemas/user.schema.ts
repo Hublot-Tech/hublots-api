@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Gender, Locale, Role, VerificationStatus } from "../dto/users.dto";
+import { Gender, Locale, Role, KycStatus } from "../dto/users.dto";
 
 @Schema({
   toJSON: {
@@ -66,11 +66,11 @@ export class User extends Document {
 
   @Prop({
     type: String,
-    enum: VerificationStatus,
+    enum: KycStatus,
     required: true,
-    default: VerificationStatus.NOT_SUBMITTED,
+    default: KycStatus.NOT_SUBMITTED,
   })
-  kycStatus: VerificationStatus;
+  kycStatus: KycStatus;
 
   @Prop({
     type: Boolean,

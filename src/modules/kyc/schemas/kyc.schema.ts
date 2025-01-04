@@ -1,11 +1,11 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document, Types } from "mongoose";
-import { VerificationStatus } from "../../users/dto";
+import { KycStatus } from "../../users/dto";
 import { User } from "../../users/schemas/user.schema";
 
 export type KYCStatus = Exclude<
-  VerificationStatus,
-  VerificationStatus.NOT_SUBMITTED
+  KycStatus,
+  KycStatus.NOT_SUBMITTED
 >;
 
 @Schema({
@@ -25,8 +25,8 @@ export class KYC extends Document {
   @Prop({
     type: String,
     required: true,
-    enum: VerificationStatus,
-    default: VerificationStatus.SUBMITTED,
+    enum: KycStatus,
+    default: KycStatus.SUBMITTED,
   })
   status: KYCStatus;
 

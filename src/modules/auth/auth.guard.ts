@@ -3,15 +3,18 @@ import {
   ExecutionContext,
   ForbiddenException,
   Injectable,
+  Logger,
 } from "@nestjs/common";
 import { Reflector } from "@nestjs/core";
 import { Request } from "express";
-import { Role, VerificationStatus } from "../users/dto";
+import { Role, KycStatus } from "../users/dto";
 import { AuthService } from "./auth.service";
 import { PUBLIC_KEY, ROLES_KEY } from "./decorator/auth.decorator";
 
 @Injectable()
 export class AuthorizationGuard implements CanActivate {
+  private readonly logger = new Logger(AuthorizationGuard.name);
+
   constructor(
     private reflector: Reflector,
     private authService: AuthService,
@@ -39,7 +42,7 @@ export class AuthorizationGuard implements CanActivate {
     }
 
     if (
-      authenticatedUser.kycStatus !== VerificationStatus.VALIDATED &&
+      authenticatedUser.kycStatus !== KycStatus.VALIDATED &&
       request.url.includes("blots") &&
       ["POST", "PUT", "PATCH", "DELETE"].includes(request.method)
     ) {

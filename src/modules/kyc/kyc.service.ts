@@ -5,7 +5,7 @@ import {
 } from "@nestjs/common";
 import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
-import { Role, VerificationStatus } from "../users/dto";
+import { Role, KycStatus } from "../users/dto";
 import { User } from "../users/schemas/user.schema";
 import { QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
 import { KYC } from "./schemas/kyc.schema";
@@ -23,7 +23,7 @@ export class KYCService {
       throw new NotFoundException(`User with id ${userId} not found`);
     }
 
-    if (user.kycStatus === VerificationStatus.VALIDATED) {
+    if (user.kycStatus === KycStatus.VALIDATED) {
       throw new UnprocessableEntityException("User has KYC'd already");
     }
 
@@ -41,7 +41,7 @@ export class KYCService {
         { upsert: true },
       )
       .exec();
-    user.kycStatus = VerificationStatus.SUBMITTED;
+    user.kycStatus = KycStatus.SUBMITTED;
     if (!user.roles.includes(Role.PROVIDER)) {
       user.roles.push(Role.PROVIDER);
     }

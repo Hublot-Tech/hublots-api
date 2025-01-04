@@ -7,7 +7,13 @@ import { InjectModel } from "@nestjs/mongoose";
 import { Model } from "mongoose";
 import { BulkQueryDto } from "../../helpers/api-dto";
 import * as bcrypt from "../../helpers/crypto";
-import { CreateAccountDto, CreateUserDto, Locale, Role } from "./dto/users.dto";
+import {
+  CreateAccountDto,
+  CreateUserDto,
+  KycStatus,
+  Locale,
+  Role,
+} from "./dto/users.dto";
 import { User } from "./schemas/user.schema";
 
 @Injectable()
@@ -34,6 +40,7 @@ export class UsersService {
           new this.userModel({
             ...adminAccount,
             isOTPVerified: true,
+            kycStatus: KycStatus.VALIDATED,
             password: bcrypt.hashSync(
               process.env.ADMIN_PASSWORD,
               parseInt(process.env.BCRYPT_SALT),

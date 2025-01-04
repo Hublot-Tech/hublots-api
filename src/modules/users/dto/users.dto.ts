@@ -8,6 +8,7 @@ import {
 import { Exclude, Transform } from "class-transformer";
 import {
   IsBoolean,
+  IsDate,
   IsDateString,
   IsEmail,
   IsEnum,
@@ -30,7 +31,7 @@ export enum Role {
   ADMIN = "admin",
 }
 
-export enum VerificationStatus {
+export enum KycStatus {
   NOT_SUBMITTED = "not_submitted",
   SUBMITTED = "submitted",
   VALIDATED = "validated",
@@ -58,9 +59,9 @@ export class CreateUserDto {
   @IsEmail()
   email: string;
 
+  @IsDate()
   @IsOptional()
-  @IsDateString()
-  @ApiProperty({ description: "Date of birth in ISO8601 format" })
+  @ApiPropertyOptional({ description: "Date of birth in ISO8601 format" })
   @Transform(({ value }) => new Date(value))
   date_of_birth?: Date;
 
@@ -152,9 +153,9 @@ export class UserEntity extends CreateUserDto {
   @IsEnum(Role, { each: true })
   roles: Role[];
 
-  @IsEnum(VerificationStatus)
-  @ApiProperty({ enum: VerificationStatus })
-  verificationStatus: VerificationStatus = VerificationStatus.NOT_SUBMITTED;
+  @IsEnum(KycStatus)
+  @ApiProperty({ enum: KycStatus })
+  kycStatus: KycStatus = KycStatus.NOT_SUBMITTED;
 
   @IsBoolean()
   @ApiProperty({ default: true })
@@ -183,7 +184,7 @@ export class UserEntity extends CreateUserDto {
 
 export class CreateAccountDto extends OmitType(CreateUserDto, ["password"]) {
   @ApiProperty({
-    example: ["CLIENT", "PROVIDER"],
+    example: ["client", "provider"],
     description:
       "The roles property is an array of Roles for the user. Required to create a new account.",
     isArray: true,

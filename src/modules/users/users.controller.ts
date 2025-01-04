@@ -192,8 +192,9 @@ export class UsersController {
 
     const roles = req.user.roles;
     if (
-      (!roles.includes(Role.ADMIN) && newUser.roles.includes(Role.ADMIN)) ||
-      newUser.roles.includes(Role.SUPPORT)
+      !roles.includes(Role.ADMIN) &&
+      (newUser.roles.includes(Role.ADMIN) ||
+        newUser.roles.includes(Role.SUPPORT))
     )
       throw new BadRequestException(
         "Only admin can create another admin or customer service account",
