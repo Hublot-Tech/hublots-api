@@ -37,6 +37,11 @@ export enum VerificationStatus {
   REJECTED = "rejected",
 }
 
+export enum Gender {
+  MALE = "Male",
+  FEMALE = "Female",
+}
+
 export class CreateUserDto {
   @ApiProperty({
     example: "Wonder",
@@ -52,6 +57,17 @@ export class CreateUserDto {
   })
   @IsEmail()
   email: string;
+
+  @IsOptional()
+  @IsDateString()
+  @ApiProperty({ description: "Date of birth in ISO8601 format" })
+  @Transform(({ value }) => new Date(value))
+  date_of_birth?: Date;
+
+  @IsOptional()
+  @IsEnum(Gender)
+  @ApiProperty({ enum: Gender })
+  gender?: Gender;
 
   @ApiProperty({
     example: "237 693 xxx xxx",

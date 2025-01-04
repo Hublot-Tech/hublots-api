@@ -28,6 +28,7 @@ export class UsersService {
             phoneNumber: process.env.ADMIN_PHONE_NUMBER,
             address: "Cameroun, Daoula Pk 8 face Eva hotel",
             roles: [Role.ADMIN],
+            date_of_birth: new Date(),
           });
 
           new this.userModel({

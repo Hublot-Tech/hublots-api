@@ -1,6 +1,6 @@
 import { Prop, Schema, SchemaFactory } from "@nestjs/mongoose";
 import { Document } from "mongoose";
-import { Locale, Role, VerificationStatus } from "../dto/users.dto";
+import { Gender, Locale, Role, VerificationStatus } from "../dto/users.dto";
 
 @Schema({
   toJSON: {
@@ -23,6 +23,12 @@ export class User extends Document {
     unique: true,
   })
   email: string;
+
+  @Prop({ type: Date })
+  date_of_birth: Date;
+
+  @Prop({ type: String, enum: Gender })
+  gender: Gender;
 
   @Prop({
     required: true,
