@@ -5,16 +5,16 @@ import {
   Delete,
   Get,
   HttpStatus,
+  Logger,
   Param,
   Post,
   Put,
   Query,
   Req,
-  UploadedFile,
   UploadedFiles,
   UseInterceptors,
 } from "@nestjs/common";
-import { FileInterceptor, FilesInterceptor } from "@nestjs/platform-express";
+import { FilesInterceptor } from "@nestjs/platform-express";
 import {
   ApiBearerAuth,
   ApiBody,
@@ -52,6 +52,8 @@ import { ServicesService } from "./services.service";
 @ApiTags("Services")
 @Controller("services")
 export class ServicesController {
+  private readonly logger = new Logger(ServicesController.name);
+
   constructor(private serviceService: ServicesService) {}
 
   @Get()
@@ -91,7 +93,7 @@ export class ServicesController {
   @Post("new")
   @UseRoles(Role.ADMIN, Role.PROVIDER, Role.SUPPORT)
   @ApiConsumes("multipart/form-data")
-  @UseInterceptors(FileInterceptor("file"))
+  @UseInterceptors(FilesInterceptor("files"))
   @ApiCustomCreatedResponse(ServiceEntity)
   @ApiBody({ type: CreateServiceDto })
   @ApiOperation({
@@ -101,11 +103,11 @@ export class ServicesController {
   })
   async create(
     @Req() request: Request,
-    @UploadedFile() file: Express.Multer.File,
+    @UploadedFiles() files: Array<Express.Multer.File>,
     @Body() createServiceDto: CreateServiceDto,
   ): Promise<ResponseDataDto<ServiceEntity>> {
-    if (!file) {
-      throw new BadRequestException("File is required");
+    if (!files?.length) {
+      throw new BadRequestException("Files is required");
     }
 
     if (
@@ -117,7 +119,7 @@ export class ServicesController {
 
     const newService: CreateServiceDto = {
       ...createServiceDto,
-      mainImageRef: `${process.env.PUBLIC_URL}/${file.filename}`,
+      mainImageRef: `${process.env.PUBLIC_URL}/${files[0].filename}`,
       provider: request.user.roles.includes(Role.PROVIDER)
         ? request.user.id
         : createServiceDto.provider,
@@ -127,6 +129,16 @@ export class ServicesController {
       newService,
       request.user.id,
     );
+
+    files.shift();
+    if (files.length) {
+      this.logger.log("Uploading extra images...");
+      this.uploadImages(request, service.id, files).then(({ data }) =>
+        this.logger.log(
+          `Uploaded ${files.length} extra images for service (${data.id}).`,
+        ),
+      );
+    }
 
     return new ResponseDataDto({
       data: new ServiceEntity(service.toJSON()),

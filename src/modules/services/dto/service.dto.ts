@@ -55,6 +55,7 @@ export class CreateServiceDto {
   })
   @IsString()
   @IsOptional()
+  @Transform(({ value }) => value.fullname, { toPlainOnly: true })
   provider: string;
 
   @IsOptional()
@@ -123,7 +124,7 @@ export class ServiceEntity extends OmitType(CreateServiceDto, ["place"]) {
   })
   imageRefs: string[];
 
-  @ApiProperty({ type: String, nullable: true })
+  @ApiProperty({ type: PlaceEntity, nullable: true })
   @Transform(({ value }) => new PlaceEntity(value))
   place: PlaceEntity;
 

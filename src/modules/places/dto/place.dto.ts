@@ -1,14 +1,16 @@
 import {
+  ApiHideProperty,
   ApiProperty,
   ApiPropertyOptional,
   OmitType,
   PartialType,
 } from "@nestjs/swagger";
-import { Transform } from "class-transformer";
-import { IsNumber, IsOptional, IsString } from "class-validator";
+import { Exclude, Transform } from "class-transformer";
+import { IsNotEmpty, IsNumber, IsOptional, IsString } from "class-validator";
 
 export class CreatePlaceDto {
   @IsString()
+  @IsNotEmpty()
   @ApiProperty()
   value: string;
 
@@ -31,6 +33,16 @@ export class PlaceEntity extends CreatePlaceDto {
   @ApiProperty()
   @Transform(({ value }) => value.toString("hex"))
   id: string;
+
+  @Exclude()
+  @ApiHideProperty()
+  location: unknown;
+
+  @Transform(({ obj }) => obj.location.coordinates[0], { toPlainOnly: true })
+  longitude: number = 0;
+
+  @Transform(({ obj }) => obj.location.coordinates[1], { toPlainOnly: true })
+  latitude: number = 0;
 
   constructor(place: PlaceEntity) {
     super(place);

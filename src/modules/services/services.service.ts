@@ -86,6 +86,7 @@ export class ServicesService {
         ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
       })
       .populate("place")
+      .populate("provider")
       .limit(perpage)
       .skip(perpage * (page - 1))
       .exec();
