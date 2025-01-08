@@ -60,6 +60,7 @@ export class PlaceQueryParams extends PartialType(
 
   @IsNumber()
   @IsOptional()
+  @Transform(({ value }) => Number(value))
   @ApiPropertyOptional({
     default: 10000,
     description: "Most distant point from location in meters",
