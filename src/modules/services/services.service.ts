@@ -83,7 +83,9 @@ export class ServicesService {
       .find({
         ...params,
         ...(keywords ? { $text: { $search: keywords } } : {}),
-        ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
+        ...(places?.length
+          ? { $or: places.map((pl) => ({ place: pl.id })) }
+          : {}),
       })
       .populate("place")
       .populate("provider")
@@ -116,7 +118,9 @@ export class ServicesService {
       .distinct("provider", {
         ...params,
         ...(keywords ? { $text: { $search: keywords } } : {}),
-        ...(places ? { $or: places.map((pl) => ({ place: pl.id })) } : {}),
+        ...(places?.length
+          ? { $or: places.map((pl) => ({ place: pl.id })) }
+          : {}),
       })
       .exec();
 
