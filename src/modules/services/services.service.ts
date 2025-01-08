@@ -126,7 +126,9 @@ export class ServicesService {
 
     const distinctServices = await this.serviceModel
       .find({
-        $or: distinctProviders.map((provider) => ({ provider })),
+        ...(distinctProviders?.length
+          ? { $or: distinctProviders.map((provider) => ({ provider })) }
+          : {}),
       })
       .populate("place")
       .populate("provider")
