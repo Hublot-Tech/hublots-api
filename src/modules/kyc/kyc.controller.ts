@@ -31,6 +31,7 @@ import { UseRoles } from "../auth/decorator/auth.decorator";
 import { Role } from "../users/dto";
 import { KYCEntity, QueryKYCDto, VerifyKYCDto } from "./dto/kyc.dto";
 import { KYCService } from "./kyc.service";
+import { MongoIdPipe } from "src/helpers/custom-pipes";
 
 @ApiBearerAuth()
 @ApiTags("KYC")
@@ -112,7 +113,24 @@ export class KYCController {
     const kycs = await this.kycService.findAll(query);
     return new ResponseDataDto({
       data: kycs.map((kyc) => new KYCEntity(kyc.toJSON())),
-      message: "Successfully updated user KYC images",
+      message: "Successfully retrived user KYCs",
+      status: HttpStatus.OK,
+    });
+  }
+
+  @Get(":id")
+  @UseRoles(Role.ADMIN, Role.SUPPORT)
+  @ApiOkPaginatedResponse(KYCEntity)
+  @ApiOperation({
+    summary: "Fetch submitted KYC for :id",
+    description:
+      "Requires authorized user to have a `admin` or `customer service` access",
+  })
+  async findKYC(@Param("id", MongoIdPipe) kycId: string) {
+    const kyc = await this.kycService.findOne(kycId);
+    return new ResponseDataDto({
+      data: new KYCEntity(kyc.toJSON()),
+      message: "Successfully retrived user KYC details",
       status: HttpStatus.OK,
     });
   }

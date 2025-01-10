@@ -40,6 +40,8 @@ export const ApiCustomCreatedResponse = <TModel extends Type<any>>(
   model: TModel | string,
   isArray = false,
 ) => {
+  const dataRef =
+    typeof model == "string" ? { type: model } : { $ref: getSchemaPath(model) };
   return applyDecorators(
     ApiExtraModels(
       ResponseDataDto,
@@ -54,12 +56,9 @@ export const ApiCustomCreatedResponse = <TModel extends Type<any>>(
               data: isArray
                 ? {
                     type: "array",
-                    items:
-                      typeof model == "string"
-                        ? { type: model }
-                        : { $ref: getSchemaPath(model) },
+                    items: dataRef,
                   }
-                : { $ref: getSchemaPath(model) },
+                : dataRef,
             },
           },
         ],

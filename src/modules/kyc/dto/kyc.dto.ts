@@ -7,7 +7,6 @@ import { Exclude, Transform } from "class-transformer";
 import { IsEnum, IsIn, IsOptional, IsString } from "class-validator";
 import { BulkQueryDto } from "src/helpers/api-dto";
 import { KycStatus } from "src/modules/users/dto";
-import { KYCStatus } from "../schemas/kyc.schema";
 
 export class KYCEntity {
   @ApiProperty()
@@ -24,7 +23,7 @@ export class KYCEntity {
     enum: KycStatus,
     default: KycStatus.SUBMITTED,
   })
-  status: KYCStatus;
+  status: KycStatus;
 
   @ApiProperty()
   message: string;
@@ -64,11 +63,13 @@ export class VerifyKYCDto {
 }
 
 export class QueryKYCDto extends BulkQueryDto {
+  @IsOptional()
   @IsEnum(KycStatus)
   @ApiPropertyOptional({ enum: KycStatus })
   status?: KycStatus;
 
   @IsString()
+  @IsOptional()
   @ApiPropertyOptional()
   userId?: string;
 

@@ -3,8 +3,6 @@ import { Document, Types } from "mongoose";
 import { KycStatus } from "../../users/dto";
 import { User } from "../../users/schemas/user.schema";
 
-export type KYCStatus = Exclude<KycStatus, KycStatus.NOT_SUBMITTED>;
-
 @Schema({
   toJSON: {
     virtuals: true,
@@ -25,7 +23,7 @@ export class KYC extends Document {
     enum: KycStatus,
     default: KycStatus.SUBMITTED,
   })
-  status: KYCStatus;
+  status: KycStatus;
 
   @Prop({ type: [{ type: String }] })
   imageRefs: string[];
