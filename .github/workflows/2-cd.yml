@@ -1,4 +1,4 @@
-name: Deploy REST Api Server
+name: CD
 
 on:
   push:
