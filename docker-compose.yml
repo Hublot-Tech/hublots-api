@@ -6,6 +6,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
+    image: hublots/hublots-api:latest
     container_name: hublots_api
     restart: always
     ports:
