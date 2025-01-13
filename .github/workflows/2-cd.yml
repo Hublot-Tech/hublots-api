@@ -1,42 +1,65 @@
-# .github/workflows/deploy.yml
-name: Deploy to Contabo
+name: Deploy REST Api Server
 
 on:
   push:
     branches:
-      - master  # Change to your deployment branch
+      - master
 
 jobs:
   deploy:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
+    env:
+      # Define environment variables for Docker Compose
+      MONGO_URI: mongodb://${{ secrets.MONGO_INITDB_ROOT_USERNAME }}:${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}@mongodb:27017/hublot
+      MONGO_INITDB_DATABASE: hublot
+      MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
+      MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}
+      BCRYPT_SALT: 10
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      PUBLIC_URL: https://api.hublots.co
+      NOTCHPAY_PK: ${{ secrets.NOTCHPAY_PK }}
+      NOTCHPAY_SK: ${{ secrets.NOTCHPAY_SK }}
+      META_MESSAGING_API_BASE_URL: ${{ secrets.META_MESSAGING_API_BASE_URL }}
+      META_MESSAGING_API_ACCESS_TOKEN: ${{ secrets.META_MESSAGING_API_ACCESS_TOKEN }}
+      GEOAPIFY_KEY: ${{ secrets.GEOAPIFY_KEY }}
+      ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
+      ADMIN_PHONE_NUMBER: ${{ secrets.ADMIN_PHONE_NUMBER }}
+      ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+    - name: Checkout repository
+      uses: actions/checkout@v3
 
-      - name: Set up SSH for Contabo
-        uses: webfactory/ssh-agent@v0.5.4
-        with:
-          ssh-private-key: ${{ secrets.SSH_PRIVATE_KEY }}
+    - name: Log in to Docker Hub
+      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
 
-      - name: Copy files to server
-        run: |
-          scp -o StrictHostKeyChecking=no -r . ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }}:/home/${{ secrets.SERVER_USER }}/hublots_api
+    - name: Build and push Docker images
+      run: |
+        if [ -f create-env.sh ]; then
+          chmod +x create-env.sh;
+          ./create-env.sh
+        else echo "create-env file not found." && exit 1;
+        fi
+        docker-compose build
+        docker-compose push
 
-      - name: Deploy app on server
-        env:
-          MONGO_URI: ${{ secrets.MONGO_URI }}
-          MONGO_INITDB_DATABASE: ${{ secrets.MONGO_INITDB_DATABASE }}
-        run: |
-          ssh -o StrictHostKeyChecking=no ${{ secrets.SERVER_USER }}@${{ secrets.SERVER_IP }} << 'EOF'
-            # Navigate to the app directory
-            cd /home/${SERVER_USER}/hublots_api
-
-            # Create an .env file with MongoDB environment variables
-            echo "MONGO_URI=$MONGO_URI" > .env
-            echo "MONGO_INITDB_DATABASE=$MONGO_INITDB_DATABASE" >> .env
-
-            # Build and deploy the Docker containers using Docker Compose
-            docker compose down
-            docker compose up -d --build
-          EOF
+    - name: Deploy on server
+      env:
+        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+        SERVER_IP: ${{ secrets.SERVER_IP }}
+        SERVER_USER: ${{ secrets.SERVER_USER }}
+      run: |
+        echo "$SSH_PRIVATE_KEY" > key.pem
+        chmod 600 key.pem
+        ssh -i key.pem $SERVER_USER@$SERVER_IP << 'EOF'
+          mkdir -p /var/www/hublots
+          cd /var/www/hublots
+          if [ -f create-env.sh ]; then
+            chmod +x create-env.sh;
+            ./create-env.sh
+          else echo "create-env file not found." && exit 1;
+          fi
+          docker-compose pull
+          docker-compose down
+          docker-compose up -d
+        EOF
