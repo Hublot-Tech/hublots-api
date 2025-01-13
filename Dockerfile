@@ -9,7 +9,8 @@ WORKDIR /app
 COPY package*.json ./
 
 # Step 4: Install dependencies
-RUN npm install --production
+RUN npm ci --omit=dev
+RUN npm install --save-dev @nestjs/cli
 
 # Step 5: Copy the application source code to the container
 COPY . .
