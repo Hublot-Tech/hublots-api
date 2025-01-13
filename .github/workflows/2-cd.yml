@@ -38,7 +38,7 @@ jobs:
         if [ -f create-env.sh ]; then
           chmod +x create-env.sh;
           ./create-env.sh
-        else echo "create-env file not found." && exit 1;
+        else echo "create-env script not found." && exit 1;
         fi
         docker compose build
         docker compose push
@@ -49,16 +49,9 @@ jobs:
         SERVER_IP: ${{ secrets.SERVER_IP }}
         SERVER_USER: ${{ secrets.SERVER_USER }}
       run: |
-        echo "$SSH_PRIVATE_KEY" > key.pem
-        chmod 600 key.pem
-        ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
-          mkdir -p /home/hublots/api
-          cd /home/hublots/api
-          
-          # Login to pull previouly pushed image
-          echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
-          
-          docker compose pull
-          docker compose down
-          docker compose up -d
-        EOF
+        if [ -f deploy.sh ]; then
+          chmod +x deploy.sh;
+          ./deploy.sh
+        else echo "Deploy script not found." && exit 1;
+        fi
+        
