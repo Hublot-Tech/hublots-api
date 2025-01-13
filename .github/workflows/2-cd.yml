@@ -40,8 +40,8 @@ jobs:
           ./create-env.sh
         else echo "create-env file not found." && exit 1;
         fi
-        docker-compose build
-        docker-compose push
+        docker compose build
+        docker compose push
 
     - name: Deploy on server
       env:
@@ -59,7 +59,7 @@ jobs:
             ./create-env.sh
           else echo "create-env file not found." && exit 1;
           fi
-          docker-compose pull
-          docker-compose down
-          docker-compose up -d
+          docker compose pull
+          docker compose down
+          docker compose up -d
         EOF
