@@ -25,6 +25,9 @@ jobs:
       ADMIN_EMAIL: ${{ secrets.ADMIN_EMAIL }}
       ADMIN_PHONE_NUMBER: ${{ secrets.ADMIN_PHONE_NUMBER }}
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
+      CONTAINER_REGISTRY: ${{ vars.CONTAINER_REGISTRY }}
+      REGISTRY_USERNAME: ${{ secrets.REGISTRY_USERNAME }}
+      REGISTRY_PASSWORD: ${{ secrets.REGISTRY_PASSWORD }}
 
     steps:
     - name: Checkout repository
