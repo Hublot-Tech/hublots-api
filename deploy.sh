@@ -11,7 +11,7 @@ echo "Starting deployment on the server..."
 
 # Copy docker-compose.yml to the server
 echo "Copying docker-compose.yml to the server..."
-scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/hublots/api/
+scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml .env $SERVER_USER@$SERVER_IP:/home/hublots/api/
 
 # SSH into the server and execute docker-compose commands
 echo "Running docker-compose commands on the server..."
