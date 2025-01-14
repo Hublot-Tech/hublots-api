@@ -27,9 +27,6 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
 
   # Start the containers in detached mode
   docker compose up -d
-
-  # Setting reverse-proxy 
-  caddy reverse-proxy --from api.hublots.co --to :8080
 EOF
 
 echo "Deployment completed!"
