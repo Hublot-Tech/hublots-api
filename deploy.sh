@@ -20,13 +20,13 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
   cd /home/hublots/api/
 
   # Pull the latest Docker images
-  docker-compose pull
+  docker compose pull
 
   # Stop and remove existing containers
-  docker-compose down
+  docker compose down
 
   # Start the containers in detached mode
-  docker-compose up -d
+  docker compose up -d
 
   # Setting reverse-proxy 
   caddy reverse-proxy --from api.hublots.co --to :8080
