@@ -11,13 +11,13 @@ echo "Starting deployment on the server..."
 
 # Copy docker-compose.yml to the server
 echo "Copying docker-compose.yml to the server..."
-scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/path/to/target/directory/
+scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml $SERVER_USER@$SERVER_IP:/home/hublots/api/
 
 # SSH into the server and execute docker-compose commands
 echo "Running docker-compose commands on the server..."
 ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
   # Change to the target directory where docker-compose.yml is located
-  cd /path/to/target/directory/
+  cd /home/hublots/api/
 
   # Pull the latest Docker images
   docker-compose pull
