@@ -27,6 +27,7 @@ WORKDIR /app
 COPY --from=builder /app/package*.json ./
 COPY --from=builder /app/dist ./dist
 COPY --from=builder /app/node_modules ./node_modules
+COPY --from=builder /app/custom* ./
 
 # Copy .env file to the container (optional, if needed for runtime)
 COPY .env .env
