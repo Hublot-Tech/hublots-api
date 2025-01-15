@@ -3,7 +3,7 @@ import { AppModule } from "./app.module";
 import { DocumentBuilder, SwaggerModule } from "@nestjs/swagger";
 import { readFileSync } from "fs";
 import { join } from "path";
-import { ValidationPipe, Logger } from "@nestjs/common";
+import { ValidationPipe, Logger, RequestMethod } from "@nestjs/common";
 import { AllExceptionsFilter } from "./all-exceptions.filter";
 import { NestExpressApplication } from "@nestjs/platform-express";
 
@@ -17,7 +17,9 @@ async function bootstrap() {
     }),
   );
 
-  app.setGlobalPrefix("api");
+  app.setGlobalPrefix("api", {
+    exclude: [{ method: RequestMethod.GET, path: "/" }],
+  });
   app.useStaticAssets("./uploads");
   app.useGlobalFilters(new AllExceptionsFilter(app.get(HttpAdapterHost)));
 
