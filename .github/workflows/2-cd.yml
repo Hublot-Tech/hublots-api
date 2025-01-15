@@ -67,7 +67,7 @@ jobs:
           context: .
           push: true
           tags: | 
-            ghcr.io/hublots/hublots-api:latest
+            ${{ vars.CONTAINER_REGISTRY }}/hublots/hublots-api:latest
 
       - name: Deploy on server
         env:
