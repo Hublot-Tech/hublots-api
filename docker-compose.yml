@@ -4,7 +4,7 @@ services:
     build:
       context: .
       dockerfile: Dockerfile
-    image: ghcr.io/hublots-tech/hublots-api:latest
+    image: ghcr.io/hublots/hublots-api:latest
     container_name: hublots_api
     restart: always
     ports:
