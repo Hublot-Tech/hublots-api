@@ -16,7 +16,7 @@ describe("AppController", () => {
     it('should return "Welcome!"', () => {
       const appController = app.get(AppController);
       expect(appController.getHello()).toBe(
-        "Welcome to Hublots Api! visit Public API docs at /docs",
+        "Welcome to Hublots Api! visit Public API docs at /api",
       );
     });
   });
