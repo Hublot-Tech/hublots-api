@@ -77,7 +77,11 @@ export class MessagesService {
       .distinct("receiver", { sender: userId })
       .exec();
     const messages = await this.messageModel
-      .find({ $or: receivers.map((receiver) => ({ receiver })) })
+      .find(
+        receivers.length
+          ? { $or: receivers.map((receiver) => ({ receiver })) }
+          : {},
+      )
       .populate("receiver")
       .sort({ updatedAt: -1 })
       .exec();
