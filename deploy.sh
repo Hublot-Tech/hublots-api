@@ -15,7 +15,7 @@ scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml .env $SERVER_USER@
 
 # SSH into the server and execute docker-compose commands
 echo "Running docker-compose commands on the server..."
-ssh -i key.pem -T -o StrictHostKeyChecking=no $SER  VER_USER@$SERVER_IP <<'EOF'
+ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP <<'EOF'
   # Change to the target directory where docker-compose.yml is located
   mkdir -p /home/hublots/api
   cd /home/hublots/api/
