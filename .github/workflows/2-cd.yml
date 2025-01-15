@@ -47,7 +47,7 @@ jobs:
         uses: docker/login-action@v2
         with:
           registry: ghcr.io
-          username: ${{ secrets.REGISTRY_PASSWORD }}
+          username: ${{ secrets.REGISTRY_USERNAME }}
           password: ${{ secrets.REGISTRY_PASSWORD }}
 
       - name: Execute Pre-Build Script
@@ -64,8 +64,8 @@ jobs:
           context: .
           push: true
           tags: | 
-            ghcr.io/hublots/hublots-api:latest  # Replace with your image name
-            ghcr.io/hublots/hublots-api:${{ github.sha }}  # Replace with your image name
+            ghcr.io/hublots/hublots-api:latest
+            ghcr.io/hublots/hublots-api:${{ github.sha }}
 
       # - name: Build and push Docker images
       #   run: |
