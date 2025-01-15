@@ -8,6 +8,11 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-22.04
+
+    permissions:
+      contents: read # Allows reading repository content
+      packages: write # Allows publishing packages to GHCR
+
     env:
       # Define environment variables for Docker Compose
       MONGO_URI: mongodb://${{ secrets.MONGO_INITDB_ROOT_USERNAME }}:${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}@mongodb:27017
@@ -27,31 +32,55 @@ jobs:
       ADMIN_PASSWORD: ${{ secrets.ADMIN_PASSWORD }}
 
     steps:
-    - name: Checkout repository
-      uses: actions/checkout@v3
+      - name: Checkout repository
+        uses: actions/checkout@v3
 
-    - name: Log in to Docker Hub
-      run: echo ${{ secrets.DOCKER_PASSWORD }} | docker login -u ${{ secrets.DOCKER_USERNAME }} --password-stdin
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v2
 
-    - name: Build and push Docker images
-      run: |
-        if [ -f create-env.sh ]; then
-          chmod +x create-env.sh;
-          ./create-env.sh
-        else echo "create-env script not found." && exit 1;
-        fi
-        docker compose build
-        docker compose push
+      - name: Log in to GitHub Container Registry
+        uses: docker/login-action@v2
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Deploy on server
-      env:
-        SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
-        SERVER_IP: ${{ secrets.SERVER_IP }}
-        SERVER_USER: ${{ secrets.SERVER_USER }}
-      run: |
-        if [ -f deploy.sh ]; then
-          chmod +x deploy.sh;
-          ./deploy.sh
-        else echo "Deploy script not found." && exit 1;
-        fi
-        
+      - name: Execute Pre-Build Script
+        run: |
+          if [ -f create-env.sh ]; then
+            chmod +x create-env.sh;
+            ./create-env.sh
+          else echo "create-env script not found." && exit 1;
+          fi
+
+      - name: Build and Push Image
+        uses: docker/build-push-action@v4
+        with:
+          context: .  # Path to Service 1 directory
+          file: ./Dockerfile  # Path to Service 1 Dockerfile
+          push: true
+          tags: | 
+            ghcr.io/hublots-tech/hublots-api:latest  # Replace with your image name
+            ghcr.io/hublots-tech/hublots-api:${{ github.sha }}  # Replace with your image name
+
+      # - name: Build and push Docker images
+      #   run: |
+      #     if [ -f create-env.sh ]; then
+      #       chmod +x create-env.sh;
+      #       ./create-env.sh
+      #     else echo "create-env script not found." && exit 1;
+      #     fi
+      #     docker compose build
+      #     docker compose push
+
+      - name: Deploy on server
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER_IP: ${{ secrets.SERVER_IP }}
+          SERVER_USER: ${{ secrets.SERVER_USER }}
+        run: |
+          if [ -f deploy.sh ]; then
+            chmod +x deploy.sh;
+            ./deploy.sh
+          else echo "Deploy script not found." && exit 1;
+          fi

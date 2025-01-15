@@ -1,28 +1,38 @@
-# Dockerfile
-# Step 1: Use Node.js as the base image
-FROM node:20-alpine
+# Stage 1: Build Stage
+FROM node:20-alpine as builder
 
-# Step 2: Set the working directory inside the container
+# Set the working directory
 WORKDIR /app
 
-# Step 3: Copy package.json and package-lock.json to install dependencies
+# Copy package files and install dependencies
 COPY package*.json ./
+RUN npm ci --omit=dev && npm install --save-dev @nestjs/cli
 
-# Step 4: Install dependencies
-RUN npm ci --omit=dev
-RUN npm install --save-dev @nestjs/cli
-
-# Step 5: Copy the application source code to the container
+# Copy the application source code and .env file
 COPY . .
 
-# Copy .env file to the container
-COPY .env .env
-
-# Step 6: Build the NestJS app
+# Build the NestJS app
 RUN npm run build
 
-# Step 7: Expose the port the app runs on (default is 3000)
+# Remove dev dependencies and clean npm cache
+RUN npm prune --production && npm cache clean --force
+
+# Stage 2: Production Stage
+FROM node:20-alpine
+
+# Set the working directory
+WORKDIR /app
+
+# Copy only the necessary files from the build stage
+COPY --from=builder /app/package*.json ./
+COPY --from=builder /app/dist ./dist
+COPY --from=builder /app/node_modules ./node_modules
+
+# Copy .env file to the container (optional, if needed for runtime)
+COPY .env .env
+
+# Expose the application port
 EXPOSE 8080
 
-# Step 8: Run the application
+# Run the application
 CMD ["node", "dist/main.js"]
