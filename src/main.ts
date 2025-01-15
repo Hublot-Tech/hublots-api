@@ -40,7 +40,7 @@ async function bootstrap() {
   ); // Load custom script
 
   const document = SwaggerModule.createDocument(app, config);
-  SwaggerModule.setup("docs", app, document, {
+  SwaggerModule.setup("api", app, document, {
     customCss,
     customSiteTitle: "Hublot",
     swaggerOptions: {

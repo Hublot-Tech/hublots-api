@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Write the SSH private key to a file
-echo "$SSH_PRIVATE_KEY" > key.pem
+echo "$SSH_PRIVATE_KEY" >key.pem
 
 # Set correct permissions for the SSH key file
 chmod 600 key.pem
@@ -15,10 +15,18 @@ scp -i key.pem -o StrictHostKeyChecking=no docker-compose.yml .env $SERVER_USER@
 
 # SSH into the server and execute docker-compose commands
 echo "Running docker-compose commands on the server..."
-ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
+ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP <<'EOF'
   # Change to the target directory where docker-compose.yml is located
   mkdir -p /home/hublots/api
   cd /home/hublots/api/
+
+  # Source the .env file to export variables
+  if [ -f .env ]; then
+    source .env
+  else
+    echo ".env file not found."
+    exit 1
+  fi
 
   # login to gcr.io
   echo "$REGISTRY_PASSWORD" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin 
@@ -32,5 +40,14 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
   # Start the containers in detached mode
   docker compose up -d
 EOF
+
+# Capture the exit status of the SSH command
+EXIT_STATUS=$?
+
+# Check if the remote script executed successfully
+if [ $EXIT_STATUS -ne 0 ]; then
+  echo "Deployment failed. Exiting."
+  exit $EXIT_STATUS
+fi
 
 echo "Deployment completed!"
