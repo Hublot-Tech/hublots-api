@@ -20,6 +20,9 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP << 'EOF'
   mkdir -p /home/hublots/api
   cd /home/hublots/api/
 
+  # login to gcr.io
+  echo "$REGISTRY_PASSWORD" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin 
+
   # Pull the latest Docker images
   docker compose pull
 
