@@ -83,9 +83,7 @@ export class MessagesController {
     const message = await this.messagesService.create(
       {
         ...payload,
-        resource: file
-          ? `${file.filename}`
-          : payload.resource,
+        resource: file ? `${file.filename}` : payload.resource,
       },
       request.user.id,
     );
@@ -149,9 +147,7 @@ export class MessagesController {
       messageId,
       {
         content: payload.content,
-        resource: file
-          ? `${file.filename}`
-          : undefined,
+        resource: file ? `${file.filename}` : undefined,
       },
       request.user.id,
     );
