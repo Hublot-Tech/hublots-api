@@ -26,7 +26,10 @@ import { UsersModule } from "./modules/users/users.module";
       inject: [ConfigService],
       useFactory(configService: ConfigService) {
         const mongoUri = configService.get("MONGO_URI");
-        return { uri: mongoUri };
+        return {
+          uri: mongoUri,
+          dbName: configService.get("MONGO_INITDB_DATABASE"),
+        };
       },
     }),
     FilesModule,
