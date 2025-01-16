@@ -116,11 +116,17 @@ export class ServiceEntity extends OmitType(CreateServiceDto, ["place"]) {
   availability: string;
 
   @ApiProperty()
+  @Transform(({ value }) => `${process.env.PUBLIC_URL}/${value}`, {
+    toPlainOnly: true,
+  })
   mainImageRef: string;
 
   @ApiProperty({
     description:
       "Should not be provided on update except one wants to completely override the previous images",
+  })
+  @Transform(({ value }) => `${process.env.PUBLIC_URL}/${value}`, {
+    toPlainOnly: true,
   })
   imageRefs: string[];
 

@@ -69,7 +69,7 @@ export class KYCController {
   ): Promise<ResponseDataDto<KYCEntity>> {
     const imageRefs = [];
     for (const file of files) {
-      imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
+      imageRefs.push(`${file.filename}`);
     }
 
     const kyc = await this.kycService.submit(req.user.id, imageRefs);

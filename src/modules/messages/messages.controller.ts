@@ -84,7 +84,7 @@ export class MessagesController {
       {
         ...payload,
         resource: file
-          ? `${process.env.PUBLIC_URL}/${file.filename}`
+          ? `${file.filename}`
           : payload.resource,
       },
       request.user.id,
@@ -150,7 +150,7 @@ export class MessagesController {
       {
         content: payload.content,
         resource: file
-          ? `${process.env.PUBLIC_URL}/${file.filename}`
+          ? `${file.filename}`
           : undefined,
       },
       request.user.id,

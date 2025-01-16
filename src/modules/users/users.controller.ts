@@ -93,7 +93,7 @@ export class UsersController {
     @Body() updateProfileDto: UpdateProfileDto,
   ): Promise<ResponseDataDto<UserEntity>> {
     if (file?.filename) {
-      updateProfileDto.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+      updateProfileDto.profileRef = `${file.filename}`;
     }
 
     const user = await this.usersService.update(req.user.id, updateProfileDto);
@@ -140,7 +140,7 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<UserEntity>> {
     if (file?.filename) {
-      updateUserDto.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+      updateUserDto.profileRef = `${file.filename}`;
     }
 
     const user = await this.usersService.update(userId, updateUserDto);
@@ -187,7 +187,7 @@ export class UsersController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<UserEntity>> {
     if (file?.filename) {
-      newUser.profileRef = `${process.env.PUBLIC_URL}/${file.filename}`;
+      newUser.profileRef = `${file.filename}`;
     }
 
     const roles = req.user.roles;

@@ -119,7 +119,7 @@ export class ServicesController {
 
     const newService: CreateServiceDto = {
       ...createServiceDto,
-      mainImageRef: `${process.env.PUBLIC_URL}/${files[0].filename}`,
+      mainImageRef: `${files[0].filename}`,
       provider: request.user.roles.includes(Role.PROVIDER)
         ? request.user.id
         : createServiceDto.provider,
@@ -256,7 +256,7 @@ export class ServicesController {
 
     const imageRefs: string[] = [];
     for (const file of files) {
-      imageRefs.push(`${process.env.PUBLIC_URL}/${file.filename}`);
+      imageRefs.push(`${file.filename}`);
     }
 
     const service = await this.serviceService.addImages(

@@ -170,6 +170,9 @@ export class UserEntity extends CreateUserDto {
   isOTPVerified: boolean = false;
 
   @ApiProperty()
+  @Transform(({ value }) => `${process.env.PUBLIC_URL}/${value}`, {
+    toPlainOnly: true,
+  })
   profileRef: string = null;
 
   @Exclude()

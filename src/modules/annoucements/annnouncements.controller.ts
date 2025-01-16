@@ -84,7 +84,7 @@ export class AnnouncementsController {
     @UploadedFile() file: Express.Multer.File,
   ): Promise<ResponseDataDto<AnnouncementEntity>> {
     const announcement = await this.annonucementsService.create(
-      { ...payload, imageRef: `${process.env.PUBLIC_URL}/${file.filename}` },
+      { ...payload, imageRef: `${file.filename}` },
       request.user.id,
     );
 

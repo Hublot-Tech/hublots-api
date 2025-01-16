@@ -43,7 +43,7 @@ export class FilesController {
       throw new BadRequestException("File is required");
     }
     return new ResponseDataDto({
-      data: `${process.env.PUBLIC_URL}/${file.filename}`,
+      data: `${file.filename}`,
       message: "File successfully uploaded",
       status: HttpStatus.OK,
     });
@@ -76,7 +76,7 @@ export class FilesController {
     }
 
     return new ResponseDataDto({
-      data: files.map((file) => `${process.env.PUBLIC_URL}/${file.filename}`),
+      data: files.map((file) => `${file.filename}`),
       message: "Files successfully uploaded",
       status: HttpStatus.OK,
     });

@@ -48,6 +48,9 @@ export class CreateAnnouncementDto {
 
   @IsString()
   @ApiHideProperty()
+  @Transform(({ value }) => `${process.env.PUBLIC_URL}/${value}`, {
+    toPlainOnly: true,
+  })
   imageRef: string;
 
   constructor(announcement: CreateAnnouncementDto) {

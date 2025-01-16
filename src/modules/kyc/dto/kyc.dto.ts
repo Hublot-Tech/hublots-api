@@ -17,6 +17,12 @@ export class KYCEntity {
   label: string | null = null;
 
   @ApiProperty()
+  @Transform(
+    ({ value }) => value.map((val) => `${process.env.PUBLIC_URL}/${val}`),
+    {
+      toPlainOnly: true,
+    },
+  )
   imageRefs: string[];
 
   @ApiProperty({
