@@ -22,7 +22,7 @@ services:
     image: mongo:8.0
     restart: unless-stopped
     container_name: hublots_mongodb
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
+    command: [ "--replSet", "rs0", "--bind_ip_all" ]
     ports:
       - 27017:27017
     extra_hosts:
@@ -41,9 +41,9 @@ services:
   mongo2:
     image: mongo:8.0
     container_name: mongoreplset2
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    command: [ "--replSet", "rs0", "--bind_ip_all" ]
     ports:
-      - 27018:27018
+      - 27018:27017
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -53,9 +53,9 @@ services:
   mongo3:
     image: mongo:8.0
     container_name: mongoreplset3
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+    command: [ "--replSet", "rs0", "--bind_ip_all" ]
     ports:
-      - 27019:27019
+      - 27019:27017
     extra_hosts:
       - "host.docker.internal:host-gateway"
     volumes:
@@ -63,7 +63,7 @@ services:
       - "mongo3_config:/data/configdb"
 
 volumes:
-  mongo_data:  # This is the named volume for MongoDB persistence
+  mongo_data: # This is the named volume for MongoDB persistence
   mongo2_data:
   mongo3_data:
   mongo_config:
