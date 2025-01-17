@@ -22,7 +22,7 @@ services:
     image: mongo:8.0
     restart: unless-stopped
     container_name: hublots_mongodb
-    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27017"]
     ports:
       - 27017:27017
     extra_hosts:
