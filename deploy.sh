@@ -38,7 +38,7 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP <<'EOF'
   docker compose down
 
   # Start the containers in detached mode
-  docker compose up -d
+  docker compose up --wait
 EOF
 
 # Capture the exit status of the SSH command
