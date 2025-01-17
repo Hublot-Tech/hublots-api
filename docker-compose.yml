@@ -6,9 +6,11 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/hublots/hublots-api:latest
     container_name: hublots_api
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:8080"
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
     depends_on:
       - mongodb
     env_file:
@@ -17,15 +19,53 @@ services:
       - ./uploads:/app/uploads
 
   mongodb:
-    image: mongo
-    restart: always
+    image: mongo:8.0
+    restart: unless-stopped
     container_name: hublots_mongodb
+    command: ["--replSet", "rs0"]
     ports:
-      - "27017:27017"
-    env_file:
-      - .env
+      - 27017:27017
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    healthcheck:
+      test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'host.docker.internal:27017',priority:1},{_id:1,host:'host.docker.internal:27018',priority:0.5},{_id:2,host:'host.docker.internal:27019',priority:0.5}]}) }" | mongosh --port 27017 --quiet
+      interval: 5s
+      timeout: 30s
+      start_period: 0s
+      # start_interval: 1s
+      retries: 30
     volumes:
-      - mongo_data:/data/db  # Maps MongoDB data to a named volume for persistence
+      - "mongo_data:/data/db"
+      - "mongo_config:/data/configdb"
+
+  mongo2:
+    image: mongo:8.0
+    container_name: mongoreplset2
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27018"]
+    ports:
+      - 27018:27018
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "mongo2_data:/data/db"
+      - "mongo2_config:/data/configdb"
+
+  mongo3:
+    image: mongo:8.0
+    container_name: mongoreplset3
+    command: ["--replSet", "rs0", "--bind_ip_all", "--port", "27019"]
+    ports:
+      - 27019:27019
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    volumes:
+      - "mongo3_data:/data/db"
+      - "mongo3_config:/data/configdb"
 
 volumes:
   mongo_data:  # This is the named volume for MongoDB persistence
+  mongo2_data:
+  mongo3_data:
+  mongo_config:
+  mongo2_config:
+  mongo3_config:
