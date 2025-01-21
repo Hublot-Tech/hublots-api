@@ -15,7 +15,7 @@ jobs:
 
     env:
       # Define environment variables for Docker Compose
-      MONGO_URI: mongodb://${{ secrets.MONGO_INITDB_ROOT_USERNAME }}:${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}@mongodb:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0
+      MONGO_URI: mongodb://${{ secrets.MONGO_INITDB_ROOT_USERNAME }}:${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}@mongo1:27017,mongo2:27018,mongo3:27019/?replicaSet=rs0
       MONGO_INITDB_DATABASE: ${{ secrets.MONGO_INITDB_DATABASE }}
       MONGO_INITDB_ROOT_USERNAME: ${{ secrets.MONGO_INITDB_ROOT_USERNAME }}
       MONGO_INITDB_ROOT_PASSWORD: ${{ secrets.MONGO_INITDB_ROOT_PASSWORD }}

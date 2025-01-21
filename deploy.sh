@@ -31,11 +31,14 @@ ssh -i key.pem -T -o StrictHostKeyChecking=no $SERVER_USER@$SERVER_IP <<'EOF'
   # login to gcr.io
   echo "$REGISTRY_PASSWORD" | docker login "$CONTAINER_REGISTRY" -u "$REGISTRY_USERNAME" --password-stdin 
 
+  # Setting the docker image name
+  DOCKER_IMAGE=$CONTAINER_REGISTRY/$REGISTRY_USERNAME/hublots-api:latest
+  
   # Pull the latest Docker images
   docker compose pull
 
   # Stop and remove existing containers
-  docker compose down
+  docker rm -f hublots_api
 
   # Start the containers in detached mode
   docker compose up --wait

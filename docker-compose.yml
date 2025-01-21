@@ -6,66 +6,16 @@ services:
       dockerfile: Dockerfile
     image: ghcr.io/hublots/hublots-api:latest
     container_name: hublots_api
-    restart: always
+    restart: unless-stopped
     ports:
       - "8080:8080"
-    depends_on:
-      - mongo1
-      # - mongo2
-      # - mongo3
     env_file:
       - .env
     volumes:
       - ./uploads:/app/uploads
+    networks:
+      - mongo-cluster_mongo-cluster
 
-  mongo1:
-    image: mongo:8.0
-    restart: unless-stopped
-    container_name: mongo1
-    # command: [ "mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/etc/mongo-keyfile", "--auth" ]
-    # ports:
-    #   - 27017:27017
-    # healthcheck:
-    #   test: echo "try { rs.status() } catch (err) { rs.initiate({_id:'rs0',members:[{_id:0,host:'mongo1:27017',priority:1},{_id:1,host:'mongo2:27018',priority:0.5},{_id:2,host:'mongo3:27019',priority:0.5}]}) }" | mongosh --port 27017 --quiet
-    #   interval: 5s
-    #   timeout: 30s
-    #   start_period: 0s
-    #   # start_interval: 1s
-    #   retries: 30
-    env_file:
-      - .env
-    volumes:
-      - "mongo1_data:/data/db"
-      # - "./mongo-keyfile:/etc/mongo-keyfile"
-
-  # mongo2:
-  #   image: mongo:8.0
-  #   container_name: mongo2
-  #   command: [ "mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/etc/mongo-keyfile", "--auth" ]
-  #   ports:
-  #     - 27018:27017
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - "mongo2_data:/data/db"
-  #     - "./mongo-keyfile:/etc/mongo-keyfile"
-
-  # mongo3:
-  #   image: mongo:8.0
-  #   container_name: mongo3
-  #   command: [ "mongod", "--replSet", "rs0", "--bind_ip_all", "--keyFile", "/etc/mongo-keyfile", "--auth" ]
-  #   ports:
-  #     - 27019:27017
-  #   env_file:
-  #     - .env
-  #   volumes:
-  #     - "mongo3_data:/data/db"
-  #     - "./mongo-keyfile:/etc/mongo-keyfile"
-
-
-
-volumes:
-  mongo1_data: # This is the named volume for MongoDB persistence
-  # mongo2_data:
-  # mongo3_data:
-
+networks:
+  mongo-cluster_mongo-cluster:
+    external: true
